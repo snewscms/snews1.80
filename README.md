@@ -2,6 +2,7 @@
 
 ## Codename: sNews Reborn!
 
+
 Welcome to [sNews] 1.80 a single engine file, template independant, PHP and Database powered, standards compliant Content Management System (CMS). 
 
 sNews consists of one engine file (snews.php), one admin file (admin.php), one language file (EN.php), one XHTML file (index.php) for content presentation, one stylesheet (style.css) for content styling and one javascript file for functionality. This makes sNews the lightest and one of the most user-friendly CMSs available today.
