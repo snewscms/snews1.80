@@ -1515,11 +1515,13 @@ function processing() {
 							if ($position == 3) {
 								$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
 									WHERE position = 2 AND category = -3 AND  page_extra = $id";
-								$chk_extra_sql = mysql_query($chk_extra_query) or die(mysql_error());
-								if ($chk_extra_sql) {
-									while ($xtra = mysql_fetch_array($chk_extra_sql)) {
+								if ($res1 = db() -> query($chk_extra_query)) {
+									while ($xtra = dbfetch($res1)) {
 										$xtra_id = $xtra['id'];
-										mysql_query("UPDATE "._PRE.'articles'." SET category = '0',page_extra = ''	WHERE id = $xtra_id");
+										$extra2 = "UPDATE "._PRE.'articles'." SET category = ? page_extra = ? WHERE id = ?";
+										if ($res_xtra = db() -> prepare($extra2)) {
+											$res_art = dbbind($res_art, array('0', '', $xtra_id), 'isi');
+										}
 									}
 								}
 							}
