@@ -1,6 +1,9 @@
 <?php
 
 // NO HACK PLEASE
+$pagename = substr($_SERVER['SCRIPT_NAME'], strripos($_SERVER['SCRIPT_NAME'], '/')+1);
+if ($pagename == 'admin.php') {die('Bye bye');}
+if (!defined('SECURE_ID') || SECURE_ID != '1234') {die('ACCESS DENIED');}
 if (!_ADMIN) {echo( notification(1,l('error_not_logged_in'),'login')); set_error();}
 
 // ADMINISTRATION
