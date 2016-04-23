@@ -1958,7 +1958,7 @@ function center() {
 						default:
 							if (!empty($action)) {articles();}
 					}
-				} else {echo '1'; articles();}
+				} else {articles();}
 		}
 	} else {articles();}
 }
