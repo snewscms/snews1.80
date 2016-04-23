@@ -29,7 +29,7 @@ Enjoy! **The sNews Team**
 
 
 
-[//]: # Comments here it shouldn't be seen. Thanks
+[//]: # (Comments here it shouldn't be seen. Thanks)
 
 
    [snews]: <http://www.snewscms.com>
