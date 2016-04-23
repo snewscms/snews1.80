@@ -41,7 +41,7 @@ Enjoy! **The sNews Team**
    [Firebird]: <http://www.firebirdsql.org>
    [sqlExpress]: <https://www.microsoft.com/en-us/server-cloud/Products/sql-server-editions/sql-server-express.aspx>
    [PHP]: <http://www.php.net>
-   [readme.html]: <https://www.github.com/snewscms/snews1.80>
+   [readme.html]: <https://www.github.com/snewscms/snews1.80/readme.html>
    [Help Section]: <http://snewscms.com/help/>
 
 [//]: # (Future: [git-repo-url]. Reserved)
