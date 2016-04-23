@@ -755,6 +755,21 @@ function show_404() {
 	echo '<p class="warning">'.l('error_404').'</p>';
 }
 
+// PREPARE TEXT TO MYSQL
+function clean_mysql($text) {
+	if ((function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) || 
+		(ini_get('magic_quotes_sybase') && (strtolower(ini_get('magic_quotes_sybase')) != "off"))) {
+			$text = stripslashes(addslashes($text));
+			$text = str_replace('\\\"', '"', $text);
+	} else { // If use another RTE you must clean text before save text, ebookrte doesn`t need
+		$text = urldecode($text);
+		$text = str_replace('\\\"', '"', $text);
+		/*$find = array('<', '>');
+		$replace = array('&lt;', '&gt;');
+		$text = str_replace($find, $replace, $text);*/
+	} return $text;
+}
+
 // MENU ARTICLES
 function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 	global $categorySEF, $_catID,$subcatSEF;

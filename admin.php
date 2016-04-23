@@ -1091,7 +1091,7 @@ function processing() {
   	$seftitle = isset($_POST['seftitle']) ? $_POST['seftitle'] : '';
 	$url = isset($_POST['url']) ? cleanXSS($_POST['url']) : '';
 	$comment = isset($_POST['editedcomment']) ? $_POST['editedcomment'] : '';
-	$text = isset($_POST['text']) ? clean($_POST['text']) : '';
+	$text = isset($_POST['text']) ? clean_mysql($_POST['text']) : '';
   	$date = date('Y-m-d H:i:s');
   	$description_meta = isset($_POST['description_meta']) ? entity($_POST['description_meta']) : '';
 	$keywords_meta = isset($_POST['keywords_meta']) ? entity($_POST['keywords_meta']) : '';
