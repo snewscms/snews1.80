@@ -23,7 +23,7 @@ Apache, MySQL and PHP are all Open Source applications and freely available. The
 
 # Need Help ?
 
-For installation please read filename ([readme.html]). More information about Using sNews on your local computer can be found in the Help Section at snewscms.com.
+For installation please read filename ([readme.html]). More information about Using sNews on your local computer can be found in the [Help Section] at snewscms.com.
 
 
 Enjoy! **The sNews Team**
@@ -42,6 +42,6 @@ Enjoy! **The sNews Team**
    [sqlExpress]: <https://www.microsoft.com/en-us/server-cloud/Products/sql-server-editions/sql-server-express.aspx>
    [PHP]: <http://www.php.net>
    [readme.html]: <https://www.github.com/snewscms/snews1.80>
-   [git-repo-url]: <>
-  
+   [Help Section]: <http://snewscms.com/help/>
 
+[//]: # (Future: [git-repo-url]. Reserved)
