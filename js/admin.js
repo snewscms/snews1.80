@@ -1,3 +1,58 @@
+// *************************************************************************************
+// Add new EVENT
+// *************************************************************************************
+function addEvent(element, event, func) {
+	if (element.addEventListener) {
+		element.addEventListener(event, func);
+	} else if (element.attachEvent) {
+		element.attachEvent('on'+event, func);
+	} else {
+		element["on"+event] = func;
+	}
+};
+
+// *************************************************************************************
+// SET FOCUS ON FIRST FIELD
+// *************************************************************************************
+head_onload = function(env) {
+	if (!document.getElementById) {return;}
+ 	var forms1 = new Array("post");
+	for (var i=0; i< forms1.length; i++) {
+		if (forms1[i]){
+			var myelement = document.getElementById(forms1[i]);
+			if (myelement !== null ){
+				var num = myelement.length;
+				var found = false;
+				for (var j=0; j<num; j++) {
+					if ((myelement[j].type=='text' || myelement[j].type=='password' || myelement[j].type=='email') && myelement[j].value === ""){
+						myelement[j].focus(); found =true; break;
+					}
+				}
+				if (found !== true) {
+					for (var j=0; j<num; j++) {
+						if (myelement[j].type=='text' || myelement[j].type=='password' || myelement[j].type=='email'){
+							myelement[j].focus(); break;
+						}
+					}	
+				}
+			}
+		}
+	}
+};
+
+// *************************************************************************************
+// SET FOCUS - ADD EVENTS
+// *************************************************************************************
+if (document.addEventListener) {
+	document.addEventListener( "DOMContentLoaded", head_onload, false );
+} else if (window.attachEvent) {
+	window.onload = function (evt){head_onload(evt);};
+} window.onload = function (evt) {head_onload(evt);};
+
+
+// *************************************************************************************
+// OLD JAVASCRIPT snews 1.71
+// *************************************************************************************
 	var allowsef = /new|add|_ar|_ca/.test("new");
 	var allowpreview = /new|_add|_ar|/.test("");
 

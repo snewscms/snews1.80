@@ -339,7 +339,7 @@ if ($_GET) {
 		# SUB-CATEGORY
 		$subcatSEF = isset($url[1]) ? $url[1] : '';
 		# COMMENT PAGE
-		if (substr($url[1], 0, 1) == l('comment_pages') && is_numeric(substr($url[1], 1, 1))) {$commentsPage = $url[1];}
+		if (isset($url[1]) && substr($url[1], 0, 1) == l('comment_pages') && is_numeric(substr($url[1], 1, 1))) {$commentsPage = $url[1];}
 		else {$commentsPage = isset($url[3]) ? $url[3] : '';}
 		# ARTICLE
 		$articleSEF = isset($url[2]) ? $url[2] : '';
@@ -457,7 +457,8 @@ if (isset($url[3]) && !$_XNAME) {$commentsPage = $url[2]; $_TYPE = 9;}
 // TITLE
 function title() {
 	global $categorySEF, $_DESCR, $_KEYW, $_TITLE, $_NAME, $_XNAME;
-	echo '<base href="'._SITE.'" />';
+	$lfeed = PHP_EOL.chr(9);
+	echo '<base href="'._SITE.'" />'.$lfeed;
 	$title  = $_TITLE ? $_TITLE.' - ' : '';
 	$title .= $_NAME ? $_NAME.' - ' : '';
    	$title .= $_XNAME ? $_XNAME.' - ' : '';
@@ -465,14 +466,12 @@ function title() {
 		$title .= l($categorySEF).' - ';
 	}
 	$title .= s('website_title');
-	echo '
-		<title>'.$title.'</title>
-		<meta http-equiv="Content-Type" content="text/html; charset='.s('charset').'" />
-		<meta name="description" content="'.(!empty($_DESCR) ? $_DESCR : s('website_description')).'" />
-		<meta name="keywords" content="'.(!empty($_KEYW) ? $_KEYW : s('website_keywords')).'" />
-	';
-	if (_ADMIN) {
-		echo '<script type = "text/javascript" src = "js/admin.js"></script>';
+	echo '<title>'.$title.'</title>'.$lfeed;
+	echo '<meta http-equiv="Content-Type" content="text/html; charset='.s('charset').'" />'.$lfeed;
+	echo '<meta name="description" content="'.(!empty($_DESCR) ? $_DESCR : s('website_description')).'" />'.$lfeed;
+	echo '<meta name="keywords" content="'.(!empty($_KEYW) ? $_KEYW : s('website_keywords')).'" />'.PHP_EOL;
+	if (_ADMIN  || $categorySEF == 'login') {
+		echo chr(9).'<script type = "text/javascript" src = "js/admin.js"></script>'.PHP_EOL;
 	}
 }
 
