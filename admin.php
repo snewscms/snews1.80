@@ -1499,51 +1499,17 @@ function processing() {
 								//allows backdating of article
 								$publish_article = strtotime($date) < time() ? 1 : $publish_article;
 							} else {$future = '';}
-							echo 'OK';
 							$art_qwr = "UPDATE "._PRE.'articles'." SET
-								title=?,
-								seftitle = ?,
-								text = ?,
-								".$future."
-								category = ?,
-								position = ?,
-								extraid = ?,
-								page_extra = ?,
-								displaytitle = ?,
-								displayinfo = ?,
-								commentable = ?,
-								published = ?,
-								description_meta = ?,
-								keywords_meta = ?,
-								show_on_home = ?,
-								show_in_subcats=?,
-								artorder = ?
-								WHERE id = ? LIMIT 1";
+								title = ?, seftitle = ?, text = ?, ".$future." category = ?, position = ?, 
+								extraid = ?, page_extra = ?, displaytitle = ?, displayinfo = ?, commentable = ?,
+								published = ?, description_meta = ?, keywords_meta = ?, show_on_home = ?,
+								show_in_subcats = ?, artorder = ? WHERE id = ?";
 							if ($res_art = db() -> prepare($art_qwr)) {
 								$res_art = dbbind($res_art, array($title, $seftitle, $text, $category, $position, $def_extra, $page,
 									$display_title, $display_info, $commentable, $publish_article, $description_meta, $keywords_meta,
 									$show_on_home, $show_in_subcats, $artorder, $id), 'sssiisssssissssii');
 								$dart = dbfetch($res_art, true);
 							}
-							/*mysql_query("UPDATE "._PRE.'articles'." SET
-								title='$title',
-								seftitle = '$seftitle',
-								text = '$text',
-								".$future."
-								category = $category,
-								position = $position,
-								extraid = '$def_extra',
-								page_extra = '$page',
-								displaytitle = '$display_title',
-								displayinfo = '$display_info',
-								commentable = '$commentable',
-								published = $publish_article,
-								description_meta = '$description_meta',
-								keywords_meta = '$keywords_meta',
-								show_on_home='$show_on_home',
-								show_in_subcats='$show_in_subcats',
-								artorder = '$artorder'
-								WHERE id = $id LIMIT 1") or die(mysql_error());//**/
 							break;
 						case(isset($_POST['delete_article'])):
 							if ($position == 3) {

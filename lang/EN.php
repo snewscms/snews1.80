@@ -1,6 +1,6 @@
 <?php
 /*---------------------------------------------------------
-  sNews 1.8.0 (lines same as sNew 1.7.1)
+  sNews 1.8.0 (lines are the same as sNew 1.7.1 except last lines)
   EN.php
   English Language File
 ---------------------------------------------------------*/
