@@ -368,6 +368,9 @@ function load_lang() {
   	// MISS LINES - snews 1.7.1
   	$l['please_wait'] = 'Please wait';
   	$l['admin_article'] = 'Admin article';
+  	
+  	// NEW LINES sNews1.80
+  	$l['mail_nexists'] = 'Your server does not support mail function.';
 
 return $l;
 }

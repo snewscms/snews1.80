@@ -285,6 +285,31 @@ function stats($table, $position, $other = '', $count = true) {
 	return $numrows;
 }
 
+// NOTIFICATION
+function notification($error = 0, $note = '', $link = '') {
+	$title = $error == 0 ? l('operation_completed') : ($error !== 2 ? l('warning') : l('admin_error'));
+	$note = (!$note || empty($note)) ? '' : '<p>'.$note.'</p>';
+	switch(true){
+		case (!$link) :
+			$goto = '';
+			break;
+		case ($link == 'home') :
+			$goto = '<p><a href="'._SITE.'">'.l('backhome').'</a></p>';
+			break;
+		case ($link != 'home') :
+			$goto = '<p><a href="'._SITE.$link.'/" title="'.$link.'">'.l('back').'</a></p>';
+			break;
+	}
+	if ($error == 2) {
+		$_SESSION[_SITE.'fatal'] = $note == '' ? '' : '<h3>'.$title.'</h3>'.$note.$goto;
+		echo '<meta http-equiv="refresh" content="0; url='._SITE.$link.'/">';
+		return;
+	} else {
+		$output = '<h3>'.$title.'</h3>'.$note.$goto;
+		return $output;
+	}
+}
+
 if ($_POST) {
 	# CHECK LOGIN CREDENTIALS
 	if (isset($_POST['Loginform'])  && !_ADMIN) {
@@ -293,12 +318,12 @@ if ($_POST) {
 		unset($_POST['uname'],$_POST['pass']);
 		if (checkMathCaptcha() && md5($user) === s('username') && md5($pass) === s('password')) {
 			$_SESSION[_SITE.'Logged_In'] = token();
-			notification(2,'','administration');
-		} else { die( notification(2,l('err_Login'),'login')); }
+			notification(2, '', 'administration');
+		} else { die( notification(2, l('err_Login'), 'login')); }
 	}
 	# SUBMIT BUT NOT LOGGED
 	if (isset($_POST['submit_text']) && !_ADMIN) {
-		die (notification(2, l('error_not_logged_in'),'home'));
+		die (notification(2, l('error_not_logged_in'), 'home'));
 	}
 }
 
@@ -577,45 +602,45 @@ function pages() {
 }
 
 // EXTRA CONTENT
-function extra($mode='', $styleit = 0, $classname = '', $idname= '') {
+function extra($mode='', $styleit = 0, $classname = '', $idname = '') {
 	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $_catID;
-   	if (empty($mode)) {
-   		$mode = retrieve('seftitle', 'extras','id',1);
-   	}
-   	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
-   	$mode = strtolower($mode);
-   	$getExtra = retrieve('id', 'extras', 'seftitle', $mode);
-   	$subCat = retrieve('subcat', 'categories', 'id', $_catID);
-   	if (!empty($_ID)) {$getArt = $_ID;}
-   	if (!empty($subcatSEF)) {$catSEF = $subcatSEF;}
-   	$url = $categorySEF.(!empty($subcatSEF)? '/'.$subcatSEF:'').(!empty($articleSEF)?'/'.$articleSEF :'');
-   	$sql = 'SELECT
-			id,title,seftitle,text,category,extraid,page_extra,
-			position,displaytitle,show_in_subcats,visible
+	if (empty($mode)) {
+		$mode = retrieve('seftitle', 'extras', 'id' ,1);
+	}
+	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
+	$mode = strtolower($mode);
+	$getExtra = retrieve('id', 'extras', 'seftitle', $mode);
+	$subCat = retrieve('subcat', 'categories', 'id', $_catID);
+	if (!empty($_ID)) {$getArt = $_ID;}
+	if (!empty($subcatSEF)) {$catSEF = $subcatSEF;}
+	$url = $categorySEF.(!empty($subcatSEF)? '/'.$subcatSEF:'').(!empty($articleSEF)?'/'.$articleSEF :'');
+	$sql = 'SELECT
+			id, title, seftitle, text, category, extraid, page_extra,
+			position, displaytitle, show_in_subcats, visible
 		FROM '._PRE.'articles'.'
 		WHERE published = 1 AND position = 2 ';
-   	$query = $sql.(!empty($getExtra) ? ' AND extraid = '.$getExtra : ' AND extraid = 1');
-   	$query = $query.$qwr.' ORDER BY artorder ASC,id ASC';
+	$query = $sql.(!empty($getExtra) ? ' AND extraid = '.$getExtra : ' AND extraid = 1');
+	$query = $query.$qwr.' ORDER BY artorder ASC,id ASC';
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$category = $r['category'];
 			$page = $r['page_extra'];
-		 	switch (true) {
-				case ($category == 0 && $page < 1):
+			switch (true) {
+				case ($category == 0 && $page < 1) :
 					$print = false;
 					break;
-				case ($category == 0 && empty($_catID) && $page!=''):
-					$print = check_category($catSEF) != true? true : false;
+				case ($category == 0 && empty($_catID) && $page != '') :
+					$print = check_category($catSEF) != true ? true : false;
 					break;
-				case ($category == $_catID || ($category == $subCat && $r['show_in_subcats'] == 'YES')):
+				case ($category == $_catID || ($category == $subCat && $r['show_in_subcats'] == 'YES')) :
 					$print = true;
 					break;
-				case ($category == -3 && $getArt == $page):
+				case ($category == -3 && $getArt == $page) :
 					$print = true;
 					break;
 				case ($category == -3 && $_catID == 0 && $getArt != $page && $page == 0
-						&& $categorySEF !='' && !in_array($categorySEF,explode(',',l('cat_listSEF')))
-						&& substr( $categorySEF, 0, 2) != l('paginator') ):
+						&& $categorySEF != '' && !in_array($categorySEF, explode(',', l('cat_listSEF')))
+						&& substr( $categorySEF, 0, 2) != l('paginator') ) :
 					$print = true;
 					break;
 				// To show up on all pages only
@@ -623,13 +648,13 @@ function extra($mode='', $styleit = 0, $classname = '', $idname= '') {
 					$print = true;
 					break;
 				// To show up on all categories and pages
-				case ($category == -1):
+				case ($category == -1) :
 					$print = true;
 					break;
-				default:
+				default :
 					$print = false;
 			}
-	 		if ($print == true) {
+			if ($print == true) {
 				if ($styleit == 1) {
 					$container ='<div';
 					$container .= !empty($classname) ? ' class="'.$classname.'"' : '';
@@ -643,8 +668,8 @@ function extra($mode='', $styleit = 0, $classname = '', $idname= '') {
 				file_include($r['text'], 9999000);
 				$action = '?action=process&amp;task=';
 				$visiblity = $r['visible'] == 'YES' ?
-	       			'<a href="'._SITE.$action.'hide&amp;item=snews_articles&amp;id='.$r['id'].'&amp;back='.$url.'">'.l('hide').'</a>' :
-	      			l('hidden').' ( <a href="'._SITE.$action.'show&amp;item=snews_articles&amp;id='.$r['id'].'&amp;back='.$url.'">'.l('show').'</a> )';
+					'<a href="'._SITE.$action.'hide&amp;item=snews_articles&amp;id='.$r['id'].'&amp;back='.$url.'">'.l('hide').'</a>' :
+					l('hidden').' ( <a href="'._SITE.$action.'show&amp;item=snews_articles&amp;id='.$r['id'].'&amp;back='.$url.'">'.l('show').'</a> )';
 				echo _ADMIN ? '<p><a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'" title="'.l('edit').' '.$r['seftitle'].'">
 					'.l('edit').'</a>'.' '.l('divider').' '.$visiblity.'</p>' : '';
 				if ($styleit == 1) {
@@ -1388,12 +1413,12 @@ function contact() {
 	</form>
 	</div>';
 
-	} elseif( isset( $_SESSION[_SITE.'time'] ) ) {
+	} else if( isset( $_SESSION[_SITE.'time'] ) ) {
 		$count = $magic = 0;
 		if( get_magic_quotes_gpc() ){ $magic = 1; }
 		foreach($_POST as $k => $v){
 		if($count === 8 ) die;
-		if( $magic ) $$k = stripslashes($v);
+		if ($magic) $k = stripslashes($v);
 		else $$k = $v;
 		++$count;
 		}
@@ -1413,7 +1438,6 @@ function contact() {
 		if ( isset($ip) && $ip === $_SERVER['REMOTE_ADDR'] && $time
 		&& $name && $mail && $message && checkMathCaptcha()) {
 			unset($_SESSION[_SITE.'time']);
-			echo notification(0,l('contact_sent'),'home');
 			$send_array = array(
 				'to'=>$to,
 				'name'=>$name,
@@ -1424,7 +1448,7 @@ function contact() {
 				'subject'=>$subject);
 			send_email($send_array);
 		} else {
-			echo notification(1,l('contact_not_sent'),'contact');
+			echo notification(1, l('contact_not_sent'), 'contact');
 		}
 	}
 }
@@ -1746,32 +1770,6 @@ function buttons(){
    	echo '<br class="clearer" /></p>';
 }
 
-//NOTIFICATION
-function notification($error = 0, $note = '', $link = '') {
-	// adds a "Warning" option
-	$title = $error == 0 ? l('operation_completed') : ($error !== 0? l('admin_error') : l('warning'));
-	$note = (!$note || empty($note)) ? '' : '<p>'.$note.'</p>';
-	switch(true){
-		case (!$link):
-			$goto = '';
-			break;
-		case ($link == 'home'):
-			$goto = '<p><a href="'._SITE.'">'.l('backhome').'</a></p>';
-			break;
-		case ($link != 'home'):
-			$goto = '<p><a href="'._SITE.$link.'/" title="'.$link.'">'.l('back').'</a></p>';
-			break;
-	}
-	if ($error == 2) {
-		$_SESSION[_SITE.'fatal'] = $note == '' ? '' : '<h3>'.$title.'</h3>'.$note.$goto;
-		echo '<meta http-equiv="refresh" content="0; url='._SITE.$link.'/">';
-		return;
-	} else {
-		$output = '<h3>'.$title.'</h3>'.$note.$goto;
-		return $output;
-	}
-}
-
 // PREPARING ARTICLE FOR XML
 function strip($text) {
 	$search = array('/\[include\](.*?)\[\/include\]/', '/\[func\](.*?)\[\/func\]/', '/\[break\]/', '/</', '/>/');
@@ -1850,22 +1848,32 @@ function br2nl($text){
 
 // SEND EMAIL
 function send_email($send_array) {
-	foreach ($send_array as $var => $value) { $$var = $value; }
-   	$body = isset($status) ? $status."\n" : '';
-   	if (isset($message)) {
- 		$text = l('message').': '."\n".br2nl($message)."\n";
-   	}
-   	if (isset($comment)) {
-   		$text = l('comment').': '."\n".br2nl($comment)."\n";
-   	}
-   	$header = "MIME-Version: 1.0\n";
-   	$header .= "Content-type: text/plain; charset=".s('charset')."\n";
-   	$header .= "From: $name <$email>\r\nReply-To: $name <$email>\r\nReturn-Path: <$email>\r\n";
-   	$body .= isset($name) ? l('name').': '.$name."\n" : '';
-   	$body .= isset($email) ? l('email').': '.$email."\n" : '';
-   	$body .= isset($url) && $url!='' ? l('url').': '.$url."\n\n" : '';
-   	$body .= $text."\n";
-   	mail($to,$subject,$body,$header);
+	if (function_exists('mail')) {
+		foreach ($send_array as $var => $value) {$$var = $value;}
+	   	$body = isset($status) ? $status."\n" : '';
+	   	if (isset($message)) {
+	 		$text = l('message').': '."\n".br2nl($message)."\n";
+	   	}
+	   	if (isset($comment)) {
+	   		$text = l('comment').': '."\n".br2nl($comment)."\n";
+	   	}
+	   	$header = "MIME-Version: 1.0\n";
+	   	$header .= "Content-type: text/plain; charset=".s('charset')."\n";
+	   	$header .= "From: $name <$email>\r\nReply-To: $name <$email>\r\nReturn-Path: <$email>\r\n";
+	   	$body .= isset($name) ? l('name').': '.$name."\n" : '';
+	   	$body .= isset($email) ? l('email').': '.$email."\n" : '';
+	   	$body .= isset($url) && $url!='' ? l('url').': '.$url."\n\n" : '';
+	   	$body .= $text."\n";
+	   	$status = mail($to, $subject, $body, $header);
+	   	if ($status != false) {echo notification(0, l('contact_sent'), 'home'); return true;}
+	   	echo notification(1, l('contact_not_sent'), 'home');
+	   	return false;
+	} else {
+		$message = l('contact_not_sent').'<p>'.l('mail_nexists').'</p>';
+		echo notification(1, $message, '');
+		return false;
+	}
+	
 }
 
 // MAKE A CLEAN SEF URL
