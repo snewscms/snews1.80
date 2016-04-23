@@ -1940,8 +1940,10 @@ function center() {
 						case 'editcomment'		:	edit_comment(); return; break;
 						case 'snews_files'		:	files(); return; break;
 						case 'logout'			:	logout(); return; break;
+						default:
+							if (!empty($action)) {articles();}
 					}
-				} else {articles();}
+				} else {echo '1'; articles();}
 		}
 	} else {articles();}
 }
