@@ -1,0 +1,18 @@
+<IfModule mod_php4.c>
+    php_value session.use_trans_sid 0
+</IfModule>
+<IfModule mod_security.c>
+    SecFilterEngine Off
+    SecFilterScanPOST Off
+</IfModule>
+
+RewriteEngine On
+
+#RewriteBase /sNews18
+
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(.*) $1 [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule ^(.*)$ index.php?category=$1 [L]

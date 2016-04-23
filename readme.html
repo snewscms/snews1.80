@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>sNews 1.8.0 ReadMe</title>
+	<meta name="author" content="snewscms.com" />
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<style type="text/css" media="all">
+	<!--
+		*{margin:0;padding:0;}
+		html,body{height:100%;margin:0;padding:0;}
+		body{background:#FFF;color:#000;font:.9em/1.6em Helvetica,Arial,sans-serif;border-top:9pt solid #f9e9f2;margin:0 auto;}
+		h1,h2,h3,h4,h5,h6{position:relative;}
+		img{border:none;outline:none;margin:2em 0;}
+		a{color:purple;text-decoration:underline;}
+		a:hover,a:focus{color:#000;text-decoration:none;}
+		a img:link,a img:visited,a img:hover,a img:active,a img:focus{text-decoration: none; border: none; outline: none; -moz-outline: none;}
+		#wrap {margin: 0 auto; padding: 4em 6em; color: inherit;}
+		#wrap div {margin: 1em auto 2em; padding: .2em 1em;}
+		#wrap h1 {font-size: 2.8em; color: #37a; margin: 0 0 .2em 0;}
+		#wrap h2, #wrap h3, #wrap h4 {color: #268; margin: 2em 0 .4em 0;}
+		#wrap h2 {border-bottom: 1px solid #b86;}
+		#wrap h3, #wrap h4 {font-style: italic;}
+		#wrap p {margin: 12px 0 18px 0; text-align: left;}
+		#wrap pre {margin: 1.5em 0; color: navy;}
+		#wrap ul {font-family: Verdana,sans-serif; font-size: 1.1em; line-height: 1.66em;}
+		#wrap li {list-style-type: square; list-style-position: inside; margin: .3em 0; padding: .1em 0 .1em .3em}
+		#wrap .greentext {color:olive !important;}
+		#wrap .redtext {color:#b91212 !important;}
+		#wrap .graytext {color:#444 !important;}
+		#wrap .smallcaps {text-transform: uppercase; font-size: 78% !important; letter-spacing: 1pt; margin-right: 1em;}
+		#wrap div.important {padding: .4em 1em; border: 2px solid #eeb; color: #a91212; background: #ffc;}
+		#wrap div.sky {background: #ddf; color: #101; padding: .4em 1em;}
+		#wrap div.lime {background: #fea; color: #041; padding: .4em 1em;}
+		#wrap div.lime h3 {border-bottom: 1px solid #b86; margin: 0 0 .5em 0 !important; padding: 0 0 .1em 0 !important;}
+		.indent { padding-left: 30px; }
+		.note {font-size: 10pt; text-align: center !important;}
+		pre {
+			white-space: pre-wrap;       /* css-3 */
+		 	white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	 		white-space: -pre-wrap;      /* Opera 4-6 */
+	 		white-space: -o-pre-wrap;    /* Opera 7 */
+	 		word-wrap: break-word;       /* Internet Explorer 5.5+ */
+		}
+	-->
+	</style>
+	<!--[if IE]>
+	<style type="text/css" media="all">
+		body{text-align:center;}
+		#wrap{text-align:left;}
+	</style><![endif]-->
+</head>
+<body>
+	<p class="note">
+		<a href="http://snewscms.com/" title="Everything the &lt;body&gt; needs">
+			<img src="images/logo.gif" alt="sNews 1.8 logo" />
+		</a>
+	</p>
+	<div id="wrap">
+		<h1>sNews 1.8.0 Readme</h1>
+		<h3>Updated: April 22, 2016</h3>
+		<p>Welcome to <a href="http://snewscms.com/">sNews 1.8.0</a> a single file, template independant, <a href="http://www.php.net/">PHP</a> and <a href="http://www.mysql.com/">MySQL</a> powered, standards compliant <a href="http://en.wikipedia.org/wiki/Content_management_system">Content Management System</a> (CMS). sNews consists of one engine file (snews.php), one language file (EN.php), one XHTML file (index.php) for content presentation, one stylesheet (style.css) for content styling and one javascript file for functionality. This makes sNews the lightest and one of the most user-friendly CMSs available today.</p>
+		<p><strong>Before installing, please check that your server meets the minimum system requirements:</strong></p>
+		<div class="important">
+			<ul>
+				<li><a href="http://www.apache.org/">Apache Server</a> with <strong>mod_rewrite</strong> module enabled</li>
+				<li><a href="#">Database</a> MySQL, sQlite, firebird</li>
+				<li><a href="http://www.php.net/">PHP</a>: Hypertext Preprocessor, minimum version 5.1</li>
+			</ul>
+		</div>
+		<h3>Fits any OS (Linux, Mac, Windows)</h3>
+		<p>Apache, MySQL and PHP are all Open Source applications and freely available. They come preinstalled on Mac OS X 10.2.8 and later; they can be installed both on Windows and Linux OS (detailed info can be found on their respective websites) and they form the most widely used database server setup on the Internet today. For best result in a local server environment though, we suggest that you use <a href="http://en.wikipedia.org/wiki/List_of_AMP_Packages" title="Wikipedia list of AMP stacks">a dedicated server stack</a> (applications bundle): <strong class="graytext">LAMP (Linux), MAMP (Mac)</strong> and <strong class="graytext">XAMPP (Windows)</strong> are the recommended stacks at this time.</p>
+		<p><em class="redtext">Note that sNews 1.8.0 in its default configuration will not work on a Windows IIS server because it uses different methods of URL rewriting.</em></p>
+
+		<h2><strong>Install sNews</strong> by following these simple steps:</h2>
+		<h3>1. Setup the Database</h3>
+		<p><strong>1.1 - Create the Database:</strong> Start by creating a database and user/password (if required by the server), using the database administration tool available on your server (phpMyAdmin for example). If you already have a database set up, skip this step.</p>
+
+<p><strong>1.2 - Populate (Create tables in) the Database:</strong> You will find an SQL folder in your sNews package. There are two ready-made SQL data files in the folder. With your empty database selected, (using phpMyAdmin, for example), click the IMPORT tab and browse to the file you wish ti import... then hit the 'GO' button to create your tables. If you have created a fresh (emty) database for a new installation, import the <span class="redtext">snews17.sql</span> file. If you are updating an existing sNews 1.6 installation, import the <span class="redtext">snews16-18.sql</span> file.</p>
+
+<p class="redtext indent"><strong>IMPORTANT NOTE:</strong> If you need to use a <em>prefix</em>, for example if your domain host only allows you to use one database, you should add that prefix to each table-name  e.g. <em>prefix_articles</em>, <em>prefix_extras</em>, <em>prefix_categories</em> etc, as well as the table-names in all data INSERT strings, before running the code. You must also add that prefix into snews.php in step 2. Be aware that this prefix is something that you choose - <em>bob_</em> or <em>sitename_</em> - it is entirely separate from any prefix that your host may add.</p>
+
+<p><strong>Make a back-up copy of the SQL files</strong> in a safe place, so you always have spares on hand. Open the file you wish to use in your good code editor... add your <em>prefix</em> as noted above... and save your file with a unique file-name. Import the modified file to populate (or modify) your database with the table-data.</p>
+		
+<h3>2. Edit Settings</h3>
+<p><strong>Edit "snews.php"</strong> and <strong>enter your settings</strong> at the top of the file:</p>
+<p><em class="redtext">Please Note: The $db['variable'] strings within the Database variables function, as previously used in sNews 1.6, have been replaced with new strings. Also note that the $db['website'] variable that was needed in previous versions has been removed; it no longer needs to be manually entered, as the path is automatially detected. Example values (the parts that may need changing to suit your installation) are shown in red italics.</em></p>
+<div class="sky">
+<p><em class="graytext">MySQL Host: provided by hosting company. This is usually "localhost":</em><br />
+			'dbhost' 	=> '<em class="redtext">localhost</em>',</p>
+
+			<p><em class="graytext">Database Name: created in <strong>phpMyAdmin</strong> or similar database editor:</em><br />
+			'dbname' 	=> '<em class="redtext">snews17</em>',</p>
+
+			<p><em class="graytext">Database Username: created in phpMyAdmin or similar database editor:</em><br />
+			'dbuname' 	=> '<em class="redtext">root</em>',</p>
+
+			<p><em class="graytext">Database password: created in phpMyAdmin or similar database editor:</em><br />
+			'dbpass' 	=> '<em class="redtext">root</em>',</p>
+
+			<p><em class="graytext">Database prefix: should end with an underscore (ex: 'snews_'); created in phpMyAdmin or similar database editor, usually used when a hosting company provides only one database:</em><br />
+			'prefix' 	=> ''</p>
+		</div>
+
+		<h3>3. Upload files</h3>
+		<div class="lime">
+			<p><strong>Copy all the files</strong> from the sNews 1.8 package to your server - <span class="redtext">excluding the SQL and Patches Log folders (and their files)</span> - and CHMOD 777 (= rwx-rwx-rwx) the folder(s) you'll upload your images (e.g. img) to. If you don't know how to change permissions, contact your server administrator.</p>
+		</div>
+
+		<h3>Done!</h3>
+		<p>You are ready to go! Login to start adding content and managing your site  default username is <strong>test</strong> and password is <strong>test</strong>.<br />
+		Bug reports, suggestions, comments, questions: <a href="http://snewscms.com/" title="The official sNews user Forum">sNews Forum</a></p>
+
+		<h2>Additional info</h2>
+		<div class="important">
+			<p><strong class="smallcaps">Important!</strong> sNews makes use of the Apache module <em>mod_rewrite</em> and the system file <em>.htaccess</em> to create the <em>Search Engine Friendly</em> (SEF) links that are essential to the CMS. Using SEF or pretty links makes your site much more search engine friendly and gives it better rankings on Google and other popular search engines. <em>If you install the sNews files in a subfolder on your domain root (i.e. http://mydomain.com/<strong>subfolder</strong>/), you must edit the included .htaccess file to match the path to your installation</em>. On a web server, use your FTP client to locate the .htaccess file in your sNews installation folder (you will need to enable "show hidden files" or similar feature in the client);</p>
+			<p>Open the .htaccess file in the FTP client or your text editor of choice and find the line: <strong>#RewriteBase /sNews18</strong>.<br />
+			Change this line to look like the following, with the second part matching the path to your sNews installation:<br />
+			<strong>RewriteBase /name-of-sNews-folder</strong></p>
+			<p>If you need to do the same operation locally on a Mac using Mac OS X or a PC using Windows Vista and can't find the .htaccess file, use the included "htaccess.txt" file to make your changes, then save it as .htaccess in your sNews installation folder. Mac OS X and Windows Vista (some editions) hide files that start with a period (.) from plain view.</p>
+		</div>
+		<p>More information about <a href="http://snewscms.com/help/snews-on-your-computer/" title="Using sNews on your local computer">Using sNews on your local computer</a> can be found in the <a href="http://snewscms.com/help/" title="Help Section">Help Section</a> at <a href="http://snewscms.com/" title="The official sNews web site">snewscms.com</a>.</p>
+		<p>Enjoy!<br />
+		<em>The sNews Team</em></p>
+		<hr />
+		<p class="note">&copy; Copyright <a href="http://www.solucija.com" title="Information Architecture and Web Design">Solucija</a>, 2008 - 2016. <a href="http://snewscms.com/">sNews</a> is licensed under a <a href="http://creativecommons.org/licenses/by/2.5/">Creative Commons Attribution 2.5 License</a>.</p>
+	</div>
+</body>
+</html>

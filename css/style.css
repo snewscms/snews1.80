@@ -1,0 +1,269 @@
+* {
+margin:0;
+padding:0;
+}
+
+body {
+font:.75em Verdana, Arial, Sans-Serif;
+color:#272727;
+line-height:1.8em;
+background:#fff;
+}
+
+p {
+line-height:1.6em;
+margin:0 0 1.4em 1em;
+}
+
+a {
+color:#F74600;
+text-decoration:none;
+background:inherit;
+}
+
+a:hover {
+color:gray;
+background:inherit;
+}
+
+ul {
+list-style:none;
+}
+
+li {
+margin-left:1em;
+}
+
+.subcat {
+margin-left:1em;
+}
+
+h1,h2,h3 {
+font-weight:400;
+margin:0 0 .8em;
+}
+
+h1,h2 {
+color:#F74600;
+font-size:2em;
+background:inherit;
+}
+
+h3 {
+font-size:1.3em;
+margin:1.2em 0 .5em;
+}
+
+#wrapper {
+width:900px;
+background:#fff;
+margin:0 auto 10px;
+padding:20px;
+}
+
+#header {
+height:110px;
+}
+
+#logo {
+float:left;
+color:gray;
+line-height:25px;
+padding-top:10px;
+}
+
+#logo h1 {
+font-size:2.4em;
+letter-spacing:-1px;
+margin:30px 0 0;
+}
+
+#top {
+float:right;
+text-align:right;
+width:70%;
+}
+
+#topmenu {
+height:35px;
+clear:both;
+margin:5px 0 -5px;
+padding:10px 0 0;
+}
+
+#topmenu li {
+font-size:1em;
+display:inline;
+}
+
+#topmenu li a {
+color:gray;
+margin:0 15px;
+}
+
+#topmenu li a:hover {
+color:#F74600;
+}
+
+#search {
+float:right;
+clear:both;
+text-align:right;
+border-top:1px solid #ccc;
+margin:0;
+padding:10px 0 0;
+}
+
+input {
+vertical-align:middle;
+padding:2px;
+}
+
+input.searchfield {
+width:255px;
+border:2px solid #ccc;
+font-size:.9em;
+padding:6px;
+}
+
+input.searchbutton {
+border:0;
+color:#fff;
+font-weight:700;
+font-size:.9em;
+background:gray;
+padding:6px;
+}
+
+#crumbs {
+clear:both;
+background:#eee;
+margin:0 auto;
+padding:10px;
+}
+
+#content {
+padding:20px 10px;
+}
+
+#content p.subcat {
+margin-left:30px;
+}
+
+#main {
+width:56%;
+float:left;
+margin-bottom:40px;
+}
+
+#side {
+width:40%;
+float:right;
+}
+
+.single {
+width:40%;
+float:left;
+padding:0 15px;
+}
+
+#footer {
+clear:both;
+margin-top:30px;
+border-top:2px solid #eee;
+}
+
+#main input[type=button] {
+border:1px solid #ccc;
+color:#000;
+font-size:.8em;
+line-height:1.5em;
+cursor:pointer;
+display:block;
+float:left;
+background:#f9f6f2;
+margin:0 .1em;
+padding:.2em .8em;
+}
+
+.strong {
+font-weight:700;
+}
+
+.em {
+font-style:italic;
+}
+
+.underline {
+text-decoration:underline;
+}
+
+.del {
+text-decoration:line-through;
+}
+
+fieldset {
+border:1px solid #E4DF94;
+color:#000;
+background:#FFFBC0;
+margin:0 0 8px;
+padding:10px 8px;
+}
+
+/* Patch #19 - 1.7.1 - new panel division */
+.adminpanel, .innerpanel { margin: 0 0 8px 0; color: #000; }
+.adminpanel { padding: 10px 8px 10px 15px; border: 1px solid #ccc; background: #FFFBC0; }
+.innerpanel { padding: 5px 8px 0px 8px; border: 1px solid #e0e0e0; background: #FFFBC0; }
+.admintitle { font: bold 14px Arial; color: #a62300; margin-left: 0px; margin-bottom: 8px; }
+.admintitle a { font-weight: normal; }
+.message { margin-bottom: 8px; }
+.warning, .message { text-align: center; color: #000; border: 1px solid #ccc; background: #FFFBC0; padding: 10px 8px 0px 8px; }
+.spacelink { margin: 0px 0px 6px 0px; }
+
+textarea {
+width:97%;
+height:20em;
+padding:3px;
+}
+
+.comment {
+color:gray;
+border-top:1px solid #ccc;
+background:#F5F6F6;
+margin:0 0 10px;
+padding:10px;
+}
+
+.commentsbox {
+color:gray;
+background:#f4f4f4;
+margin:0 0 10px;
+padding:10px;
+}
+
+.date {
+border-top:1px solid #eee;
+margin:0 0 20px;
+}
+
+.clearer {
+clear:both;
+margin:0 auto;
+padding:1px 0 0;
+}
+
+/* for expandable title links on archive and sitemap pages */
+.drop_title a {
+font:bold 12px Arial;
+}
+
+.droplist_div {
+width:95%;
+border-bottom:1px solid #ccc;
+padding:4px 0;
+}
+
+.subcatlist_div {
+width:95%;
+padding:0 0 0 15px;
+}

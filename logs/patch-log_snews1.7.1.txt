@@ -1,0 +1,261 @@
+
+
+sNews Version:	1.7.1
+Patches Log - Official Download
+=======================================
+
+Started:	October 22, 2010
+Updated:	February 16, 2011
+Author:		Keyrocks (sNews Dude)
+
+=======================================
+
+Version Protocol
+-----------------
+1) All versions in the 1.7 series will only include patches and fixes
+   to correct bugs or improve performance.
+   Modifications affecting system functionality will not be added.
+
+2) When one patch (or two) is added, the version remains the same.
+
+3) When several patches are added at once, the version will be sub-numbered.
+   Example: from 1.7.1 to 1.7.2 or 1.7.2 to 1.7.3.
+
+4) If improvements to system functionality are required,  the  version
+   will change to 1.8.0. Minor patches and fixes added to that version
+   will be sub-numbered as 1.8.1, 1.8.2, and so on.
+
+================================================================================
+
+History:
+---------
+Patches listed in this file are divided into sections for easier reference.
+
+1.7.0
+------
+Patches #1 to #15 were added to the Official 1.7 (a.k.a. 1.7.0) Download
+package, January 2009 to July 14, 2010.
+
+1.7.1
+------
+The Official Package version number changed to 1.7.1 on October 22, 2010.
+- October 22, 2010 Added:	Patches #16 to #19 plus #404
+- February 16, 2011 Added:      Patch #20
+
+================================================================================
+PATCHES ADDED TO 1.7.0
+From January 2009 to July 14, 2010
+================================================================================
+
+Patch #1
+---------
+	Reported on:	Nov.02.2008
+	Issue:		New comments and comments pagination
+	Reference:	http://snewscms.com/forum/index.php?topic=7839.0
+	File affected:	snews.php - 2 locations
+	Search words:	Patch #1 - 1.7.0
+
+Patch #2	
+---------
+	Reported on:	Nov.02.2008
+	Issue:		ID assigned to text field and check-box
+	Reference:	http://snewscms.com/forum/index.php?topic=7840.0
+	File affected:	snews.php
+	Search words:	Patch #2 - 1.7.0
+
+Patch #3	
+---------
+	Reported on:	Nov.03.2008
+	Issue:		Deleting files
+	Reference:	http://snewscms.com/forum/index.php?topic=7849.0
+	File affected:	snews.php
+	Search words:	Patch #3 - 1.7.0
+
+Patch #4
+---------
+	Reported on:	Nov.08.2008
+	Issue:		Upgrade SQL - missing items
+	Reference:	http://snewscms.com/forum/index.php?topic=7882.0
+	File affected:	SQL/snews16-17.sql
+	Search words:	none
+
+Patch #5
+---------
+	Reported on:	Nov.18.2008
+	Issue:		Future Posting - SQL error
+	Reference:	http://snewscms.com/forum/index.php?topic=7959.0
+	File affected:	snews.php
+	Search words:	Patch #5 - 1.7.0
+
+Patch #6
+---------
+	Reported on:	Jan.04.2009
+	Issue:		extra character in admin.js - removed a redundant semi-colon.
+	Reference:	http://snewscms.com/forum/index.php?topic=8092.0
+	File affected:	js/admin.js
+	Search words:	none
+
+Patch #7
+---------
+	Reported on:	Jan.07.2009
+	Issue:		404 Errors fix
+	Reference:	http://snewscms.com/forum/index.php?topic=8105.0
+	File affected:	snews.php - in 3 locations
+	Search words:	Patch #7 - 1.7.0
+
+Patch #8
+---------
+	Reported on:	Jan.03.2009 & Jan.23.2009
+	Issue:		Freeze comments - in administration settings
+	Reference:	http://snewscms.com/forum/index.php?topic=8091.0
+	File affected:	snews.php - in 2 locations
+	Search words:	Patch #8 - 1.7.0
+
+Patch #9
+---------
+	Reported on:	Feb.23.2009             Added on: April 15.10 (Keys)
+	Issue:		\r\n bug when article saving error occurs
+	Reference:	http://snewscms.com/forum/index.php?topic=8256.0
+	File affected:	snews.php - 3 strings replaced
+	Search words:	Patch #9 - 1.7.0
+
+Patch #10
+----------
+	Reported on:	Mar.26.2009             Added on: April 15.10 (Keys)
+	Issue:		double // on links to comments on extra pages
+	Reference:	http://snewscms.com/forum/index.php?topic=8344.0
+	File affected:	snews.php - 4 strings in 1 location
+	Search words:	Patch #10 - 1.7.0
+
+Patch #11
+----------
+	Reported on:	Dec.21.2009             Added on: April 15.10 (Keys)
+	Issue:		Save/Edit button  - a tiny fix
+	Reference:	http://snewscms.com/forum/index.php?topic=8847.0
+	File affected:	snews.php (3 locations) and lang/EN.php (1 location)
+	Search words:	Patch #11 - 1.7.0
+
+Patch #12
+----------
+	Reported on:	Feb.20.2010             Added on: April 15.10 (Keys)
+	Issue:		Function Contact - security patch
+	Reference:	http://snewscms.com/forum/index.php?topic=8939.0
+	File affected:	snews.php - at  // CONTACT FORM
+	Search words:	Patch #12 - 1.7.0
+
+Patch #13
+----------
+	Reported on:	April.13.2010           Added on: May.12.10 (Keys)
+	Issue:		Admin's Extra VIEW link for All & Page Only results in 404 Error
+	Reference:	http://snewscms.com/forum/index.php?topic=9040.0
+	File affected:	snews.php
+	Search words:	Patch #13 - 1.7.0
+
+Patch #14
+----------
+	Reported on:	Oct.18.2009             Added on: May.12.10 (Keys)
+	Issue:		RSS Comment feed incorrectly linked paginated comments
+	Reference:	http://snewscms.com/forum/index.php?topic=8719
+	File affected:	snews.php - in: // RSS FEED - ARTICLES/PAGES/COMMENTS function
+	Search words:	Patch #14 - 1.7.0
+
+Patch #15
+----------
+	Reported on:	May.30.2010             Added: June.16.2010 (keys)
+	Issue:		XSS vulnerability in Comment posting
+	Reference:	http://snewscms.com/forum/index.php?topic=9124
+	File affected:	snews.php - 3 locations within the // COMMENTS function
+	Search words:	Patch #15 - 1.7.0
+
+--------------------------------
+| End of patches made to 1.7.0 |
+--------------------------------
+
+================================================================================
+PATCHES ADDED TO 1.7.1
+October 22, 2010 to February 16, 2011
+================================================================================
+	
+
+Patch #16
+----------
+	Reported on:	Sept.09.2010            Added: Oct.22.2010 (keys)
+	Issue:		Page link shows in Sitemap when set as the Home page
+	Reference:	http://snewscms.com/forum/index.php?topic=9375.0
+	Solution used:	by Skian - http://snewscms.com/forum/index.php?topic=8896.msg65884#msg65884
+	File affected:	snews.php - 1 location in the // SITEMAP function
+	Search words:	Patch #16 - 1.7.1
+
+Patch #17A
+-----------
+	Reported on:	Jan.23.2009             Added: Oct.22.2010 (keys)
+	Issue:		Removed redundant variables in function rss_contents
+	Reference:	2a in - http://snewscms.com/forum/index.php?topic=8896.0
+	File affected:	snews.php - 2 locations
+	Search words:	Patch #17A - 1.7.1
+
+Patch #17B
+-----------
+	Reported on:	Jan.23.2009             Added: Oct.22.2010 (keys)
+	Issue:		Removed redundant variables in function rss_links()
+	Reference:	4. BUG in - http://snewscms.com/forum/index.php?topic=8896.0
+	Solution used:	Improved function - http://snewscms.com/forum/index.php?topic=8391.msg62954#msg62954
+	File affected:	snews.php - replaced function with improved function,
+			Eliminates need for global variables and replaced 3 queries with one.
+	Search words:	Patch #17B - 1.7.1
+
+Patch #18
+----------
+	Reported on:	April 29, 2009             Added: Oct.22.2010 (keys)
+	Issue:		Login problem when using IE8
+	Reference:	http://snewscms.com/forum/index.php?topic=8416.0
+	Solution used:	by KikkoMax - http://snewscms.com/forum/index.php?topic=8416.msg60771#msg60771
+	Files affected:	snews.php - 2 locations: 1 in // STARTUP section, 1 in the // MATH CAPTCHA function.
+	Search words:	Patch #18 - 1.7.1
+
+Patch #19
+----------
+	Added on:	Oct.22.2010 (Keys)
+	Issue:		none.
+	Purpose:	These are minor, corrective styling changes to administration panels
+			Replaced remaining fieldset tags with css classes in several admin functions.
+	File affected:	snews.php - 29 locations file-wide.
+			css/style.css - 8 new style declarations added between fieldset and textarea declarations.
+	Search words:	Patch #19 - 1.7.1
+
+Patch #20
+----------
+	Added on:	Feb.16.2011 (Keys)
+	Issue:		Bug since 1.7 release. Category names were added to page text-links in search results.
+	Reference:      http://snewscms.com/forum/index.php?topic=9948.0
+	Purpose:	This patch removes category names from page text-links in search results returned using the sNews search function.
+	Solution used:  As provided by Nukpana (Jason Parks)in the referenced thread.
+	File affected:	snews.php - 1 location in the // SEARCH ENGINE function.
+	Search words:	Patch #20 - 1.7.1
+
+Patch #404
+-----------
+	Added on:	Oct.22.2010 (Keys)
+	Issue:		Viewer not re-directed anywhere when 404 errors occur
+	Reference:	http://snewscms.com/forum/index.php?topic=9457.msg65890#msg65890
+			- 404 now redirects to Sitemap with a custom message block above it.
+	File affected:	snews.php - 3 locations: 1 near the end of function center(), 1 in lang/EN.php,
+			and .warning declaration added to the css/style.css file.
+	Search words:	Patch #404 - 1.7.1
+
+
+===============================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+

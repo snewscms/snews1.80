@@ -1,0 +1,7 @@
+snews_1.71
+- PHP 5.5.15 WORKS (XAMPP 1.83)
+
+
+
+snews 1.80
+- PHP 5.5.15 WORKS (XAMPP 1.83)
