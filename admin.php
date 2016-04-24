@@ -245,7 +245,8 @@ function form_categories($subcat = 'cat') {
 	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', $frm_action, '');
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.$frm_add_edit.'</p>';
-	echo html_input('text', 'name', 't', $frm_name, l('name'), '', 'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
+	echo html_input('text', 'name', 't', $frm_name, l('name'), '', 
+		'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 	echo html_input('text', 'seftitle', 's', $frm_sef_title, l('sef_title_cat'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('text', 'description', 'desc', $frm_description, l('description'), '', '', '', '', '', '', '', '', '', '');
 	if (empty($sub_cat) && !empty($categoryid)) {
@@ -264,7 +265,8 @@ function form_categories($subcat = 'cat') {
 	if (!empty($categoryid)) {
 		echo '&nbsp;&nbsp;';
 		echo html_input('hidden', 'id', 'id', $categoryid, '', '', '', '', '', '', '', '', '', '', '');
-		echo html_input('submit', 'delete_category', 'delete_category', l('delete'), '', 'button', 'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
+		echo html_input('submit', 'delete_category', 'delete_category', l('delete'), '', 'button', 
+			'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
 	}
 	echo '</p></form>';
 }
@@ -677,12 +679,14 @@ function admin_articles($contents) {
 		$month_names = explode(', ', l('month_names'));
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle">'.l('articles').'</p>';
-		echo ' - '.l('filter').' <span style="color: #0000FF">'.$subcatSEF.'</span> - '.l('see').' ('.$link.'">'.l('all').'</a>) - '.l('filter').' ('.$link.l('year').'">'.l('year').'</a> / '.$link.l('month').'">'.l('month').'</a>)</legend>';
+		echo ' - '.l('filter').' <span style="color: #0000FF">'.$subcatSEF.'</span> - ';
+		echo l('see').' ('.$link.'">'.l('all').'</a>) - '.l('filter').' ('.$link.l('year').'">'.l('year').'</a> / ';
+		echo $link.l('month').'">'.l('month').'</a>)</legend>';
 		if ($sqr = db() -> query($query)) {
 		    while ($r = dbfetch($sqr)) {
-		    //print_r($r);
 			 	$ryear = $r['dyear'];
-				echo ($subcatSEF == l('month') ? '<span style="color: #0000FF">'.$r['dyear'].'</span>' : $link.l('year').'='.$r['dyear'].'">'.$r['dyear'].'</a> ');
+				echo ($subcatSEF == l('month') ? '<span style="color: #0000FF">'.$r['dyear'].'</span>' :
+					$link.l('year').'='.$r['dyear'].'">'.$r['dyear'].'</a> ');
 				if ($subcatSEF == l('month')) {
 				    $qx = "SELECT DISTINCT(MONTH(date)) AS dmonth 
 						FROM "._PRE.'articles'." 
@@ -860,7 +864,8 @@ function admin_articles($contents) {
 							}
 							if ($res3 = db() -> query($catart_sql2)) {
 								while ($ca_r2 = dbfetch($res3)) {
-									$order_input2 = '<input type="text" name="page_'.$ca_r2['id'].'" value="'.$ca_r2['artorder'].'" size="1" tabindex="'.$tab2.'" /> &nbsp;';
+									$order_input2 = '<input type="text" name="page_'.$ca_r2['id'].'" value="'.$ca_r2['artorder'].'" 
+										size="1" tabindex="'.$tab2.'" /> &nbsp;';
 									$catSEF = cat_rel($row2['id'],'seftitle');
 									echo '<p>'.$order_input2.'<strong title="'.date(s('date_format'), strtotime($ca_r2['date'])).'">
 										'.$ca_r2['title'].'</strong> '.l('divider').'
@@ -1033,7 +1038,8 @@ function filelist($mode, $path, $depth = 0) {
 			  		echo '
 					<a href="'.$target.'" title="'.l('view').' '.$file.'">'.$file.'</a>
 						'.l('divider').'
-					<a href="?action=snews_files&amp;task=delete&amp;folder='.$path.'&amp;file='.$file.'" title="'.l('delete').' '.$file.'" onclick="return pop()">	'.l('delete').'</a><br />';
+					<a href="?action=snews_files&amp;task=delete&amp;folder='.$path.'&amp;file='.$file.'" title="'.l('delete').' '.$file.
+						'" onclick="return pop()">	'.l('delete').'</a><br />';
 			  		break;
 			}
 		}
@@ -1140,10 +1146,7 @@ function processing() {
 		$_POST['fposting_hour'].':'.$_POST['fposting_minute'].':00';
      	if (date('Y-m-d H:i:s') < $date) $publish_article = 2;
     }
-    //$task = clean(cleanXSS($_GET['task']));
     $task = isset($_POST['task']) ? clean(cleanXSS($_POST['task'])) : '';
-//    echo $task;
-///	echo '<pre>'; print_r($_POST); echo '</pre>';
 	switch ($task) {
  		case 'save_settings':
 	 		if (isset($_POST['save'])) {
@@ -1306,7 +1309,6 @@ function processing() {
 			break;
 		case 'admin_category':
 		case 'admin_subcategory':
-//		echo '<pre>'; print_r($_POST); echo '</pre>';
 			switch (true) {
 				case (empty($name)):
 					echo notification(1,l('err_TitleEmpty').l('errNote'));
@@ -1380,8 +1382,9 @@ function processing() {
 							if ($any_subcats > 0 || $any_articles > 0) {
 								echo notification(1,l('warn_catnotempty'),'');
 								echo '<p><a href="'._SITE.'administration/" title="'.l('administration').'">
-									'.l('administration').'</a>  OR  <a href="'._SITE.'?action=process&amp;task=delete_category_all&amp;id='.$id.'" onclick="javascript: return pop(\'x\')" title="'.l('administration').'">
-									'.l('empty_cat').'</a></p>';
+									'.l('administration').'</a>  OR  ';
+								echo '<a href="'._SITE.'?action=process&amp;task=delete_category_all&amp;id='.$id.'" ';
+								echo 'onclick="javascript: return pop(\'x\')" title="'.l('administration').'">'.l('empty_cat').'</a></p>';
 								$no_success = true;
 							} else {delete_cat($id);}
 							break;
@@ -1598,8 +1601,8 @@ function processing() {
 				$r3 = dbbind($r3, array($id), 'i');
 				while ($rart = dbfetch($r3)) {
 					delete_item('comments', 'articleid', $rart['id']);
-					//delete_item('articles', 'category', $rart['id']);
-				} delete_item('articles', 'category', $id);
+					delete_item('articles', 'category', $rart['id']);
+				}// delete_item('articles', 'category', $id);
 			}
 			# DELETE ARTICLES FROM SUB-CATEGORY
 			$sub_query = "SELECT id FROM "._PRE.'categories'." WHERE subcat = ?";
@@ -1610,9 +1613,9 @@ function processing() {
 					if ($r5 = db() -> prepare($art_query1)) {	
 						while ($rart1 = dbfetch($r5)) {
 							delete_item('comments', 'articleid', $rart1['id']);
-							//delete_item('articles', 'category',  $rart1['id']);
+							delete_item('articles', 'category',  $rart1['id']);
 						}
-					} delete_item('articles', 'category',  $rsub['id']);
+					} //delete_item('articles', 'category',  $rsub['id']);
 				}
 			}
 			delete_item('categories', 'subcat',  $id); delete_cat($id);
