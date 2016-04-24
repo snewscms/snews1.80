@@ -1551,8 +1551,8 @@ function processing() {
 									}
 								}
 							}
-							delete_item('articles', 'id', $id)
-							delete_item('articles', 'articleid', $id)
+							delete_item('articles', 'id', $id);
+							delete_item('articles', 'articleid', $id);
 							if ($id == s('display_page')) {
 								$qwr1 = "UPDATE "._PRE.'settings'." SET VALUE = ? WHERE name = ?";
 								if ($r1 = db() -> prepare($qwr1)) {
