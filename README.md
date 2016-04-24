@@ -43,4 +43,5 @@ Enjoy! **The sNews Team**
    [PHP]: <http://www.php.net>
    [Help Section]: <http://snewscms.com/help/>
 
+
 [//]: # (Future: [git-repo-url]. Reserved)
