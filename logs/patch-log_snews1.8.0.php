@@ -26,7 +26,7 @@ Version Protocol
 4) If improvements to system functionality are required,  the  version
    will change to 1.9.0. Minor patches and fixes added to that version
    will be sub-numbered as 1.9.1, 1.9.2, and so on.
-5) Don't put any modules inside snews.php, use "addons" folder.
+5) Do not put any modules inside snews.php, use "addons" folder.
    It is easy to upgrade system
    
 

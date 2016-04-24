@@ -20,19 +20,3 @@
 
 */
 
-
-
-getData('$_ID')
-getData('CAT')
-getData('CAT_ID')
-getData('TYPE')
-getData('TITLE')
-getData('NAME')
-getData('XNAME')
-getData('DESCR')
-getData('KEYW')
-getData('CAT_SEF')
-getData('SUBCAT_SEF')
-getData('articleSEF')
-
-

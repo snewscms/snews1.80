@@ -48,6 +48,3 @@ LANGUAGE VARIABLES
 - fix mysql_* (deprecated) for PDO or msqli
 - fix characters, spaces and some variables
 - rewritten function
-
-
-
