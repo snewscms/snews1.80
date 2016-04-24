@@ -65,93 +65,99 @@ function administration() {
 
 // SETTINGS FORM
 function settings() {
-echo '<div class="adminpanel"><p class="admintitle">'.l('settings_title').'</p>';
-echo html_input('form','','','','','','','','','','','','post', '?action=process&amp;task=save_settings','');
-    # Expandable Settings
-    echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
-    echo '<div id="sub1" style="display: none;">';
-	echo html_input('text', 'website_title', 'webtitle', s('website_title'), l('a_website_title'),'','','','','','','','','','');
-	echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '', 'onkeypress="return SEFrestrict(event);"','','','','','','','','');
-	echo html_input('text', 'website_description', 'wdesc', s('website_description'), l('a_description'),'','','','','','','','','','');
-	echo html_input('text', 'website_keywords', 'wkey', s('website_keywords'), l('a_keywords'),'','','','','','','','','','');
-    echo '</div>';
-	# Expandable Contact
-    echo '<p><a onclick="toggle(\'sub2\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_contact_info').'">'.l('a_contact_info').'</a></p>';
-    echo '<div id="sub2" style="display: none;">';
-	echo html_input('text', 'website_email', 'we', s('website_email'), l('a_website_email'),'','','','','','','','','','');
-	echo html_input('text', 'contact_subject', 'cs', s('contact_subject'), l('a_contact_subject'),'','','','','','','','','','');
-    echo '</div>';
-	# Expandable Time & Locale
-    echo '<p><a onclick="toggle(\'sub3\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_time_settings').'">'.l('a_time_settings').'</a></p>';
-    echo '<div id="sub3" style="display: none;">';
-	echo html_input('text', 'language', 'lang', s('language') == '' ? 'EN' : s('language'), l('a_language'),'','','','','','','','','','');
-	echo html_input('text', 'charset', 'char', s('charset') == '' ? 'UTF-8' : s('charset'), l('charset'),'','','','','','','','','','');
-	echo html_input('text', 'date_format', 'dt', s('date_format'), l('a_date_format'),'','','','','','','','','','');
-    echo '</div>';
-	# Expandable Contents
-    echo '<p><a onclick="toggle(\'sub4\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('contents').'">'.l('contents').'</a></p>';
-    echo '<div id="sub4" style="display: none;">';
-	echo html_input('text', 'article_limit', 'artl', s('article_limit'), l('a_article_limit'),'','','','','','','','','','');
-	echo html_input('text', 'rss_limit', 'rssl', s('rss_limit'), l('a_rss_limit'),'','','','','','','','','','');
-	echo '<p><label for="dp">'.l('a_display_page').':</label><br /> <select name="display_page" id="dp">';
-	echo '<option value="0"'.(s('display_page') == 0 ? ' selected="selected"' : '').'>'.l('none').'</option>';
-	$query = 'SELECT id,title FROM '._PRE.'articles'.' WHERE position = 3 ORDER BY id ASC';
-	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {
-			echo '<option value="'.$r['id'].'"';
-		    if (s('display_page') == $r['id']) { echo ' selected="selected"'; }
-		    echo '>'.$r['title'].'</option>';
+	echo '<div class="adminpanel"><p class="admintitle">'.l('settings_title').'</p>';
+	echo html_input('form','','','','','','','','','','','','post', '?action=process&amp;task=save_settings','');
+	    # Expandable Settings
+	    echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
+	    echo '<div id="sub1" style="display: none;">';
+		echo html_input('text', 'website_title', 'webtitle', s('website_title'), l('a_website_title'),'','','','','','','','','','');
+		echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '', 
+			'onkeypress="return SEFrestrict(event);"','','','','','','','','');
+		echo html_input('text', 'website_description', 'wdesc', s('website_description'), l('a_description'),'','','','','','','','','','');
+		echo html_input('text', 'website_keywords', 'wkey', s('website_keywords'), l('a_keywords'),'','','','','','','','','','');
+	    echo '</div>';
+		# Expandable Contact
+	    echo '<p><a onclick="toggle(\'sub2\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_contact_info').'">'.l('a_contact_info').'</a></p>';
+	    echo '<div id="sub2" style="display: none;">';
+		echo html_input('text', 'website_email', 'we', s('website_email'), l('a_website_email'),'','','','','','','','','','');
+		echo html_input('text', 'contact_subject', 'cs', s('contact_subject'), l('a_contact_subject'),'','','','','','','','','','');
+	    echo '</div>';
+		# Expandable Time & Locale
+	    echo '<p><a onclick="toggle(\'sub3\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_time_settings').'">'.l('a_time_settings').'</a></p>';
+	    echo '<div id="sub3" style="display: none;">';
+		echo html_input('text', 'language', 'lang', s('language') == '' ? 'EN' : s('language'), l('a_language'),'','','','','','','','','','');
+		echo html_input('text', 'charset', 'char', s('charset') == '' ? 'UTF-8' : s('charset'), l('charset'),'','','','','','','','','','');
+		echo html_input('text', 'date_format', 'dt', s('date_format'), l('a_date_format'),'','','','','','','','','','');
+	    echo '</div>';
+		# Expandable Contents
+	    echo '<p><a onclick="toggle(\'sub4\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('contents').'">'.l('contents').'</a></p>';
+	    echo '<div id="sub4" style="display: none;">';
+		echo html_input('text', 'article_limit', 'artl', s('article_limit'), l('a_article_limit'),'','','','','','','','','','');
+		echo html_input('text', 'rss_limit', 'rssl', s('rss_limit'), l('a_rss_limit'),'','','','','','','','','','');
+		echo '<p><label for="dp">'.l('a_display_page').':</label><br /> <select name="display_page" id="dp">';
+		echo '<option value="0"'.(s('display_page') == 0 ? ' selected="selected"' : '').'>'.l('none').'</option>';
+		$query = 'SELECT id,title FROM '._PRE.'articles'.' WHERE position = 3 ORDER BY id ASC';
+		if ($result = db() -> query($query)) {
+			while ($r = dbfetch($result)) {
+				echo '<option value="'.$r['id'].'"';
+			    if (s('display_page') == $r['id']) { echo ' selected="selected"'; }
+			    echo '>'.$r['title'].'</option>';
+			}
 		}
-	}
-	echo '</select></p>';
-	echo html_input('checkbox','display_new_on_home','dnoh','',l('a_display_new_on_home'),'','','','',(s('display_new_on_home') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('checkbox','display_pagination','dpag','',l('a_display_pagination'),'','','','',(s('display_pagination') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('checkbox','num_categories','nc','',l('a_num_categories'),'','','','',(s('num_categories') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('checkbox','show_cat_names','scn','',l('a_show_category_name'),'','','','',(s('show_cat_names') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('checkbox','enable_extras','ee','',l('enable_extras'),'','','','',(s('enable_extras') == 'YES' ? 'ok' : ''),'','','','','');
-	echo html_input('text','file_ext','fileext',s('file_extensions'),l('file_extensions'),'','','','','','','','','','');
-	echo html_input('text','allowed_file','all_file',s('allowed_files'),l('allowed_files'),'','','','','','','','','','');
-	echo html_input('text','allowed_img','all_img',s('allowed_images'),l('allowed_images'),'','','','','','','','','','');
-    echo '</div>';              
-	# Expandable Comments
-    echo '<p><a onclick="toggle(\'sub5\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('comments').'">'.l('comments').'</a></p>';
-    echo '<div id="sub5" style="display: none;">';
-	echo html_input('checkbox','approve_comments','ac','',l('a_approve_comments'),'','','','',(s('approve_comments') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('text','comment_repost_timer','crt',s('comment_repost_timer'),l('comment_repost_timer'),'','','','','','','','','','');
-	echo html_input('checkbox','mail_on_comments','mc','',l('a_mail_on_comments'),'','','','',(s('mail_on_comments') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('checkbox','enable_comments','ec','',l('enable_comments'),'','','','',(s('enable_comments') == 'YES' ? 'ok' : ''),'','','','','');
-	echo html_input('checkbox','freeze_comments','dc','',l('freeze_comments'),'','','','',(s('freeze_comments') == 'YES' ? 'ok' : ''),'','','','','');
-	
-	echo '<p><label for="co">'.l('a_comments_order').':</label><br /><select id="co" name="comments_order">';
-	echo '<option value="DESC"'.(s('comments_order') == 'DESC' ? ' selected="selected"' : '').'>'.l('newer_top').'</option>';
-	echo '<option value="ASC"'.(s('comments_order') == 'ASC' ? ' selected="selected"' : '').'>'.l('newer_bottom').'</option></select>';
-	echo '</p>';
-	echo html_input('text','comment_limit','cl',s('comment_limit'),l('a_comment_limit'),'','','','','','','','','','');
-	echo html_input('checkbox','word_filter_enable','wfe','',l('a_word_filter_enable'),'','','','',(s('word_filter_enable') == 'on' ? 'ok' : ''),'','','','','');
-	echo html_input('text','word_filter_file','wff',s('word_filter_file'),l('a_word_filter_file'),'','','','','','','','','','');
-	echo html_input('text','word_filter_change','wfc',s('word_filter_change'),l('a_word_filter_change'),'','','','','','','','','','');
-    echo '</div>';
-    echo '<p>'; 		# Save Settings button
-    echo html_input('hidden','task','task','save_settings','','','','','','','','','','','');
-    echo html_input('submit','save','save',l('save'),'','button','','','','','','','','','');
-    echo '</p>';
-echo '</form>';
-echo '</div>';
-# Change Password panel
-echo html_input('form','','','','','','','','','','','','post','?action=process&amp;task=changeup','');
-echo '<div class="adminpanel">';
-    echo '<p><a onclick="toggle(\'sub6\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('change_up').'">'.l('change_up').'</a>';
-    echo '<div id="sub6" style="display: none;">';
-	echo '<p>'.l('login_limit').'</p>';
-	echo html_input('text','uname','uname','',l('a_username'),'','','','','','','','','','');
-	echo html_input('password','pass1','pass1','',l('a_password'),'','','','','','','','','','');
-	echo html_input('password','pass2','pass2','',l('a_password2'),'','','','','','','','','','');
-	echo '<p>'; # Save Password Change button
-	echo html_input('hidden','task','task_login','changeup','','','','','','','','','','','');
-	echo html_input('submit','submit_pass','submit_pass',l('save'),'','button','','','','','','','','','');
-    echo '</p></div>';
-echo '</div>';
-echo '</form>';
+		echo '</select></p>';
+		echo html_input('checkbox','display_new_on_home','dnoh','',l('a_display_new_on_home'),'','','','',
+			(s('display_new_on_home') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('checkbox','display_pagination','dpag','',l('a_display_pagination'),'','','','',
+			(s('display_pagination') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('checkbox','num_categories','nc','',l('a_num_categories'),'','','','',(s('num_categories') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('checkbox','show_cat_names','scn','',l('a_show_category_name'),'','','','',(s('show_cat_names') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('checkbox','enable_extras','ee','',l('enable_extras'),'','','','',(s('enable_extras') == 'YES' ? 'ok' : ''),'','','','','');
+		echo html_input('text','file_ext','fileext',s('file_extensions'),l('file_extensions'),'','','','','','','','','','');
+		echo html_input('text','allowed_file','all_file',s('allowed_files'),l('allowed_files'),'','','','','','','','','','');
+		echo html_input('text','allowed_img','all_img',s('allowed_images'),l('allowed_images'),'','','','','','','','','','');
+	    echo '</div>';              
+		# Expandable Comments
+	    echo '<p><a onclick="toggle(\'sub5\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('comments').'">'.l('comments').'</a></p>';
+	    echo '<div id="sub5" style="display: none;">';
+		echo html_input('checkbox','approve_comments','ac','',l('a_approve_comments'),'','','','',(s('approve_comments') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('text','comment_repost_timer','crt',s('comment_repost_timer'),l('comment_repost_timer'),'','','','','','','','','','');
+		echo html_input('checkbox','mail_on_comments','mc','',l('a_mail_on_comments'),'','','','',(s('mail_on_comments') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('checkbox','enable_comments','ec','',l('enable_comments'),'','','','',(s('enable_comments') == 'YES' ? 'ok' : ''),'','','','','');
+		echo html_input('checkbox','freeze_comments','dc','',l('freeze_comments'),'','','','',(s('freeze_comments') == 'YES' ? 'ok' : ''),'','','','','');
+		# ORDER
+		echo '<p><label for="co">'.l('a_comments_order').':</label><br /><select id="co" name="comments_order">';
+		echo '<option value="DESC"'.(s('comments_order') == 'DESC' ? ' selected="selected"' : '').'>'.l('newer_top').'</option>';
+		echo '<option value="ASC"'.(s('comments_order') == 'ASC' ? ' selected="selected"' : '').'>'.l('newer_bottom').'</option></select>';
+		echo '</p>';
+		echo html_input('text','comment_limit','cl',s('comment_limit'),l('a_comment_limit'),'','','','','','','','','','');
+		echo html_input('checkbox','word_filter_enable','wfe','',l('a_word_filter_enable'),'','','','',
+			(s('word_filter_enable') == 'on' ? 'ok' : ''),'','','','','');
+		echo html_input('text','word_filter_file','wff',s('word_filter_file'),l('a_word_filter_file'),'','','','','','','','','','');
+		echo html_input('text','word_filter_change','wfc',s('word_filter_change'),l('a_word_filter_change'),'','','','','','','','','','');
+	    echo '</div>';
+	    echo '<p>';
+		# Save Settings button
+	    echo html_input('hidden','task','task','save_settings','','','','','','','','','','','');
+	    echo html_input('submit','save','save',l('save'),'','button','','','','','','','','','');
+	    echo '</p>';
+	echo '</form>';
+	echo '</div>';
+	# Change Password panel
+	echo html_input('form','','','','','','','','','','','','post','?action=process&amp;task=changeup','');
+	echo '<div class="adminpanel">';
+	    echo '<p><a onclick="toggle(\'sub6\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('change_up').'">'.l('change_up').'</a>';
+	    echo '<div id="sub6" style="display: none;">';
+		echo '<p>'.l('login_limit').'</p>';
+		echo html_input('text','uname','uname','',l('a_username'),'','','','','','','','','','');
+		echo html_input('password','pass1','pass1','',l('a_password'),'','','','','','','','','','');
+		echo html_input('password','pass2','pass2','',l('a_password2'),'','','','','','','','','','');
+		echo '<p>';
+		# Save Password Change button
+		echo html_input('hidden','task','task_login','changeup','','','','','','','','','','','');
+		echo html_input('submit','submit_pass','submit_pass',l('save'),'','button','','','','','','','','','');
+	    echo '</p></div>';
+	echo '</div>';
+	echo '</form>';
 }
 
 // CATEGORIES - ADMIN LIST
@@ -461,7 +467,8 @@ function form_articles($contents) {
 		} else {
 		     echo '<p class="admintitle">'.$frm_fieldset.'</p>';
 		}
-		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
+		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 
+			'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 		if ($contents == 'extra_new' || $edit_option == 2) {
 		    echo '<div style="display: none;">';
 		    echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
@@ -606,9 +613,9 @@ function form_articles($contents) {
 		echo html_input('submit', $frm_task, $frm_task, $frm_submit, '', 'button', '', '', '', '', '', '', '', '', '');
 		if (!empty($id)) {
 			echo html_input('hidden', 'article_category', 'article_category', $article_category, '', '', '', '', '', '', '', '', '', '', '');
-			echo html_input('hidden', 'id', 'id', $id, '', '', '', '', '', '', '', '', '', '', '');
-			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '',
-			'button', 'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
+			echo html_input('hidden', 'id', 'id', $id, '', '', '', '', '', '', '', '', '', '', '').' ';
+			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '', 'button', 
+				'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
 		}
 		echo '</p></form>';
 	}
