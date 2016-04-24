@@ -274,7 +274,7 @@ function delete_cat($id) {
 	$catdata = retrieve('catorder, subcat', 'categories', 'id', $id);
 	$cat_order = $catdata['catorder'];
 	$cat_subcat = $catdata['subcat'];
-	$query = "DELETE FROM "._PRE.'categories'." WHERE id = $id LIMIT 1";
+	$query = "DELETE FROM "._PRE.'categories'." WHERE id = $id";
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
 	$sql = "SELECT id,catorder FROM "._PRE.'categories'." WHERE catorder > $cat_order AND subcat = $cat_subcat";
 	if ($res = db() -> query($sql)) {
@@ -1199,7 +1199,7 @@ function processing() {
 					'allowed_images' => $allowed_img
 			 );
 		 	while (list($key, $value) = each($ufield)) {
-		 		$sql = "UPDATE "._PRE.'settings'." SET value = ? WHERE name = ? LIMIT 1";
+		 		$sql = "UPDATE "._PRE.'settings'." SET value = ? WHERE name = ?";
 		 		if ($result = db() -> prepare($sql)) {
 					$result = dbbind($result, array($value, $key), 'ss'); 
 					$r = dbfetch($result, true);
@@ -1218,14 +1218,14 @@ function processing() {
 					$uname = md5($user);
 					$pass = md5($pass2);
 					# USERNAME
-					$q1 = "UPDATE "._PRE.'settings'." SET value = ? WHERE name = ? LIMIT 1";
+					$q1 = "UPDATE "._PRE.'settings'." SET value = ? WHERE name = ?";
 					if ($res1 = db() -> prepare($q1)) {
 						$res1 = dbbind($res1, array($uname, 'username'), 'ss');
 						$r1 = dbfetch($res1, true);
 						unset($res1);
 					}
 					# PASSWORD
-					$q2 = "UPDATE "._PRE.'settings'." SET value= ? WHERE name = ? LIMIT 1";
+					$q2 = "UPDATE "._PRE.'settings'." SET value= ? WHERE name = ?";
 					if ($res2 = db() -> prepare($q2)) {
 						$res2 = dbbind($res2, array($pass, 'password'), 'ss'); 
 						$r2 = dbfetch($res2, true);
@@ -1275,7 +1275,7 @@ function processing() {
 								name = ?,
 								seftitle = ?,
 								description = ?
-								WHERE id = ? LIMIT 1";
+								WHERE id = ?";
 							if ($result = db() -> prepare($sql2)) {
 								$result = dbbind($result, array($name, $seftitle, $description, $id), 'sssi'); 
 								$r = dbfetch($result, true);
@@ -1283,7 +1283,7 @@ function processing() {
 							}
 							break;
 						case (isset($_POST['delete_groupings'])):
-							$sql3 = "DELETE FROM "._PRE.'extras'." WHERE id = ? LIMIT 1";
+							$sql3 = "DELETE FROM "._PRE.'extras'." WHERE id = ?";
 							if ($result = db() -> prepare($sql3)) {
 								$result = dbbind($result, array($id), 'i'); 
 								$r = dbfetch($result, true);
@@ -1399,7 +1399,7 @@ function processing() {
 					$type_id = str_replace($remove,'',$key);
 					$key = clean(cleanXSS(trim($value)));
 					if ($key != 'reorder' && $key != 'order' && $key != $table && $key != l('order_content') && $key != $_POST['order']){
-						$query = "UPDATE "._PRE.$table." SET $order_type = ? WHERE id = ? LIMIT 1;";
+						$query = "UPDATE "._PRE.$table." SET $order_type = ? WHERE id = ?;";
 						if ($result = db() -> prepare($query)) {
 							$result = dbbind($result, array($value, $type_id), 'ii');
 							$data = dbfetch($result, true);
