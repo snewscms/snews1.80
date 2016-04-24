@@ -50,11 +50,11 @@ include('snews.php');
 			<div class="single">
 				<h3>New Posts</h3>
 					<ul>
-						<?php menu_articles(0,3,1); ?>
+						<?php menu_articles(0, 3, 1); ?>
 					</ul>
 				<h3>New Comments</h3>
 					<ul>
-						<?php new_comments(5,30); ?>
+						<?php new_comments(5, 30); ?>
 					</ul>
 			</div>
 		</div>

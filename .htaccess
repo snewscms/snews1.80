@@ -1,6 +1,7 @@
 <IfModule mod_php4.c>
     php_value session.use_trans_sid 0
 </IfModule>
+
 <IfModule mod_security.c>
     SecFilterEngine Off
     SecFilterScanPOST Off
