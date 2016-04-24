@@ -14,7 +14,7 @@ session_start();
 	define('SECURE_ID', '1234');
 
 //error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(E_ALL ^ E_NOTICE); // 0 - No Error Reporting
+error_reporting(E_ALL ^ E_NOTICE);	// 0 - No Error Reporting
 include('report_errors.php');		// FILE TO DEBUG ERRORS FINAL VERSION ERASE FILE AND THIS LINE
 
 // CONFIGURE DATABASE VARIABLES (eBookCMS.com)
