@@ -27,7 +27,7 @@ function db_cfg($field) { static $dbcfg;
 			'database' => 'snews18',
 			'username' => 'root',
 			'password' => '',
-			'dbpath' => 'test.db3', // only sqlite
+			'dbpath' => 'snews.db3', // only sqlite
 			'prefix' => ''
 		);
 	} return $dbcfg[$field];
