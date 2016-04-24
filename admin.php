@@ -137,6 +137,7 @@ function settings() {
 	    echo '</div>';
 	    echo '<p>';
 		# Save Settings button
+		echo html_input('hidden', 'action', 'action', 'process', '', '', '', '', '', '', '', '', '', '', '');
 	    echo html_input('hidden','task','task','save_settings','','','','','','','','','','','');
 	    echo html_input('submit','save','save',l('save'),'','button','','','','','','','','','');
 	    echo '</p>';
@@ -318,6 +319,7 @@ function form_groupings() {
 		echo html_input('text', 'seftitle', 's', $frm_sef_title, l('extra_title'), '', '', '', '', '', '', '', '', '', '');
 		echo html_input('text', 'description', 'desc', $frm_description, l('description'), '', '', '', '', '', '', '', '', '', '');
 		echo '</div><p>';
+		echo html_input('hidden', 'action', 'action', 'process', '', '', '', '', '', '', '', '', '', '', '');
 		echo html_input('hidden', 'task', 'task', 'admin_groupings', '', '', '', '', '', '', '', '', '', '', '');
 		echo html_input('submit', $frm_task, $frm_task, $frm_submit, '', 'button', '', '', '', '', '', '', '', '', '');
 		if (!empty($extraid)) {
@@ -1147,7 +1149,7 @@ function processing() {
 				$rss_limit = $_POST['rss_limit'];
 				$display_page = $_POST['display_page'];
 				$display_new_on_home = isset($_POST['display_new_on_home']) ? $_POST['display_new_on_home'] : '';
-				$display_pagination = $_POST['display_pagination'];
+				$display_pagination = isset($_POST['display_pagination']) ? $_POST['display_pagination'] : '';
 				$num_categories = $_POST['num_categories'];
 				$show_cat_names = isset($_POST['show_cat_names']) && $_POST['show_cat_names'] ? $_POST['show_cat_names'] : '';
 				$approve_comments = isset($_POST['approve_comments']) ? $_POST['approve_comments'] : '';
