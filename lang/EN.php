@@ -370,6 +370,7 @@ function load_lang() {
   	$l['please_wait'] = 'Please wait';
   	$l['admin_article'] = 'Admin article';
   	$l['article_new'] = 'New Article';
+  	$l['article_category'] = 'Article Category';
   	
   	// NEW LINES sNews 1.80
   	$l['mail_nexists'] = 'Your server does not support mail function.';

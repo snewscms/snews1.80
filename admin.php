@@ -363,7 +363,7 @@ function admin_groupings() {
 
 // ARTICLES FORM
 function form_articles($contents) {
- 	if (is_numeric($_GET['id']) && !is_null($_GET['id'])) {
+ 	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
 		$id = $_GET['id'];
 		$frm_position1 = ''; $frm_position2 = ''; $frm_position3 = '';
  		$query = 'SELECT * FROM '._PRE.'articles'.' WHERE id = '.$id;
@@ -443,11 +443,11 @@ function form_articles($contents) {
 			$frm_fieldset =  l('article_new');
 		}
 		$frm_action = _SITE.'?action=process&amp;task=admin_article';
-		$frm_title = isset($_SESSION[_SITE.'temp']['title']) ? $_SESSION[_SITE.'temp']['title'] : $title;
-		$frm_sef_title = cleanSEF($_SESSION[_SITE.'temp']['seftitle']);
-		$frm_text = $_SESSION[_SITE.'temp']['text'];
-		$frm_meta_desc = cleanSEF($_SESSION[_SITE.'temp']['description_meta']);
-		$frm_meta_key = cleanSEF($_SESSION[_SITE.'temp']['keywords_meta']);
+		$frm_title = isset($_SESSION[_SITE.'temp']['title']) ? $_SESSION[_SITE.'temp']['title'] : '';
+		$frm_sef_title = isset($_SESSION[_SITE.'temp']['seftitle']) ?cleanSEF($_SESSION[_SITE.'temp']['seftitle']) : '';
+		$frm_text = isset($_SESSION[_SITE.'temp']['text']) ? $_SESSION[_SITE.'temp']['text'] : '';
+		$frm_meta_desc = isset($_SESSION[_SITE.'temp']['description_meta']) ? cleanSEF($_SESSION[_SITE.'temp']['description_meta']) : '';
+		$frm_meta_key = isset($_SESSION[_SITE.'temp']['keywords_meta']) ? cleanSEF($_SESSION[_SITE.'temp']['keywords_meta']) : '';
 		$frm_display_title = 'ok';
 		$frm_display_info = ($contents == 'extra_new') ? '' : 'ok';
 		$frm_publish = 'ok';
@@ -458,7 +458,7 @@ function form_articles($contents) {
 		$frm_submit = l('submit');
 	}
 	$catnum = stats('categories', '');
- 	if ($contents == 'article_new' && $catnum['catnum'] < 1) {
+ 	if ($contents == 'article_new' && isset($catnum['catnum']) && $catnum['catnum'] < 1) {
  		echo l('create_cat');
  	} else {
 		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', $frm_action, '');
@@ -471,7 +471,7 @@ function form_articles($contents) {
 		}
 		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 
 			'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
-		if ($contents == 'extra_new' || $edit_option == 2) {
+		if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 		    echo '<div style="display: none;">';
 		    echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
 		    echo '</div>';
@@ -480,10 +480,10 @@ function form_articles($contents) {
 		}
 		echo html_input('textarea', 'text', 'txt', $frm_text, l('text'), '', '', '', '', '', '2', '100', '', '', '');
 		buttons();
-		if ($contents != 'page_new' && $edit_option != 3) {
+		if ($contents != 'page_new' && (isset($edit_option) && $edit_option != 3)) {
 		    echo '<p><label for="cat">';
-		    echo ($contents == 'extra_new' || $edit_option == 2) ?  l('appear_category') : l('category');
-		    if ($contents == 'extra_new' || $edit_option == 2) {
+		    echo ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) ?  l('appear_category') : l('category');
+		    if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'extra\');">';
 				echo '<option value="-1"'.($article_category == -1 ? ' selected="selected"' : '').'>'.l('all').'</option>';
 				echo '<option value="-3"'.($article_category == -3 ? ' selected="selected"' : '').'>'.l('page_only').'</option>';
@@ -512,7 +512,7 @@ function form_articles($contents) {
 				}
 			}
 			echo '</select></p>';
-			if ($contents == 'extra_new' || $edit_option == 2) {
+			if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 				$none_display = $article_category == -1 ? 'none' : 'inline';
 				echo '<div id="def_page" style="display:'.$none_display.';"><p><label for="dp">'.l('appear_page').':</label>
 					<br /><select name="define_page" id="dp">';
@@ -531,7 +531,7 @@ function form_articles($contents) {
 				html_input('checkbox', 'show_in_subcats', 'asc', 'YES', l('show_in_subcats'), '', '', '', '', $show_in_subcats, '', '', '', '', '').'</p></div>';
 			}
 		}
-		if ($contents == 'article_new' || $edit_option == 1) {
+		if ($contents == 'article_new' || (isset($edit_option) && $edit_option == 1)) {
 		 	echo html_input('checkbox', 'show_on_home', 'sho', 'YES', l('show_on_home'), '', '', '', '', $frm_showonhome, '', '', '', '', '');
 		}
 		echo html_input('checkbox', 'publish_article', 'pu', 'YES', l('publish_article'), '', '', '', '', $frm_publish, '', '', '', '', '');
@@ -547,7 +547,7 @@ function form_articles($contents) {
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle"><a onclick="toggle(\'customize\')" style="cursor: pointer;" title="'.l('customize').'">'.l('customize').'</a></p>';
 		echo '<div id="customize" style="display: none;">';
-		if ($contents == 'extra_new' || $edit_option == 2) {
+		if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 			if (s('enable_extras') == 'YES') {
 				echo '<p><label for="ext">'.l('define_extra').'</label><br />';
 				echo '<select name="define_extra" id="ext">';
@@ -576,12 +576,12 @@ function form_articles($contents) {
 		} else {
 			echo html_input('hidden', 'position', 'position', $pos, '', '', '', '', '', '', '', '', '', '', '');
 		}
-		if ($contents != 'extra_new' && $edit_option != '2') {
+		if ($contents != 'extra_new' && isset($edit_option) && $edit_option != '2') {
 			echo html_input('text', 'description_meta', 'dm', $frm_meta_desc, l('description_meta'), '', '', '', '', '', '', '', '', '', '');
 			echo html_input('text', 'keywords_meta', 'km', $frm_meta_key, l('keywords_meta'), '', '', '', '', '', '', '', '', '', '');
 		}
 		echo html_input('checkbox', 'display_title', 'dti', 'YES', l('display_title'), '', '', '', '', $frm_display_title, '', '', '', '', '');
-		if ($contents != 'extra_new' && $edit_option != '2') {
+		if ($contents != 'extra_new' && isset($edit_option) && $edit_option != '2') {
 			echo html_input('checkbox', 'display_info', 'di', 'YES', l('display_info'), '', '', '', '', $frm_display_info, '', '', '', '', '');
 			echo html_input('checkbox', 'commentable', 'ca', 'YES', l('enable_commenting'), '', '', '', '', $frm_commentable, '', '', '', '', '');
 				if (!empty($id)) {
@@ -598,11 +598,13 @@ function form_articles($contents) {
 			}
 		echo '</div></div>';
 		
-		if ($contents == 'article_new' || $edit_option == 1) {
+		if ($contents == 'article_new' || (isset($edit_option) && $edit_option == 1)) {
 			echo '<div class="adminpanel">';
-			echo '<p class="admintitle"><a onclick="toggle(\'admin_publish_date\')" style="cursor: pointer;" title="'.l('publish_date').'">'.l('publish_date').'</a></p>';
+			echo '<p class="admintitle">';
+				echo '<a onclick="toggle(\'admin_publish_date\')" style="cursor: pointer;" title="'.l('publish_date').'">'.l('publish_date').'</a>';
+			echo '</p>';
 			echo '<div id="admin_publish_date" style="display: none;">';
-			$onoff_status = $r['published'] == '2' ? 'ok' : ''; // Variable inserted in check-box string show is as checked if enabled.
+			$onoff_status = isset($r['published']) && $r['published'] == '2' ? 'ok' : ''; // Variable inserted in check-box string show is as checked if enabled.
 			echo html_input('checkbox', 'fposting', 'fp', 'YES', l('enable'), '', '', '', '', $onoff_status, '', '', '', '', '');
 			echo '<p>'.l('server_time').': '.date('d.m.Y. H:i:s').'</p>';
 			echo '<p>'.l('article_date').'</p>';
@@ -1437,7 +1439,7 @@ function processing() {
 					form_articles('');
 					unset($_SESSION[_SITE.'temp']);
 					break;
-				case ($position == 1 && $_POST['article_category'] != $category && isset($_POST['edit_article'])
+				case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
 						&& check_if_unique('article_seftitle', $seftitle, $category, '')):
 					echo notification(1,l('err_SEFExists').l('errNote'));
 					form_articles('');
