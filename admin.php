@@ -276,7 +276,7 @@ function delete_cat($id) {
 	$cat_subcat = $catdata['subcat'];
 	$query = "DELETE FROM "._PRE.'categories'." WHERE id = $id";
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
-	$sql = "SELECT id,catorder FROM "._PRE.'categories'." WHERE catorder > $cat_order AND subcat = $cat_subcat";
+	$sql = "SELECT id, catorder FROM "._PRE.'categories'." WHERE catorder > $cat_order AND subcat = $cat_subcat";
 	if ($res = db() -> query($sql)) {
 		while ($rr = dbfetch($res)) {
 			$sq = "UPDATE "._PRE.'categories'." SET catorder = catorder - 1 WHERE id = $r[id]";
@@ -284,6 +284,15 @@ function delete_cat($id) {
 				$rq = dbfetch($ru);
 			} unset($ru);
 		}
+	}
+}
+
+// DELETE EXTRA/PAGE
+function delete_item($table, $field, $id) {
+	$query = "DELETE FROM "._PRE.$table." WHERE $field = ?";
+	if ($result = db() -> prepare($query)) {
+		$result = dbbind($result, array($id), 'i'); 
+		$r = dbfetch($result, true);
 	}
 }
 
@@ -1539,11 +1548,14 @@ function processing() {
 									}
 								}
 							}
-							mysql_query("DELETE FROM "._PRE.'articles'." WHERE id = $id");
-							mysql_query("DELETE FROM "._PRE.'comments'." WHERE articleid = $id");
+							delete_item('articles', 'id', $id)
+							delete_item('articles', 'articleid', $id)
 							if ($id == s('display_page')) {
-								mysql_query("UPDATE "._PRE.'settings'." SET
-									VALUE = 0 WHERE name = 'display_page'");
+								$qwr1 = "UPDATE "._PRE.'settings'." SET VALUE = ? WHERE name = ?";
+								if ($r1 = db() -> prepare($qwr1)) {
+									$r1 = dbbind($r1, array('0', 'display_page'), 'ss');
+									$ok = dbfetch($r1, true);
+								}
 							}
 							break;
 					}
@@ -1558,14 +1570,13 @@ function processing() {
 			$postCat = cat_rel($articleCAT, 'seftitle');
 			$link = $postCat.'/'.$articleSEF;
 			if (isset($_POST['submit_text'])) {
-				mysql_query("UPDATE "._PRE.'comments'." SET
-					name = '$name',
-					url = '$url',
-					comment = '$comment',
-					approved = '$approved'
-					WHERE id = $commentid");
+				$q2 = "UPDATE "._PRE.'comments'." SET name = ?, url = ?, comment = ?, approved = ? WHERE id = ?";
+				if ($r2 = db() -> prepare($q2)) {
+					$r2 = dbbind($r2, array($name, $url, $comment, $approved, $commentid), 'ssssi');
+					$d2 = dbfetch($r2, true);
+				}
 			} else if (isset($_POST['delete_text'])) {
-				mysql_query("DELETE FROM "._PRE.'comments'." WHERE id = $commentid");
+				delete_item('comments', 'id', $commentid);
 			}
 			echo notification(0,'',$link);
 			break;
@@ -1576,25 +1587,35 @@ function processing() {
 			$articleCAT = retrieve('category','articles','id', $articleid);
 			$postCat = cat_rel($articleCAT, 'seftitle');
 			$link = $postCat.'/'.$articleSEF;
-       		mysql_query("DELETE FROM "._PRE.'comments'." WHERE id = $commentid");
+       		delete_item('comments', 'id', $commentid);
 			echo notification(0,'', $link);
 			echo '<meta http-equiv="refresh" content="1; url='._SITE.$postCat.'/'.$articleSEF.'/">';
 			break;
 		case 'delete_category_all':
-			$art_query = mysql_query("SELECT id FROM "._PRE.'articles'." WHERE category = $id");
-			while ($rart = mysql_fetch_array($art_query)) {
-				mysql_query("DELETE FROM "._PRE.'comments'." WHERE articleid = $rart[id]");
+			# DELETE ARTICLES FROM CATEGORY
+			$art_query = "SELECT id FROM "._PRE.'articles'." WHERE category = ?";
+			if ($r3 = db() -> prepare($art_query)) {
+				$r3 = dbbind($r3, array($id), 'i');
+				while ($rart = dbfetch($r3)) {
+					delete_item('comments', 'articleid', $rart['id']);
+					//delete_item('articles', 'category', $rart['id']);
+				} delete_item('articles', 'category', $id);
 			}
-			mysql_query("DELETE FROM "._PRE.'articles'." WHERE category = $id");
-			$sub_query = mysql_query("SELECT id FROM "._PRE.'categories'." WHERE subcat = $id");
-			while ($rsub = mysql_fetch_array($sub_query)) {
-				$art_query = mysql_query("SELECT id FROM "._PRE.'articles'." WHERE category = $rsub[id]");
-				while ($rart = mysql_fetch_array($art_query)) {
-					mysql_query("DELETE FROM "._PRE.'comments'." WHERE articleid = $rart[id]");
+			# DELETE ARTICLES FROM SUB-CATEGORY
+			$sub_query = "SELECT id FROM "._PRE.'categories'." WHERE subcat = ?";
+			if ($r4 = db() -> prepare($sub_query)) {
+				$r4 = dbbind($r4, array($id), 'i');
+				while ($rsub = dbfetch($r4)) {
+					$art_query1 = "SELECT id FROM "._PRE.'articles'." WHERE category = $rsub[id]";
+					if ($r5 = db() -> prepare($art_query1)) {	
+						while ($rart1 = dbfetch($r5)) {
+							delete_item('comments', 'articleid', $rart1['id']);
+							//delete_item('articles', 'category',  $rart1['id']);
+						}
+					} delete_item('articles', 'category',  $rsub['id']);
 				}
-				mysql_query("DELETE FROM "._PRE.'articles'." WHERE category = $rsub[id]");
 			}
-			mysql_query("DELETE FROM "._PRE.'categories'." WHERE subcat = $id"); delete_cat($id);
+			delete_item('categories', 'subcat',  $id); delete_cat($id);
 			echo notification(0,'', 'snews_categories');
 			break;
 		case 'hide':
