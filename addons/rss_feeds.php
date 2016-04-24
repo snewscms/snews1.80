@@ -99,7 +99,6 @@ function rss_contents($rss_item) {
 				echo $item;
 		}
 	}
-	 	
 	echo '</channel></rss>';
 	exit;
 }

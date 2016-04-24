@@ -443,7 +443,7 @@ function form_articles($contents) {
 			$frm_fieldset =  l('article_new');
 		}
 		$frm_action = _SITE.'?action=process&amp;task=admin_article';
-		$frm_title = $_SESSION[_SITE.'temp']['title'];
+		$frm_title = isset($_SESSION[_SITE.'temp']['title']) ? $_SESSION[_SITE.'temp']['title'] : $title;
 		$frm_sef_title = cleanSEF($_SESSION[_SITE.'temp']['seftitle']);
 		$frm_text = $_SESSION[_SITE.'temp']['text'];
 		$frm_meta_desc = cleanSEF($_SESSION[_SITE.'temp']['description_meta']);
