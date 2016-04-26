@@ -138,8 +138,8 @@ function settings() {
 	    echo '<p>';
 		# Save Settings button
 		echo html_input('hidden', 'action', 'action', 'process', '', '', '', '', '', '', '', '', '', '', '');
-	    echo html_input('hidden','task','task','save_settings','','','','','','','','','','','');
-	    echo html_input('submit','save','save',l('save'),'','button','','','','','','','','','');
+	    echo html_input('hidden', 'task', 'task', 'save_settings','','','','','','','','','','','');
+	    echo html_input('submit', 'save', 'save', l('save'),'','button','','','','','','','','','');
 	    echo '</p>';
 	echo '</form>';
 	echo '</div>';
@@ -374,11 +374,14 @@ function admin_groupings() {
 
 // ARTICLES FORM
 function form_articles($contents) {
+//	if (empty($contents)) {echo 'Empty';} else {echo $contents;}
+// echo $_GET['task'];
+//	$contents = !empty(contents) ? $contents : clean($_GET['task']);
  	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
 		$id = $_GET['id'];
 		$frm_position1 = ''; $frm_position2 = ''; $frm_position3 = '';
  		$query = 'SELECT * FROM '._PRE.'articles'.' WHERE id = '.$id;
- 		if ($result = db() -> query($query)){
+ 		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				$article_category = $r['category'];
 				$edit_option = $r['position'] == 0 ? 1 : $r['position'];
@@ -438,6 +441,8 @@ function form_articles($contents) {
 				$frm_position1 = 'selected="selected"';
 				break;
 			case 'extra_new':
+				$edit_option = 0;
+				$edit_page = 0;
 				$frm_fieldset = l('extra_new');
 				$toggle_div='';
 				$pos = 2;
@@ -474,7 +479,7 @@ function form_articles($contents) {
  	} else {
 		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', $frm_action, '');
 		echo '<div class="adminpanel">';
-		if ($toggle_div=='show') {
+		if (!empty($toggle_div) && $toggle_div == 'show') {
 		    echo '<p class="admintitle"><a onclick="toggle(\'edit_article\')" style="cursor: pointer;" title="'.$frm_fieldset.'">'.$frm_fieldset.'</a></p>';
 		    echo '<div id="edit_article" style="display: none;">';
 		} else {
@@ -491,8 +496,9 @@ function form_articles($contents) {
 		}
 		echo html_input('textarea', 'text', 'txt', $frm_text, l('text'), '', '', '', '', '', '2', '100', '', '', '');
 		buttons();
-		if ($contents != 'page_new' && (isset($edit_option) && $edit_option != 3)) {
+		if ($contents != 'page_new' && (empty($edit_option) || $edit_option != 3)) {
 		    echo '<p><label for="cat">';
+			$article_category = isset($article_category) ? $article_category : -1;
 		    echo ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) ?  l('appear_category') : l('category');
 		    if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'extra\');">';
@@ -546,7 +552,7 @@ function form_articles($contents) {
 		 	echo html_input('checkbox', 'show_on_home', 'sho', 'YES', l('show_on_home'), '', '', '', '', $frm_showonhome, '', '', '', '', '');
 		}
 		echo html_input('checkbox', 'publish_article', 'pu', 'YES', l('publish_article'), '', '', '', '', $frm_publish, '', '', '', '', '');
-		if ($toggle_div=='show') {
+		if (!empty($toggle_div) && $toggle_div == 'show') {
 			echo '</div>';
 		}
 		echo '</div>';
@@ -558,6 +564,7 @@ function form_articles($contents) {
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle"><a onclick="toggle(\'customize\')" style="cursor: pointer;" title="'.l('customize').'">'.l('customize').'</a></p>';
 		echo '<div id="customize" style="display: none;">';
+		# NEW EXTRA
 		if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 			if (s('enable_extras') == 'YES') {
 				echo '<p><label for="ext">'.l('define_extra').'</label><br />';
@@ -585,6 +592,7 @@ function form_articles($contents) {
 			echo '<option value="3"'.$frm_position3.'>'.l('display_page').'</option>';
 			echo '</select></p>';
 		} else {
+			$pos = $contents == 'article_new' ? 1 : ($contents == 'extra_new' ? 2 : 3);
 			echo html_input('hidden', 'position', 'position', $pos, '', '', '', '', '', '', '', '', '', '', '');
 		}
 		if ($contents != 'extra_new' && isset($edit_option) && $edit_option != '2') {
@@ -754,8 +762,10 @@ function admin_articles($contents) {
 							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
 					    }
 					    $visiblity = $r['visible'] == 'YES' ?
-							'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-							l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
+					    	'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
+							//'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+							//l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
 						echo ' '.l('divider').' '.$visiblity;
 						if ($r['published'] == 2) {
 							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -789,14 +799,16 @@ function admin_articles($contents) {
 				echo '<p class="admintitle">'.l('no_category_set').'</p>';
 				if ($res = db() -> query($sql)) {
 					while ($O = dbfetch($res)) {
-						$order_input = '<input type="text" name="page_'.$O['id'].'" value="'.$O['artorder'].'" size="1" tabindex="'.$tab22.'" /> &nbsp;';
+						$order_input = '<input type="text" name="page_'.$O['id'].'" value="'.$O['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
 						echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($O['date'])).'">'.$O['title'].'</strong> ';
-						if ($r['default_page'] != 'YES'){
+						if (isset($r['default_page']) && $r['default_page'] != 'YES'){
 							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$O['id'].'">'.l('edit').'</a> ';
 						}
 						$visiblity = $O['visible'] == 'YES' ?
-	               	 		'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
-	               	 		l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
+	               	 		'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
+	               	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
+	               	 		//'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
+	               	 		//l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
 	               			echo ' '.l('divider').' '.$visiblity;
 						if ($O['published'] == 2) {
 							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -805,7 +817,7 @@ function admin_articles($contents) {
 							echo  l('divider').' ['.l('status').' '.l('unpublished').']';
 						}
 						echo '</p>';
-						$tab22++;
+						$tab++;
 					}
 				}
 			    echo '</div>';
@@ -834,8 +846,10 @@ function admin_articles($contents) {
 								echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
 							}
 							$visiblity = $r['visible'] == 'YES' ?
-		               	 		'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-		               	 		l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
+		               	 		'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+		               	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
+		               	 		//'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+		               	 		//l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
 		               			echo ' '.l('divider').' '.$visiblity;
 							if ($r['published'] == 2) {
 								echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -872,9 +886,12 @@ function admin_articles($contents) {
 										<a href="'._SITE.$catSEF.'/'.$ca_r2['seftitle'].'/">'.l('view').'</a> ';
 									echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$ca_r2['id'].'">'.l('edit').'</a> ';
 									$visiblity2 = $ca_r2['visible'] == 'YES' ?
-						       	 		'<a href="'._SITE.'?action=process&amp;task=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
-			            	   	 		l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
+						       	 		'<a href="'._SITE.'?action=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
+			            	   	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
 			            	   	 			'.l('show').'</a> )';
+			            	   	 		/*'<a href="'._SITE.'?action=process&amp;task=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
+			            	   	 		l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
+			            	   	 			'.l('show').'</a> )';*/
 			       					echo ' '.l('divider').' '.$visiblity2;
 									if ($ca_r2['published'] == 2) {
 										echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -912,8 +929,10 @@ function admin_articles($contents) {
 					echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
 				}
 				$visiblity = $r['visible'] == 'YES' ?
-	                '<a href="'._SITE.'?action=process&amp;task=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-	                l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
+	                '<a href="'._SITE.'?action=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+	                l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
+	                //'<a href="'._SITE.'?action=process&amp;task=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+	                //l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
 				echo ' '.l('divider').' '.$visiblity;
 				if ($r['published'] == 2) {
 					echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -1100,6 +1119,34 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 	else {return true;}
 }
 
+// HIDE/SHOW
+function visibility($mode) {
+    $id = clean(cleanXSS($_GET['id']));
+    $item = clean(cleanXSS($_GET['item']));
+    $back = isset($_GET['back']) ? $_GET['back'] : '';
+    $no_yes = $mode == 'hide' ? 'NO' : 'YES';
+    switch ($item) {
+        case 'snews_articles':
+        	$order = 'artorder';
+        	$link = empty($back) ? 'snews_articles' : $back;
+        	break;
+        case 'extra_contents':
+        	$order = 'artorder';
+        	$link = empty($back) ? 'extra_contents' : $back;
+        	break;
+        case 'snews_pages':
+        	$order = 'artorder';
+        	$link = empty($back) ? 'snews_pages' : $back;
+        	break;
+    }
+    $query = "UPDATE "._PRE."articles SET visible = ?  WHERE id = ? ";
+    if ($result = db() -> prepare($query)) {
+    	$result = dbbind($result, array($no_yes, $id), 'si'); 
+		$result = dbfetch($result, true);
+	} echo notification(0, l('please_wait'));
+	$link = $link != 'home' ? $link : '';
+    echo '<meta http-equiv="refresh" content="1; url='._SITE.$link.'/">';
+ }
 
 /*** PROCESSING (CATEGORIES, CONTENTS, COMMENTS) ***/
 function processing() {
@@ -1132,9 +1179,9 @@ function processing() {
   		$commentable = 'FREEZ';
   	}
 	$position = isset($_POST['position']) && $_POST['position']> 0 ? $_POST['position'] : 1;
-	if ($position == 2) {
+	/*if ($position == 2) { ISSUE ?
 		$position = $_POST['cat_dependant'] == 'on' ? 21 : 2;
-	}
+	}*/
   	$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
   	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
 	$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
@@ -1425,64 +1472,60 @@ function processing() {
 			}
 			break;
 		case 'admin_article':
+	//	echo '<pre>'; print_r($_POST); echo '</pre>';
 			$_SESSION[_SITE.'temp']['title'] = $_POST['title'];
 			$_SESSION[_SITE.'temp']['seftitle'] = $_POST['seftitle'];
 			$_SESSION[_SITE.'temp']['text'] = $_POST['text'];
+			switch ($position) {
+				case 1: $from = $id != 0 ? '' : 'article_new';	$link = 'snews_articles'; break;
+				case 2: $from = $id != 0 ? '' : 'extra_new';	$link = 'extra_contents'; break;
+				case 3: $from = $id != 0 ? '' : 'page_new';		$link = 'snews_pages'; break;
+			}
 			switch (true) {
 				case (empty($title)):
-					echo notification(1,l('err_TitleEmpty').l('errNote'));
-					form_articles('');
+					echo notification(1,l('err_TitleEmpty').l('errNote'), $link);
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				case (empty($seftitle)):
 					echo notification(1,l('err_SEFEmpty').l('errNote'));
 					$_SESSION[_SITE.'temp']['seftitle'] = $_SESSION[_SITE.'temp']['title'];
-					form_articles('');
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				case (cleancheckSEF($seftitle) == 'notok'):
 					echo notification(1,l('err_SEFIllegal').l('errNote'));
-					form_articles('');
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
-				case ($position == 1 && $_POST['article_category'] != $category && isset($_POST['edit_article'])
+				case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
 						&& check_if_unique('article_title', $title, $category, '')):
 					echo notification(1,l('err_TitleExists').l('errNote'));
-					form_articles('');
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
 						&& check_if_unique('article_seftitle', $seftitle, $category, '')):
 					echo notification(1,l('err_SEFExists').l('errNote'));
-					form_articles('');
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				case (!isset($_POST['delete_article']) && !isset($_POST['edit_article'])
 						&& check_if_unique('article_title', $title, $category, '')):
 					echo notification(1,l('err_TitleExists').l('errNote'));
-					form_articles('');
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				case (!isset($_POST['delete_article']) && !isset($_POST['edit_article'])
 						&& check_if_unique('article_seftitle', $seftitle, $category, '')):
 					echo notification(1,l('err_SEFExists').l('errNote'));
-					form_articles('');
+					form_articles($from);
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				default:
-					$pos = $position;
 					$sub = !empty($category) ? ' AND category = '.$category : '';
-					$curr_artorder = retrieve('artorder','articles','id',$id);
-					if (!$curr_artorder){
-						$artorder = 1;
-					} else {
-						$artorder = $curr_artorder;
-					}
-					switch ($pos) {
-						case 1: $link = 'snews_articles'; break;
-						case 2: $link = 'extra_contents'; break;
-						case 3: $link = 'snews_pages'; break;
-					}
+					$curr_artorder = retrieve('artorder', 'articles', 'id', $id);
+					$artorder = !$curr_artorder ? 1 : $curr_artorder;
 					switch (true) {
 						case (isset($_POST['add_article'])):
 							$query = "INSERT INTO "._PRE.'articles '."(
@@ -1562,7 +1605,7 @@ function processing() {
 							}
 							break;
 					}
-				echo notification(0,'',$link);
+				echo notification(0, '', $link);
 				unset($_SESSION[_SITE.'temp']);
 			}
 			break;
@@ -1621,34 +1664,6 @@ function processing() {
 			delete_item('categories', 'subcat',  $id); delete_cat($id);
 			echo notification(0,'', 'snews_categories');
 			break;
-		case 'hide':
-        case 'show':
-            $id = $_GET['id'];
-            $item = $_GET['item'];
-            $back = $_GET['back'];
-            $no_yes = $task == 'hide' ? 'NO' : 'YES';
-            switch ($item) {
-                case 'snews_articles':
-                	$order = 'artorder';
-                	$link = empty($back) ? 'snews_articles' : $back;
-                	break;
-                case 'extra_contents':
-                	$order = 'artorder';
-                	$link = empty($back) ? 'extra_contents' : $back;
-                	break;
-                case 'snews_pages':
-                	$order = 'artorder';
-                	$link = empty($back) ? 'snews_pages' : $back;
-                	break;
-            }
-            $item = 'articles';
-            $query = "UPDATE "._PRE."$item SET visible = ?  WHERE id = ? ";
-            if ($result = db() -> prepare($query)) {
-            	$result = dbbind($result, array($no_yes, $id), 'si'); 
-				$result = dbfetch($result, true);
-			} echo notification(0,l('please_wait'));
-            echo '<meta http-equiv="refresh" content="1; url='._SITE.$link.'/">';
-        break;
 		}
 	}
 }

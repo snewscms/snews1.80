@@ -1,7 +1,7 @@
 <?php
 
 /*---------------------------------------------------------
-  sNews 1.8.0 (lines are the same as sNew 1.7.1 except last lines)
+  sNews 1.8.0 (lines are the same as sNew 1.7.1 except lines 349-to-end)
   EN.php
   English Language File
 ---------------------------------------------------------*/
@@ -371,10 +371,14 @@ function load_lang() {
   	$l['admin_article'] = 'Admin article';
   	$l['article_new'] = 'New Article';
   	$l['article_category'] = 'Article Category';
+  	$l['hidden'] = 'Hidden';
   	
   	// NEW LINES sNews 1.80
   	$l['mail_nexists'] = 'Your server does not support mail function.';
 
+// Editing may end here
+
 return $l;
 }
+
 ?>

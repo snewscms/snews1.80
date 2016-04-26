@@ -204,11 +204,19 @@ function checkUserPass($input) {
 	} else {return null;}
 }
 
+// INCLUDE ADDONS
+	$fd = opendir('addons/');
+	while (($file = @readdir($fd)) == true) {
+		clearstatcache();
+		$ext = substr($file, strrpos($file, '.') + 1);
+		if ($ext == 'php' || $ext == 'txt') {include_once('addons/'.$file);}
+	} closedir($fd); unset($fd, $file, $ext);
+
 // LANGUAGE VARIABLES
 	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
 
 // LANGUAGE
-function l($var) {static $lang;
+function l($var) {static $lang; global $l;
 	if (!$lang) {
 		$lang = load_lang();
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
@@ -217,6 +225,8 @@ function l($var) {static $lang;
 			$lang['cat_listSEF'] .= ',administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories';
 			$lang['cat_listSEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
 		}
+		# SET FOCUS
+		$lang['js_inc'] = 'login,contact'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
 		# DIVIDER CHARACTER
 		$lang['divider'] = '&middot;';
 		# used in article pagination links
@@ -224,16 +234,9 @@ function l($var) {static $lang;
 		$lang['comment_pages'] = 'c_';
 		# list of files & folders ignored by upload/file list routine
 		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,'.s('language').'.php';
+		while (list($key, $value) = each($l)) {$lang[$key] = $value;}
 	} return $lang[$var];
 }
-
-// INCLUDE ADDONS
-	$fd = opendir('addons/');
-	while (($file = @readdir($fd)) == true) {
-		clearstatcache();
-		$ext = substr($file, strrpos($file, '.') + 1);
-		if ($ext == 'php' || $ext == 'txt') {include_once('addons/'.$file);}
-	} closedir($fd); unset($fd, $file, $ext);
 
 // ARTICLES - FUTURE POSTING
 function update_articles() {
@@ -414,18 +417,25 @@ if ($_GET) {
 					$MainQuery ='SELECT id AS catID, name, description
 						FROM '._PRE.'categories'.' AS c
 						WHERE seftitle = "'.$categorySEF.'" AND subcat = 0 '.$pub_c;
-					$_TYPE = 6;
+					$_TYPE = 6; unset($Try_Page);
+					//$num = stats('categories', '', 'seftitle = "'.$categorySEF.'" AND subcat = 0');
+					//if ($num != 0) {} else {$TYPE = 10;}
 				}
 			}
 		}
 		// MAIN QUERY
 		if (!empty($MainQuery)) {
-			if ($main = db() -> query($MainQuery)) {$R = dbfetch($main);} 
+			if ($main = db() -> query($MainQuery)) {$R = dbfetch($main);}
 			else if (!in_array($_GET['action'], explode(',', l('cat_listSEF')))) {
-				$categorySEF = '404';
-				header('HTTP/1.1 404 Not Found');
-				unset($subcatSEF, $articleSEF);
-				set_error();
+			 echo $categorySEF;
+				if (function_exists('public_'.$categorySEF)){
+					$TYPE = 10;
+				} else {
+					$categorySEF = '404';
+					header('HTTP/1.1 404 Not Found');
+					unset($subcatSEF, $articleSEF);
+					set_error();
+				}
 			} update_articles();
 		}
 	// ADMIN
@@ -473,7 +483,8 @@ function title() {
 	echo '<meta http-equiv="Content-Type" content="text/html; charset='.s('charset').'" />'.$lfeed;
 	echo '<meta name="description" content="'.(!empty($_DESCR) ? $_DESCR : s('website_description')).'" />'.$lfeed;
 	echo '<meta name="keywords" content="'.(!empty($_KEYW) ? $_KEYW : s('website_keywords')).'" />'.PHP_EOL;
-	if (_ADMIN  || $categorySEF == 'login') {
+	$js_list = explode(',', l('js_inc'));
+	if (_ADMIN  || in_array($categorySEF, $js_list)) {
 		echo chr(9).'<script type = "text/javascript" src = "js/admin.js"></script>'.PHP_EOL;
 	}
 }
@@ -486,7 +497,7 @@ function breadcrumbs() {
 	if (_ADMIN) {
 		echo $link.'administration/" title="'.l('administration').'">'.l('administration').'</a> '.l('divider').' ';
 	}
-	// CATEGORY
+	# CATEGORY
 	echo (!empty($categorySEF) ? $link.'">'.l('home').'</a>' : l('home'));
 	if (!empty($categorySEF) && check_category($categorySEF) == false) {
 	 	echo ($categorySEF == '404' ? ' '.l('divider').' HTTP 404' : '');
@@ -613,9 +624,10 @@ function extra($mode='', $styleit = 0, $classname = '', $idname = '') {
 	$mode = strtolower($mode);
 	$getExtra = retrieve('id', 'extras', 'seftitle', $mode);
 	$subCat = retrieve('subcat', 'categories', 'id', $_catID);
-	if (!empty($_ID)) {$getArt = $_ID;}
+	$getArt = !empty($_ID) ? $_ID : 0;
 	if (!empty($subcatSEF)) {$catSEF = $subcatSEF;}
 	$url = $categorySEF.(!empty($subcatSEF)? '/'.$subcatSEF:'').(!empty($articleSEF)?'/'.$articleSEF :'');
+	$url = !empty($url) ? $url : 'home';
 	$sql = 'SELECT
 			id, title, seftitle, text, category, extraid, page_extra,
 			position, displaytitle, show_in_subcats, visible
@@ -668,13 +680,14 @@ function extra($mode='', $styleit = 0, $classname = '', $idname = '') {
 					echo '<h3>'. $r['title'] .'</h3>';
 				}
 				file_include($r['text'], 9999000);
-				$action = '?action=process&amp;task=';
+				$action = '?action=';
 				$visiblity = $r['visible'] == 'YES' ?
 					'<a href="'._SITE.$action.'hide&amp;item=snews_articles&amp;id='.$r['id'].'&amp;back='.$url.'">'.l('hide').'</a>' :
 					l('hidden').' ( <a href="'._SITE.$action.'show&amp;item=snews_articles&amp;id='.$r['id'].'&amp;back='.$url.'">'.l('show').'</a> )';
 				echo _ADMIN ? '<p><a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'" title="'.l('edit').' '.$r['seftitle'].'">
 					'.l('edit').'</a>'.' '.l('divider').' '.$visiblity.'</p>' : '';
 				if ($styleit == 1) {
+				 echo $url;
 					echo '</div>';
 				}
 			}
@@ -758,7 +771,7 @@ function show_404() {
 	echo '<p class="warning">'.l('error_404').'</p>';
 }
 
-// PREPARE TEXT TO MYSQL
+// PREPARE TEXT TO DATABASE
 function clean_mysql($text) {
 	if ((function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) || 
 		(ini_get('magic_quotes_sybase') && (strtolower(ini_get('magic_quotes_sybase')) != "off"))) {
@@ -824,7 +837,7 @@ function articles() {
 	if ($_catID == 0 && $_TYPE != 4 && $_TYPE != 5 && $_TYPE != 7) {set_error(); return;}
 	if ($_TYPE >= 1 && $_TYPE < 10) {
 		if ($_TYPE == 1 || $_TYPE == 2 || $_TYPE == 9) {$num = stats('articles', '', 'id='.$_ID);} else
-		if (($_TYPE == 3 || $_TYPE == 6) && $_catID != 0) {$num = stats('articles', '', 'category='.$_catID);} else
+		if (($_TYPE == 3 || $_TYPE == 6) && $_catID != 0) {$num = stats('articles', '', 'category='.$_catID.' AND position = 1');} else
 		if ($_TYPE == 5) {$num = stats('articles', '', 'id='.$_ID);} else
 		if ($_TYPE == 7  || $_TYPE == 4) {
 			$num = $display != 0 && $_TYPE == 7 ? 
@@ -881,8 +894,8 @@ function articles() {
 					}
 					file_include(str_replace('[break]', '',$text), $shorten);
 					$commentable = $r['commentable'];
-					$hide = '?action=process&amp;task=hide&amp;item=snews_articles&amp;id='.$r['aid'].'&amp;back='.$uri;
-					$show = '?action=process&amp;task=show&amp;item=snews_articles&amp;id='.$r['aid'].'&amp;back='.$uri;
+					$hide = '?action=hide&amp;item=snews_articles&amp;id='.$r['aid'].'&amp;back='.$uri;
+					$show = '?action=show&amp;item=snews_articles&amp;id='.$r['aid'].'&amp;back='.$uri;
 					$visiblity = $r['visible'] == 'YES' ? 
 						$link.$hide.'">'.l('hide').'</a>' :
 						l('hidden').' ( '.$link.$show.'">'.l('show').'</a> )';
@@ -952,10 +965,11 @@ function articles() {
 				}
 			}
 		} else {
-			if (_ADMIN) {echo $title_not_found;}
-			echo '<ul class="vertical">';
-				menu_articles(0, 10, 1);
-			echo '</ul>';
+			if (_ADMIN) {echo '<h2>'.$title_not_found.'</h2>';}
+			else {
+				echo '<h2 class="big">'.$_NAME.'</h2>';
+				echo '<p>'.l('no_articles').'</p>';
+			}
 		}
 	}
 }
@@ -1691,7 +1705,6 @@ function category_list($id) {
 	$selected =' selected="selected"';
 	$query = 'SELECT id,name FROM '._PRE.'categories 
 			WHERE subcat = 0 ORDER BY catorder, id';
-	//if (!empty($var)) {$parent_selection = $selected;}
 	$parent_selection = !empty($var) ? $selected : '';
 	if ($result = db() -> query($query)) {
 		echo '<option value="0"'.$parent_selection.'>'.l('not_sub').'</option>';
@@ -1915,6 +1928,8 @@ function center() {
 	global $_catID, $categorySEF, $subcatSEF, $articleSEF, $_TYPE;
 	# FATAL SESSION
 	if (isset($_SESSION[_SITE.'fatal'])) {unset($_SESSION[_SITE.'fatal']); return;}
+	# BAD ADMIN REQUEST OR NOT LOGGED
+	if (isset($_GET['action']) && !_ADMIN) {set_error(); return;}
 	# CHECK POST FIRST
 	if ($_POST) {
 		if (_ADMIN) {include('admin.php');}
@@ -1923,9 +1938,12 @@ function center() {
 			case isset($_POST['comment']) 		: comment('comment_posted'); return; break;
 			case isset($_POST['contactform'])	: contact(); return; break;
 			case isset($_POST['Loginform'])		: administration(); return; break;
-			case isset($_POST['action']) 		: if (_ADMIN && $_POST['action'] == 'process') {processing();} return; break;
-			default : set_error(); 
-			break;
+			case isset($_POST['action']) 		: if (_ADMIN && $_POST['action'] == 'process') {processing();} else {set_error();} return; break;
+			default : 
+				if (isset($_POST['addon']) && function_exists('public_'.$categorySEF)) {
+					$func = 'public_'.$categorySEF;
+					$func(); return; break;
+				} else {set_error();} return; break;
 		}
 	# CHECK GET NOW
 	} else if ($_GET) {
@@ -1941,27 +1959,38 @@ function center() {
 					include('admin.php');
 					$action = isset($_GET['action']) ? clean(cleanXSS($_GET['action'])) : $action;
 					switch ($action) {
-						case 'administration'	:	administration(); return; break;
-						case 'snews_settings'	:	settings(); return; break;
-						case 'snews_categories'	:	admin_categories(); return; break;
-						case 'admin_category'	:	form_categories(); return; break;
-						case 'admin_subcategory':	form_categories('sub'); return; break;
-						case 'groupings'		:	admin_groupings(); return; break;
-						case 'admin_groupings'	:	form_groupings(); return; break;
-						case 'snews_articles'	:	admin_articles('article_view'); return; break;
-						case 'extra_contents'	:	admin_articles('extra_view'); return; break;
-						case 'snews_pages'		:	admin_articles('page_view'); return; break;
-						case 'admin_article'	:	form_articles(''); return; break;
-						case 'article_new'		:	form_articles('article_new'); return; break;
-						case 'extra_new'		:	form_articles('extra_new'); return; break;
-						case 'page_new'			:	form_articles('page_new'); return; break;
-						case 'editcomment'		:	edit_comment(); return; break;
+						case 'administration'	:	administration(); break;
+						case 'snews_settings'	:	settings(); break;
+						case 'snews_categories'	:	admin_categories(); break;
+						case 'admin_category'	:	form_categories(); break;
+						case 'admin_subcategory':	form_categories('sub'); break;
+						case 'groupings'		:	admin_groupings(); break;
+						case 'admin_groupings'	:	form_groupings(); break;
+						case 'snews_articles'	:	admin_articles('article_view'); break;
+						case 'extra_contents'	:	admin_articles('extra_view'); break;
+						case 'snews_pages'		:	admin_articles('page_view'); break;
+						case 'admin_article'	:	form_articles(''); break;
+						case 'article_new'		:	form_articles('article_new'); break;
+						case 'extra_new'		:	form_articles('extra_new'); break;
+						case 'page_new'			:	form_articles('page_new'); break;
+						case 'editcomment'		:	edit_comment(); break;
 						case 'snews_files'		:	files(); return; break;
+						case 'hide'				:	visibility('hide'); break;
+						case 'show'				:	visibility('show'); break;
 						case 'logout'			:	logout(); return; break;
 						default:
-							if (!empty($action)) {articles();}
+							if (!empty($action)) {
+								if (substr($action, 0, 6) == 'admin_' && function_exists($action)) {
+									$action(); return;
+								} articles();
+							}
 					}
-				} else {articles();}
+				} else {
+					if (function_exists('public_'.$categorySEF)) {
+						$func = 'public_'.$categorySEF;
+						$func();
+					} else {articles();}
+				}
 		}
 	} else {articles();}
 }

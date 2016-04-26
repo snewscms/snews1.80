@@ -16,22 +16,25 @@ function addEvent(element, event, func) {
 // *************************************************************************************
 head_onload = function(env) {
 	if (!document.getElementById) {return;}
- 	var forms1 = new Array("post");
+	var forms1 = new Array("post");
 	for (var i=0; i< forms1.length; i++) {
-		if (forms1[i]){
+		if (forms1[i]) {
 			var myelement = document.getElementById(forms1[i]);
-			if (myelement !== null ){
+			if (myelement !== null ) {
 				var num = myelement.length;
 				var found = false;
 				for (var j=0; j<num; j++) {
 					if ((myelement[j].type=='text' || myelement[j].type=='password' || myelement[j].type=='email') && myelement[j].value === ""){
-						myelement[j].focus(); found =true; break;
+						myelement[j].focus();
+						found = true;
+						break;
 					}
 				}
 				if (found !== true) {
 					for (var j=0; j<num; j++) {
 						if (myelement[j].type=='text' || myelement[j].type=='password' || myelement[j].type=='email'){
-							myelement[j].focus(); break;
+							myelement[j].focus();
+							break;
 						}
 					}	
 				}
