@@ -205,12 +205,21 @@ function checkUserPass($input) {
 }
 
 // INCLUDE ADDONS
-	$fd = opendir('addons/');
-	while (($file = @readdir($fd)) == true) {
-		clearstatcache();
-		$ext = substr($file, strrpos($file, '.') + 1);
-		if ($ext == 'php' || $ext == 'txt') {include_once('addons/'.$file);}
-	} closedir($fd); unset($fd, $file, $ext);
+function readAddons() { static $admin_mods; global $l;
+	if (!$admin_mods) {
+		$fd = opendir('addons/');
+		while (($file = @readdir($fd)) == true) {
+			clearstatcache();
+			$ext = substr($file, strrpos($file, '.') + 1);
+			if ($ext == 'php') {
+				include_once('addons/'.$file);
+				$name = str_replace('.php', '', $file);
+				if (function_exists('admin_'.$name)) {
+					$admin_mods[] = 'admin_'.$name;}
+			}
+		} closedir($fd); return;
+	} else {return implode('', $admin_mods);}
+} readAddons();
 
 // LANGUAGE VARIABLES
 	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
@@ -222,7 +231,7 @@ function l($var) {static $lang; global $l;
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
 		$lang['cat_listSEF'] = 'archive,contact,sitemap,login';
 		if (_ADMIN) {
-			$lang['cat_listSEF'] .= ',administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories';
+			$lang['cat_listSEF'] .= ',administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories,admin_mods';
 			$lang['cat_listSEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
 		}
 		# SET FOCUS
@@ -1974,6 +1983,7 @@ function center() {
 						case 'extra_new'		:	form_articles('extra_new'); break;
 						case 'page_new'			:	form_articles('page_new'); break;
 						case 'editcomment'		:	edit_comment(); break;
+						case 'admin_addons'		:	showAdmAddons();break;
 						case 'snews_files'		:	files(); return; break;
 						case 'hide'				:	visibility('hide'); break;
 						case 'show'				:	visibility('show'); break;
@@ -1982,6 +1992,10 @@ function center() {
 							if (!empty($action)) {
 								if (substr($action, 0, 6) == 'admin_' && function_exists($action)) {
 									$action(); return;
+								}
+								if (function_exists('public_'.$categorySEF)) {
+									$func = 'public_'.$categorySEF;
+									$func(); return;
 								} articles();
 							}
 					}

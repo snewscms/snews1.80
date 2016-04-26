@@ -375,6 +375,7 @@ function load_lang() {
   	
   	// NEW LINES sNews 1.80
   	$l['mail_nexists'] = 'Your server does not support mail function.';
+  	$l['admin_addons'] = 'Admin Addons';
 
 // Editing may end here
 

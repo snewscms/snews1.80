@@ -1,15 +1,21 @@
 <?php
 
-/* EXAMPLE HOW TO USE ADDON AS A PUBLIC FUNCTION AND ADMIN FUNCTION */
+/* SIMPLE EXAMPLE HOW TO USE ADDON */
 
 // LANG
+$l['hello_title'] = 'Hello World';
+$l['hello_desc'] = 'This is simple addon to show how this works';
 $l['wyname'] = 'What is your name';
-$l['focus'] = isset($l['focus']) ? $l['focus'].',hi' : ',hi';
+$l['focus'] = isset($l['focus']) ? $l['focus'].',hello' : ',hello';
 
+
+// FUNCTION CALLED BY ADMIN
 function admin_hello() {
-	echo 'Everything is fine. Cool';
+	echo '<h2>Create your code here</h2>';
+	echo '<p>You can see public function <a href="'._SITE.'hello'.'">here</a></p>';
 }
 
+// PUBLIC FUNCTION
 function public_hello() {
 	if ($_POST) {
 		if ($_POST['name']) {echo '<h1>Hello '.clean($_POST['name']).'</h1>';}

@@ -11,34 +11,39 @@ function administration() {
 	foreach ($_POST as $key) {unset($_POST[$key]);}
 	echo '<div class="adminpanel">';
 	    echo '<p class="admintitle"><a href="http://snewscms.com/" title="sNews CMS">sNews</a> '.l('administration').'</p>';
-	    echo '<p>'.l('categories').': <a href="admin_category/">'.l('add_new').'</a>';
-	    $link = ' '.l('divider').' <a href="';
+	    echo '<p>'.l('categories').': <a href="'._SITE.'admin_category/">'.l('add_new').'</a>';
+	    $link = ' '.l('divider').' <a href="'._SITE;
 	    $catnum = stats('categories', '');
 	    if ($catnum > 0) {echo $link.'snews_categories/">'.l('view').'</a>';}
 	    echo '</p><p>'.l('articles').': ';
-	    $art_new = $catnum > 0 ? '<a href="article_new/">'.l('add_new').'</a>' : l('create_cat');
+	    $art_new = $catnum > 0 ? '<a href="'._SITE.'article_new/">'.l('add_new').'</a>' : l('create_cat');
 	    echo $art_new;
 	    if (stats('articles','1') > 0) {
 			echo $link.'snews_articles/">'.l('view').'</a>';
 	    }
-	    echo '</p><p>'.l('pages').': <a href="page_new/">'.l('add_new').'</a>';
+	    echo '</p><p>'.l('pages').': <a href="'._SITE.'page_new/">'.l('add_new').'</a>';
 	    if (stats('articles','3') > 0) {
 			echo $link.'snews_pages/">'.l('view').'</a>';
 	    }
 	    echo '</p>';
 	    if (s('enable_extras') == 'YES') {
 	        echo '<p class="admintitle">'.l('extra_contents').'</p>';
-			echo '<p>'.l('groupings').': <a href="admin_groupings/">'.l('add_new').'</a>';
+			echo '<p>'.l('groupings').': <a href="'._SITE.'admin_groupings/">'.l('add_new').'</a>';
 			if (stats('extras','') > 0) {
 			    echo $link.'groupings/">'.l('view').'</a>';
 			}
 			echo '</p>';
 	    }
-	    echo '<p>'.l('extra_contents').': <a href="extra_new/">'.l('add_new').'</a>';
+	    echo '<p>'.l('extra_contents').': <a href="'._SITE.'extra_new/">'.l('add_new').'</a>';
 	    if (stats('articles','2') > 0) {
 			echo $link.'extra_contents/">'.l('view').'</a>';
 	    }
 	    echo '</p>';
+	    # ADDONS
+	    echo '<p>'.l('admin_addons').': ';
+	    if (empty(readAddons())) {echo l('none');}
+	    else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
+		echo '</p>';
 	    echo '</div>';
 	    $query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';
 	    $unapproved = stats('comments', '', 'approved != \'True\'');
@@ -56,10 +61,24 @@ function administration() {
 			} echo '</div></div>';
 	    }
 	    echo '<div class="message"><p class="admintitle">'.l('site_settings').'</p>';
-	    echo '<p><a href="snews_settings/">'.l('settings').'</a>&nbsp;|&nbsp;
-			<a href="snews_files/">'.l('files').'</a></p></div>';
+	    echo '<p><a href="'._SITE.'snews_settings/">'.l('settings').'</a>&nbsp;|&nbsp;
+			<a href="'._SITE.'snews_files/">'.l('files').'</a></p></div>';
 	    echo '<div class="message"><p class="admintitle">'.l('login_status').'</p>';
-	    echo '<p><a href="logout/">'.l('logout').'</a></p>';
+	    echo '<p><a href="'._SITE.'logout/">'.l('logout').'</a></p>';
+	echo '</div>';
+}
+
+function showAdmAddons() {
+	echo '<div class="adminpanel">';
+    echo '<p class="admintitle">'.l('admin_addons').'</p>';
+	$funcs = readAddons();
+	if (!empty($funcs)) {
+		$list = explode(',', $funcs);
+		for ($i=0; $i < count($list); $i++) {
+			$name = str_replace('admin_', '', $list[$i]);
+			echo '<p>'.l('hello_title').': <a href="'._SITE.'?action='.$list[$i].'">Admin</a>';
+		}
+	}
 	echo '</div>';
 }
 
@@ -163,7 +182,7 @@ function settings() {
 
 // CATEGORIES - ADMIN LIST
 function admin_categories() {
-    $add = ' - <a href="admin_category/">'.l('add_new').'</a>';
+    $add = ' - <a href="'._SITE.'admin_category/">'.l('add_new').'</a>';
     $link = '?action=admin_category';
     $tab = 1;
     echo '<div class="adminpanel">';
@@ -349,7 +368,7 @@ function form_groupings() {
 function admin_groupings() {
     if (s('enable_extras') == 'YES') {
 		if (stats('extras', '') > 0) {
-		    $add = ' - <a href="admin_groupings/" title="'.l('add_new').'">'.l('add_new').'</a>';
+		    $add = ' - <a href="'._SITE.'admin_groupings/" title="'.l('add_new').'">'.l('add_new').'</a>';
 		} else {
 		    $add = '';
 		}
@@ -374,9 +393,6 @@ function admin_groupings() {
 
 // ARTICLES FORM
 function form_articles($contents) {
-//	if (empty($contents)) {echo 'Empty';} else {echo $contents;}
-// echo $_GET['task'];
-//	$contents = !empty(contents) ? $contents : clean($_GET['task']);
  	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
 		$id = $_GET['id'];
 		$frm_position1 = ''; $frm_position2 = ''; $frm_position3 = '';
@@ -764,8 +780,6 @@ function admin_articles($contents) {
 					    $visiblity = $r['visible'] == 'YES' ?
 					    	'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
 							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
-							//'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-							//l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
 						echo ' '.l('divider').' '.$visiblity;
 						if ($r['published'] == 2) {
 							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -807,8 +821,6 @@ function admin_articles($contents) {
 						$visiblity = $O['visible'] == 'YES' ?
 	               	 		'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
 	               	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
-	               	 		//'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
-	               	 		//l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
 	               			echo ' '.l('divider').' '.$visiblity;
 						if ($O['published'] == 2) {
 							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -848,8 +860,6 @@ function admin_articles($contents) {
 							$visiblity = $r['visible'] == 'YES' ?
 		               	 		'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
 		               	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-		               	 		//'<a href="'._SITE.'?action=process&amp;task=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-		               	 		//l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
 		               			echo ' '.l('divider').' '.$visiblity;
 							if ($r['published'] == 2) {
 								echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -889,9 +899,6 @@ function admin_articles($contents) {
 						       	 		'<a href="'._SITE.'?action=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
 			            	   	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
 			            	   	 			'.l('show').'</a> )';
-			            	   	 		/*'<a href="'._SITE.'?action=process&amp;task=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
-			            	   	 		l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
-			            	   	 			'.l('show').'</a> )';*/
 			       					echo ' '.l('divider').' '.$visiblity2;
 									if ($ca_r2['published'] == 2) {
 										echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -931,8 +938,6 @@ function admin_articles($contents) {
 				$visiblity = $r['visible'] == 'YES' ?
 	                '<a href="'._SITE.'?action=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
 	                l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-	                //'<a href="'._SITE.'?action=process&amp;task=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-	                //l('hidden').' ( <a href="'._SITE.'?action=process&amp;task=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
 				echo ' '.l('divider').' '.$visiblity;
 				if ($r['published'] == 2) {
 					echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -1057,7 +1062,7 @@ function filelist($mode, $path, $depth = 0) {
 			  		echo '
 					<a href="'.$target.'" title="'.l('view').' '.$file.'">'.$file.'</a>
 						'.l('divider').'
-					<a href="?action=snews_files&amp;task=delete&amp;folder='.$path.'&amp;file='.$file.'" title="'.l('delete').' '.$file.
+					<a href="'._SITE.'?action=snews_files&amp;task=delete&amp;folder='.$path.'&amp;file='.$file.'" title="'.l('delete').' '.$file.
 						'" onclick="return pop()">	'.l('delete').'</a><br />';
 			  		break;
 			}
@@ -1179,9 +1184,6 @@ function processing() {
   		$commentable = 'FREEZ';
   	}
 	$position = isset($_POST['position']) && $_POST['position']> 0 ? $_POST['position'] : 1;
-	/*if ($position == 2) { ISSUE ?
-		$position = $_POST['cat_dependant'] == 'on' ? 21 : 2;
-	}*/
   	$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
   	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
 	$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
@@ -1472,7 +1474,6 @@ function processing() {
 			}
 			break;
 		case 'admin_article':
-	//	echo '<pre>'; print_r($_POST); echo '</pre>';
 			$_SESSION[_SITE.'temp']['title'] = $_POST['title'];
 			$_SESSION[_SITE.'temp']['seftitle'] = $_POST['seftitle'];
 			$_SESSION[_SITE.'temp']['text'] = $_POST['text'];
