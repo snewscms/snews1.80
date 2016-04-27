@@ -1566,10 +1566,10 @@ function search($limit = 20) {
 		$query = 'SELECT a.id
 			FROM '._PRE.'articles'.' AS a
 			LEFT OUTER JOIN '._PRE.'categories'.' as c
-				ON category = c.id AND c.published =\'YES\'
+				ON a.category = c.id AND c.published =\'YES\'
 			LEFT OUTER JOIN '._PRE.'categories'.' as x
 				ON c.subcat =  x.id AND x.published =\'YES\'
-			WHERE position != 2
+			WHERE a.position != 2
 				AND a.published = 1
 				AND';
 		if(!_ADMIN){
@@ -1577,34 +1577,28 @@ function search($limit = 20) {
 		}
 		if ($keyCount > 1) {
 			for ($i = 0; $i < $keyCount - 1; $i++) {
-				$query = $query.' (title LIKE "%'.$keywords[$i].'%" ||
-					text LIKE "%'.$keywords[$i].'%" ||
-					keywords_meta LIKE "%'.$keywords[$i].'%") &&';
+				$query = $query.' (a.title LIKE "%'.$keywords[$i].'%" OR
+					a.text LIKE "%'.$keywords[$i].'%" OR
+					a.keywords_meta LIKE "%'.$keywords[$i].'%") &&';
 			}
 			$j = $keyCount - 1;
-			$query = $query.'(title LIKE "%'.$keywords[$j].'%" ||
-				text LIKE "%'.$keywords[$j].'%" ||
-				keywords_meta LIKE "%'.$keywords[$j].'%")';
+			$query = $query.'(a.title LIKE "%'.$keywords[$j].'%" OR
+				a.text LIKE "%'.$keywords[$j].'%" OR
+				a.keywords_meta LIKE "%'.$keywords[$j].'%")';
 		} else {
-			$query = $query.'(title LIKE "%'.$keywords[0].'%" ||
-				text LIKE "%'.$keywords[0].'%" ||
-				keywords_meta LIKE "%'.$keywords[0].'%")';
+			$query = $query.'(a.title LIKE "%'.$keywords[0].'%" OR
+				a.text LIKE "%'.$keywords[0].'%" OR
+				a.keywords_meta LIKE "%'.$keywords[0].'%")';
 		}
-		$query = $query.' ORDER BY id DESC LIMIT '.$limit;
-		echo $query;
-		
-		
-		
+		$query = $query.' ORDER BY a.id DESC LIMIT '.$limit;
 		if ($result = db() -> query($query)) {
 			echo '<p><strong>'.$numrows.'</strong> '.l('resultsfound').' <strong>'.stripslashes($search_query).'</strong>.</p>';
-			while ($r = dbfetch($result)) {
-				$Or_id[] = 'a.id ='.$r['id'];
-			}
+			while ($r = dbfetch($result)) {$Or_id[] = 'a.id ='.$r['id'];}
 			$Or_id = implode(' OR ',$Or_id);
 			$sql = 'SELECT
-					title,a.seftitle AS asef,a.date AS date,
-					c.name AS name,c.seftitle AS csef,
-					x.name AS xname,x.seftitle AS xsef
+					title, a.seftitle AS asef, a.date AS date,
+					c.name AS name, c.seftitle AS csef, a.category,
+					x.name AS xname, x.seftitle AS xsef
 				FROM '._PRE.'articles'.' AS a
 				LEFT OUTER JOIN '._PRE.'categories'.' as c
 					ON category = c.id
@@ -1613,11 +1607,13 @@ function search($limit = 20) {
 				WHERE '.$Or_id;
 			if ($res = db() -> query($sql)) {
 				while ($s = dbfetch($res)) {
-					$date = date(s('date_format'), strtotime($r['date']));
-					$name = isset($r['name']) ? ' ('.$r['name'].')' : '';
-					if (isset($r['xsef']))  $link = $r['xsef'].'/'.$r['csef'].'/';
-					else $link = isset($r['csef']) ? $r['csef'].'/' : '';
-					echo '<p><a href="'._SITE.$link.$r['asef'].'/">'.$r['title'].$name.'</a> - '.$date.'</p>';
+					$date = date(s('date_format'), strtotime($s['date']));
+					$name = isset($s['name']) ? ' ('.$s['name'].')' : '';
+					if (isset($s['xsef'])) {
+						$link = $s['xsef'].'/'.$s['csef'].'/';
+					} else {
+						$link = isset($s['csef']) ? $s['csef'].'/' : '';
+					} echo '<p><a href="'._SITE.$link.$s['asef'].'/">'.$s['title'].$name.'</a> - '.$date.'</p>';
 				}
 			}
 		} else {
@@ -1627,8 +1623,6 @@ function search($limit = 20) {
 	}
 	echo '<p><a href="'._SITE.'">'.l('backhome').'</a></p>';
 }
-
-
 
 // RSS FEED - LINK BUILDER
 function rss_links() {
