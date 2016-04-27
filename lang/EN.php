@@ -119,7 +119,7 @@ function load_lang() {
 	$l['extra_new'] = 'New Extra Contents';
 	$l['page_new'] = 'New Page';
 	$l['edit'] = 'Edit';
-	$l['edit_button'] = 'Save'; // Patch #11 - 1.7.1 - added for 3 Save buttons
+	$l['edit_button'] = 'Save';
 	$l['update'] = 'Update';
 	$l['delete'] = 'Delete';
 	$l['save'] = 'Save';
@@ -128,7 +128,7 @@ function load_lang() {
 	#settings
 	$l['settings'] = 'Settings';
 	$l['site_settings'] = 'Site';
-	$l['settings_title'] = 'Site Management Panels'; // Patch #19 - 1.7.1
+	$l['settings_title'] = 'Site Management Panels';
 
 	#login
 	$l['login_status'] = 'Login status';
@@ -234,7 +234,7 @@ function load_lang() {
 	//Database table error message
 	$l['db_tables_error'] = '<strong>Your database table "prefix" is incorrect OR your database tables have not been created.</strong>
 		<br /> Check your database "prefix" setting OR create your database tables (see <a href="'._SITE.'readme.html">readme.html</a>).';
-	$l['error_404'] = 'The content you requested could not be found and may not exist.<br />Please choose from content listed below or return to the previous page.'; // Patch #18 - 1.7.1 - revised message
+	$l['error_404'] = 'The content you requested could not be found and may not exist.<br />Please choose from content listed below or return to the previous page.';
 	$l['error_not_logged_in'] = 'You are not permitted to do that until you are logged in.';
 	$l['admin_error'] = 'Error';
 	$l['back'] = 'Back';
@@ -366,7 +366,7 @@ function load_lang() {
   	$l['hide'] = 'Hide';
   	$l['show'] = 'Show';
   	
-  	// MISS LINES - snews 1.7.1
+  	// MISSING LINES - snews 1.7.1
   	$l['please_wait'] = 'Please wait';
   	$l['admin_article'] = 'Admin article';
   	$l['article_new'] = 'New Article';

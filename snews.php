@@ -586,15 +586,14 @@ function subcategories($parent) {
 		ORDER BY c.catorder,c.id';
 	if ($result = db() -> query($query)) {
 		echo '<ul>';
-		while ($s = dbfetch($result)) {
-			$subSEF = $s['subsef'];
-			$class = $subSEF == $subcatSEF ? ' class="current"' : '';
-			$num = isset($s['total']) ? ' ('.$s['total'].')' : '';
-			echo '
-			<li class="subcat">
-				<a'.$class.' href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>
-			</li>';
-		}
+			while ($s = dbfetch($result)) {
+				$subSEF = $s['subsef'];
+				$class = $subSEF == $subcatSEF ? ' class="current"' : '';
+				$num = isset($s['total']) ? ' ('.$s['total'].')' : '';
+				echo '<li class="subcat">';
+					echo '<a'.$class.' href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
+				echo '</li>';
+			}
 		echo '</ul>';
 	}
 }
