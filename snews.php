@@ -46,11 +46,11 @@ function db() { static $conn;
 		// DATABASE TYPE
 		switch($dbtype) {
 			case "mysql"  : $dbconn = "mysql:host=$server;dbname=$database;"; break;
-	  		case "sqlite" : $dbconn = "sqlite:$dbpath"; break;
+			case "sqlite" : $dbconn = "sqlite:$dbpath"; break;
 			case "postgresql" : $dbconn = "pgsql:host=$server dbname=$database"; break;
 			case "sqlexpress" : $dbconn = "mssql:host=$server dbname=$database"; break;
 			case "firebird" : $dbconn = "firebird:dbname=$server:$dbpath"; break;
-		} 
+		}
 		if ($driver == 'pdo' || $driver == 'PDO') {
 			try {$conn = new PDO($dbconn, $username, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));}
 			catch (PDOException $msg) {die ('Connection error, because: '.$msg->getMessage());}
@@ -71,7 +71,7 @@ function dbbind($result, $args, $binds) {
 		$count = is_array($args) ? count($args) : 0;
 		$bindParamsMethod = new ReflectionMethod('mysqli_stmt', 'bind_param');
 		$bindParamsReferences = array();
-		foreach($args as $key => $value) {$bindParamsReferences[$key] = &$args[$key];}
+		foreach ($args as $key => $value) {$bindParamsReferences[$key] = &$args[$key];}
 		array_unshift($bindParamsReferences, $binds);
 		$bindParamsMethod -> invokeArgs($result, $bindParamsReferences);
 		$result -> execute();
@@ -115,7 +115,7 @@ function retrieve($column, $table, $field, $value) {
 	if (is_null($value)) {return null;}
 	if ($table == 'categories') { global $retr_cache_cat_id, $retr_cache_cat_sef, $retr_init;
 		if (!$retr_init) {populate_retr_cache(); $retr_init = true;}
-		if ($column == 'name') {return $retr_cache_cat_sef[$value];} 
+		if ($column == 'name') {return $retr_cache_cat_sef[$value];}
 		else if ($column == 'seftitle') {return $retr_cache_cat_id[$value];}
 	} $retrieve = '';
 	$query = "SELECT $column FROM "._PRE."$table WHERE $field = '$value'";
@@ -173,11 +173,11 @@ function clean($text) {
 // CHECK MATH CAPTCHA RESULT
 function checkMathCaptcha() {
 	$result = false;
-   	$testNumber = isset($_SESSION[_SITE.'mathCaptcha-digit']) ? $_SESSION[_SITE.'mathCaptcha-digit'] : 'none';
-   	unset($_SESSION[_SITE.'mathCaptcha-digit']);
-   	if (is_numeric($testNumber) && is_numeric($_POST['calc']) && ($testNumber == $_POST['calc'])) {
-    	$result = true;
-    } return $result;
+	$testNumber = isset($_SESSION[_SITE.'mathCaptcha-digit']) ? $_SESSION[_SITE.'mathCaptcha-digit'] : 'none';
+	unset($_SESSION[_SITE.'mathCaptcha-digit']);
+	if (is_numeric($testNumber) && is_numeric($_POST['calc']) && ($testNumber == $_POST['calc'])) {
+		$result = true;
+	} return $result;
 }
 
 // MATH CAPTCHA
@@ -185,9 +185,9 @@ function mathCaptcha() {
 	$x = rand(1, 9);
 	$y = rand(1, 9);
 	if (!isset($_SESSION[_SITE.'mathCaptcha-digit'])) {
-	    $_SESSION[_SITE.'mathCaptcha-digit'] = $x + $y;
-	    $_SESSION[_SITE.'mathCaptcha-digit-x'] = $x;
-	    $_SESSION[_SITE.'mathCaptcha-digit-y'] = $y;
+		$_SESSION[_SITE.'mathCaptcha-digit'] = $x + $y;
+		$_SESSION[_SITE.'mathCaptcha-digit-x'] = $x;
+		$_SESSION[_SITE.'mathCaptcha-digit-y'] = $y;
 	}
 	$math = '<p><label for="calc">* '.l('math_captcha').': </label><br />';
 	$math .= $_SESSION[_SITE.'mathCaptcha-digit-x'].' + '.$_SESSION[_SITE.'mathCaptcha-digit-y'].' = ';
@@ -215,7 +215,8 @@ function readAddons() { static $admin_mods; global $l;
 				include_once('addons/'.$file);
 				$name = str_replace('.php', '', $file);
 				if (function_exists('admin_'.$name)) {
-					$admin_mods[] = 'admin_'.$name;}
+					$admin_mods[] = 'admin_'.$name;
+				}
 			}
 		} closedir($fd); return;
 	} else {return implode('', $admin_mods);}
@@ -225,11 +226,11 @@ function readAddons() { static $admin_mods; global $l;
 	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
 
 // LANGUAGE
-function l($var) {static $lang; global $l;
+function l($var) { static $lang; global $l;
 	if (!$lang) {
 		$lang = load_lang();
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
-		$lang['cat_listSEF'] = 'archive,contact,sitemap,login';
+		$lang['cat_listSEF'] = 'archive,contact,sitemap,login,searching';
 		if (_ADMIN) {
 			$lang['cat_listSEF'] .= ',administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories,admin_mods';
 			$lang['cat_listSEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
@@ -304,7 +305,7 @@ function stats($table, $position, $other = '', $count = true) {
 function notification($error = 0, $note = '', $link = '') {
 	$title = $error == 0 ? l('operation_completed') : ($error !== 2 ? l('warning') : l('admin_error'));
 	$note = (!$note || empty($note)) ? '' : '<p>'.$note.'</p>';
-	switch(true){
+	switch(true) {
 		case (!$link) :
 			$goto = '';
 			break;
@@ -366,7 +367,7 @@ if ($_GET) {
 			$pub_c = ' AND c.published =\'YES\'';
 			$pub_x = ' AND x.published =\'YES\'';
 		}
-	 	// [TYPE = 1] : QUERY FOR ->  CATEGORY/SUBCATEGORY/ARTICLE/
+		// [TYPE = 1] : QUERY FOR ->  CATEGORY/SUBCATEGORY/ARTICLE/
 		if ($articleSEF && substr( $articleSEF, 0, 2) != l('paginator') && substr( $articleSEF, 0, 2) != l('comment_pages')) {
 			$MainQuery = 'SELECT
 				a.id AS id, title, position, description_meta, keywords_meta,
@@ -379,8 +380,8 @@ if ($_GET) {
 					'.$pub_a.$pub_c.$pub_x.'
 					AND x.seftitle="'.$categorySEF.'"
 					AND c.seftitle="'.$subcatSEF.'"
-					AND a.seftitle="'.$articleSEF.'"
-			'; $_TYPE = 1;
+					AND a.seftitle="'.$articleSEF.'"';
+				$_TYPE = 1;
 		}
 	 	// TWO QUERIES FOR ->  CATEGORY / SUBCATEGORY  /  | OR |  / CATEGORY / ARTICLE /
 		else if ($subcatSEF  && substr( $subcatSEF, 0, 2) != l('paginator') && substr( $subcatSEF, 0, 2) != l('comment_pages')) {
@@ -427,8 +428,6 @@ if ($_GET) {
 						FROM '._PRE.'categories'.' AS c
 						WHERE seftitle = "'.$categorySEF.'" AND subcat = 0 '.$pub_c;
 					$_TYPE = 6; unset($Try_Page);
-					//$num = stats('categories', '', 'seftitle = "'.$categorySEF.'" AND subcat = 0');
-					//if ($num != 0) {} else {$TYPE = 10;}
 				}
 			}
 		}
@@ -436,7 +435,6 @@ if ($_GET) {
 		if (!empty($MainQuery)) {
 			if ($main = db() -> query($MainQuery)) {$R = dbfetch($main);}
 			else if (!in_array($_GET['action'], explode(',', l('cat_listSEF')))) {
-			 echo $categorySEF;
 				if (function_exists('public_'.$categorySEF)){
 					$TYPE = 10;
 				} else {
@@ -452,7 +450,7 @@ if ($_GET) {
 		$url = explode('/', clean($_GET['action']));
 		$categorySEF = $url[0];
 	}
-	
+
 // HOME
 } else {
 	if (s('display_page') !== 0) {$_ID = s('display_page'); $_TYPE = 7;}
@@ -483,7 +481,7 @@ function title() {
 	echo '<base href="'._SITE.'" />'.$lfeed;
 	$title  = $_TITLE ? $_TITLE.' - ' : '';
 	$title .= $_NAME ? $_NAME.' - ' : '';
-   	$title .= $_XNAME ? $_XNAME.' - ' : '';
+	$title .= $_XNAME ? $_XNAME.' - ' : '';
 	if (check_category($categorySEF) == true && $categorySEF != 'administration' && $categorySEF) {
 		$title .= l($categorySEF).' - ';
 	}
@@ -509,10 +507,10 @@ function breadcrumbs() {
 	# CATEGORY
 	echo (!empty($categorySEF) ? $link.'">'.l('home').'</a>' : l('home'));
 	if (!empty($categorySEF) && check_category($categorySEF) == false) {
-	 	echo ($categorySEF == '404' ? ' '.l('divider').' HTTP 404' : '');
+		echo ($categorySEF == '404' ? ' '.l('divider').' HTTP 404' : '');
 		echo (!empty($subcat) ? ' '.l('divider').' '.$link.$categorySEF.'/">'.
-			 (!empty($_XNAME) ? $_XNAME : $_NAME).'</a>' :
-			 (!empty($_NAME) ? ' '.l('divider').' '.$_NAME:'')
+			(!empty($_XNAME) ? $_XNAME : $_NAME).'</a>' :
+			(!empty($_NAME) ? ' '.l('divider').' '.$_NAME:'')
 		);
 		if (!empty($subcat) && $_XNAME) {
 			echo ($_POS == 1 ? ' '.l('divider').' '.$link.$categorySEF.'/'.$subcat.'/">'.$_NAME.'</a>' : ' '.l('divider').' '.$_NAME);
@@ -695,7 +693,7 @@ function extra($mode='', $styleit = 0, $classname = '', $idname = '') {
 				echo _ADMIN ? '<p><a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'" title="'.l('edit').' '.$r['seftitle'].'">
 					'.l('edit').'</a>'.' '.l('divider').' '.$visiblity.'</p>' : '';
 				if ($styleit == 1) {
-				 echo $url;
+					echo $url;
 					echo '</div>';
 				}
 			}
@@ -706,9 +704,9 @@ function extra($mode='', $styleit = 0, $classname = '', $idname = '') {
 // PAGINATOR
 function paginator($pageNum, $maxPage, $pagePrefix) {
 	global $categorySEF,$subcatSEF, $articleSEF,$_ID, $_catID,$_POS, $_XNAME;
-	switch (true){
+	switch (true) {
 		case !$_ID && !$_catID :
-			$uri ='';
+			$uri = '';
 			break;
 		case $_ID && $_XNAME :
 			$uri = $categorySEF.'/'.$subcatSEF.'/'.$articleSEF.'/';
@@ -723,12 +721,12 @@ function paginator($pageNum, $maxPage, $pagePrefix) {
 	$prefix = !empty($pagePrefix) ? $pagePrefix : '';
 	if ($pageNum > 1) {
 		$goTo =  $link;
-		$prev = (($pageNum-1)==1 ? $goTo :
+		$prev = (($pageNum-1) == 1 ? $goTo :
 			$link.$prefix.($pageNum - 1).'/').'" title="'.l('page').' '.($pageNum - 1).'">
 				&lt; '.l('previous_page').'</a> ';
 		$first = $goTo.'" title="'.l('first_page').' '.l('page').'">
 			&lt;&lt; '.l('first_page').'</a>';
-    } else {
+	} else {
 		$prev = '&lt; '.l('previous_page');
 		$first = '&lt;&lt; '.l('first_page');
 	}
@@ -798,7 +796,7 @@ function clean_mysql($text) {
 function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 	global $categorySEF, $_catID,$subcatSEF;
 	$no_articles = '<li>'.l('no_articles').'</li>';
-	switch ($cat_specific){
+	switch ($cat_specific) {
 		case 1 : $subcat = !empty($_catID) && empty($subcatSEF) ? 'AND c.subcat = '.$_catID : ''; break;
 		case 2 : $subcat = !empty($_catID) ? 'AND c.subcat = '.$_catID : ''; break;
 		default: $subcat = '';
@@ -866,7 +864,7 @@ function articles() {
 				elseif ($subcatSEF) {$SEF = $subcatSEF;}
 				else {$SEF = $categorySEF;}
 				$currentPage = strpos($SEF, l('paginator')) === 0 ? str_replace(l('paginator'), '', $SEF) : '';
-			} 
+			}
 			if (!isset($currentPage) || !is_numeric($currentPage) || $currentPage < 1) {$currentPage = 1;}
 			# QUERY
 			$query_articles = 'SELECT
@@ -984,13 +982,13 @@ function articles() {
 
 // CLEAN - WORD FILTER
 function cleanWords($text) {
-    if ((strtolower(s('word_filter_enable')) == 'on') && (file_exists(s('word_filter_file')))) {
-        $bad_words_from_what = preg_replace('/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/', '', file(s('word_filter_file')));
-        $bad_words_from_what = preg_replace('/^(.*)$/', '/\\1/i', $bad_words_from_what);
-        $bad_words_to_what = s('word_filter_change');
-        $text = preg_replace($bad_words_from_what, $bad_words_to_what, $text);
-        return $text;
-    } else {
+	if ((strtolower(s('word_filter_enable')) == 'on') && (file_exists(s('word_filter_file')))) {
+		$bad_words_from_what = preg_replace('/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/', '', file(s('word_filter_file')));
+		$bad_words_from_what = preg_replace('/^(.*)$/', '/\\1/i', $bad_words_from_what);
+		$bad_words_to_what = s('word_filter_change');
+		$text = preg_replace($bad_words_from_what, $bad_words_to_what, $text);
+		return $text;
+	} else {
 		return $text;
 	}
 }
@@ -999,21 +997,21 @@ function cleanWords($text) {
 function xss_clean() { static $BlackList;
 	if (!$BlackList) {
 		$ra1 = array('applet', 'body', 'bgsound', 'base', 'basefont', 'embed', 'frame', 'frameset', 'head', 'html',
-	             'id', 'iframe', 'ilayer', 'layer', 'link', 'meta', 'name', 'object', 'script', 'style', 'title', 'xml');
+			'id', 'iframe', 'ilayer', 'layer', 'link', 'meta', 'name', 'object', 'script', 'style', 'title', 'xml');
 		$ra2 = array('javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'style', 'script',
-	            'embed', 'object', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base',
-	            'onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy',
-	            'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint',
-	            'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick',
-	            'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged',
-	            'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave',
-	            'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus',
-	            'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload',
-	            'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover',
-	            'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange',
-	            'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit',
-	            'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart',
-	            'onstop', 'onsubmit', 'onunload');
+			'embed', 'object', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base',
+			'onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy',
+			'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint',
+			'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick',
+			'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged',
+			'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave',
+			'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus',
+			'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload',
+			'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover',
+			'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange',
+			'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit',
+			'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart',
+			'onstop', 'onsubmit', 'onunload');
 		$BlackList = array_merge($ra1, $ra2);
 	} return $BlackList;
 }
@@ -1026,7 +1024,7 @@ function filterTags($source) {
 	$preTag = NULL;
 	$postTag = $source;
 	$tagOpen_start = strpos($source, '<');
-	while($tagOpen_start !== FALSE) {
+	while ($tagOpen_start !== FALSE) {
 		$preTag .= substr($postTag, 0, $tagOpen_start);
 		$postTag = substr($postTag, $tagOpen_start);
 		$fromTagOpen = substr($postTag, 1);
@@ -1092,7 +1090,7 @@ function cleanXSS($val) {
 		$source = html_entity_decode($val, ENT_QUOTES, 'ISO-8859-1');
 		$source = preg_replace('/&#38;#(\d+);/mi','chr(\\1)', $source);
 		$source = preg_replace('/&#38;#x([a-f0-9]+);/mi','chr(0x\\1)', $source);
-		while($source != filterTags($source)) {
+		while ($source != filterTags($source)) {
 			$source = filterTags($source);
 		}
 		$source = nl2br($source);
@@ -1264,9 +1262,9 @@ function comment($freeze_status) {
 		}
 	}
 	if ($freeze_status != 'freezed' && s('freeze_comments') != 'YES') {
-	    if ($numrows == 0) {echo '<p>'.l('no_comment').'</p>';}
+		if ($numrows == 0) {echo '<p>'.l('no_comment').'</p>';}
 		// recall and set vars for reuse when botched post
-		if(isset($_SESSION[_SITE.'comment']['fail']) && $_SESSION[_SITE.'comment']['fail'] == true) {
+		if (isset($_SESSION[_SITE.'comment']['fail']) && $_SESSION[_SITE.'comment']['fail'] == true) {
 			$name = $_SESSION[_SITE.'comment']['name'];
 			$comment = $_SESSION[_SITE.'comment']['comment'];
 			$url = $_SESSION[_SITE.'comment']['url'];
@@ -1426,54 +1424,52 @@ function sitemap() {
 			echo '</li>';
 		}
 		echo '</ul>';
-	} else {echo '<li>'.l('no_articles').'</li></ul>';}		
+	} else {echo '<li>'.l('no_articles').'</li></ul>';}
 }
 
 // CONTACT FORM
 function contact() {
- 	if (!isset($_POST['contactform'])) {
+	if (!isset($_POST['contactform'])) {
 	$_SESSION[_SITE.'time'] = $time = time();
 	echo
-	'<div class="commentsbox"><h2>'.l('contact').'</h2>
-	<p>'.l('required').'</p>
-	<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
-	<p><label for="name">* ',l('name'),'</label>:<br />
-	<input type="text" name="name" id="name" maxlength="100" class="text" value="" /></p>
-	<p><label for="email">* ',l('email'),'</label>:<br />
-	<input type="text" name="email" id="email" maxlength="320" class="text" value="" /></p>
-	<p><label for="weblink">',l('url'),'</label>:<br />
-	<input type="text" name="weblink" id="weblink"  maxlength="160" class="text" value="" /></p>
-	<p><label for="message">* ',l('message'),'</label>:<br />
-	<textarea name="message" rows="5" cols="5" id="message"></textarea></p>
-	',mathCaptcha(),'
-	<p><input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
-	<input type="hidden" name="time" id="time" value="',time(),'" />
-	<input type="submit" name="contactform" id="contactform" class="button" value="',l('submit'),'" /></p>
-	</form>
+	'<div class="commentsbox">
+		<h2>'.l('contact').'</h2>
+		<p>'.l('required').'</p>
+		<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
+			<p><label for="name">* ',l('name'),'</label>:<br />
+			<input type="text" name="name" id="name" maxlength="100" class="text" value="" /></p>
+			<p><label for="email">* ',l('email'),'</label>:<br />
+			<input type="text" name="email" id="email" maxlength="320" class="text" value="" /></p>
+			<p><label for="weblink">',l('url'),'</label>:<br />
+			<input type="text" name="weblink" id="weblink"  maxlength="160" class="text" value="" /></p>
+			<p><label for="message">* ',l('message'),'</label>:<br />
+			<textarea name="message" rows="5" cols="5" id="message"></textarea></p>
+			',mathCaptcha(),'
+			<p><input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
+			<input type="hidden" name="time" id="time" value="',time(),'" />
+			<input type="submit" name="contactform" id="contactform" class="button" value="',l('submit'),'" /></p>
+		</form>
 	</div>';
 
-	} else if( isset( $_SESSION[_SITE.'time'] ) ) {
+	} else if (isset($_SESSION[_SITE.'time'])) {
 		$count = $magic = 0;
-		if( get_magic_quotes_gpc() ){ $magic = 1; }
-		foreach($_POST as $k => $v){
-		if($count === 8 ) die;
-		if ($magic) $k = stripslashes($v);
-		else $$k = $v;
-		++$count;
+		if (get_magic_quotes_gpc()) {$magic = 1;}
+		foreach ($_POST as $k => $v){
+			if ($count === 8 ) die;
+			if ($magic) $k = stripslashes($v);
+			else $$k = $v;
+			++$count;
 		}
 		$to = s('website_email');
 		$subject = s('contact_subject');
-
 		$name = (isset($name[0]) && ! isset($name[300]) ) ? trim($name) : null;
 		$name = ! preg_match('/[\\n\\r]/', $name) ? $name : die;
-
 		$mail = (isset($email[6]) && ! isset($email[320]) ) ? trim($email) : null;
 		$mail = ! preg_match('/[\\n\\r]/', $mail) ? $mail : die;
-
 		$url = (isset($weblink[4]) && ! isset($weblink[160]) ) ? trim($weblink) : null;
 		$url = ( strpos($url, '?') === false && ! preg_match('/[\\n\\r]/', $url)) ? $url : null;
 		$message = (isset($message[10]) && ! isset($message[6000]) ) ? strip_tags($message) : null;
-		$time = ( isset($_SESSION[_SITE.'time']) && $_SESSION[_SITE.'time'] === (int)$time && (time() - $time) > 10) ? $time : null ;
+		$time = ( isset($_SESSION[_SITE.'time']) && $_SESSION[_SITE.'time'] === (int)$time && (time() - $time) > 10) ? $time : null;
 		if ( isset($ip) && $ip === $_SERVER['REMOTE_ADDR'] && $time
 		&& $name && $mail && $message && checkMathCaptcha()) {
 			unset($_SESSION[_SITE.'time']);
@@ -1554,9 +1550,23 @@ function searchform() { ?>
 	</form>
 <?php }
 
+// SEARCH FORM 2
+function searchform2() {
+	$charset = s('charset');
+	echo '<form id = "search_engine2" method="post" class="navbar-form navbar-right" action="'._SITE.'searching/" accept-charset="'.$charset.'">
+		<input class="searchfield" name="search_query" type="text" id="keywords2" class="form-control" value="'.l('search_keywords').'" 
+			onfocus="document.forms[\'search_engine2\'].keywords2.value=\'\';"
+			onblur="if (document.forms[\'search_engine2\'].keywords2.value == \'\') 
+				document.forms[\'search_engine2\'].keywords2.value = \''.l('search_keywords').'\';" />
+		<input type="hidden"  name="search2" id="s2" value="'.substr(session_id(), 2, 7).'" />
+		<button type="submit" class="btn btn-sm btn-default" name="submit">'.l('search_button').'</button>
+	</form>';
+}
+
 // SEARCH ENGINE
 function search($limit = 20) {
 	$search_query = clean(cleanXSS($_POST['search_query']));
+	if (isset($_POST['search2']) && $_POST['search2'] == substr(session_id(), 2, 7)) {searchform2();}
 	echo '<h2>'.l(search_results).'</h2>';
 	if (strlen($search_query) < 4 || $search_query == l('search_keywords')) {
 		echo '<p>'.l('charerror').'</p>';
@@ -1572,7 +1582,7 @@ function search($limit = 20) {
 			WHERE a.position != 2
 				AND a.published = 1
 				AND';
-		if(!_ADMIN){
+		if (!_ADMIN){
 			$query = $query.' a.visible = \'YES\' AND ';
 		}
 		if ($keyCount > 1) {
@@ -1633,17 +1643,17 @@ function rss_links() {
 	if ($result = db() -> query($query)) {
 		$l_error = array(); // catch any errors
 		while ($r = dbfetch($result)) {
-		    foreach ($r as $k => $v) {
-			if ( $v > 0 ) {
-			    $l = explode('_', $k);
-			    echo '<li><a href="rss-'.$l[0].'/">'.l( 'rss_'.$l[0] ).'</a></li>';
-			} else {
-			    $l_error[] = $k;
+			foreach ($r as $k => $v) {
+				if ( $v > 0 ) {
+					$l = explode('_', $k);
+					echo '<li><a href="rss-'.$l[0].'/">'.l( 'rss_'.$l[0] ).'</a></li>';
+				} else {
+					$l_error[] = $k;
+				}
 			}
-		    }
 		}
 		if (count($l_error) == 3) {
-		    echo '<li>'.l('no_rss').'</li>';
+			echo '<li>'.l('no_rss').'</li>';
 		}
 	}
 }
@@ -1651,7 +1661,7 @@ function rss_links() {
 // LOGIN
 function login() {
 	if (!_ADMIN) {
-        echo '<div class="adminpanel">
+		echo '<div class="adminpanel">
 		<h2>'.l('login').'</h2>';
 		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', _SITE.'administration/', '');
 		echo '<p>'.l('login_limit').'</p>';
@@ -1679,7 +1689,7 @@ function html_input($type, $name, $id, $value, $label, $css, $script1, $script2,
 	$attribs = $ID.$style.$js1.$js2.$js3;
 	$val = ' value="'.$value.'"';
 	$input = '<input type="'.$type.'" name="'.$name.'"'.$attribs;
-	switch($type) {
+	switch ($type) {
 		case 'form': $output = (!empty($method) && $method != 'end') ?
 			'<form method="'.$method.'" action="'.$action.'"'.$attribs.' accept-charset="'.s('charset').'">' : '</form>'; break;
 		case 'fieldset': $output = (!empty($legend) && $legend != 'end') ?
@@ -1710,12 +1720,12 @@ function category_list($id) {
 	$parent_selection = !empty($var) ? $selected : '';
 	if ($result = db() -> query($query)) {
 		echo '<option value="0"'.$parent_selection.'>'.l('not_sub').'</option>';
-	   	while ($r = dbfetch($result)) {
+		while ($r = dbfetch($result)) {
 			$child = retrieve('subcat', 'categories', 'id', $var);
 			if ($r['id'] == $child) {
 				echo '<option value="'.$r['id'].'"'.$selected.'>'.$r['name'].'</option>';
 			} elseif ($id!=$r['id']){
-	    		echo '<option value="'.$r['id'].'">'.$r['name'].'</option>';
+				echo '<option value="'.$r['id'].'">'.$r['name'].'</option>';
 			}
 		}
 	} echo '</select>';
@@ -1725,46 +1735,46 @@ function category_list($id) {
 function posting_time($time='') {
 	echo '<p>'.l('day').':&nbsp;<select name="fposting_day">';
 	$thisDay = !empty($time) ? substr($time, 8, 2) : intval(date('d'));
-	for($i = 1; $i < 32; $i++) {
+	for ($i = 1; $i < 32; $i++) {
 		echo '<option value="'.$i.'"';
-		if($i == $thisDay) {
+		if ($i == $thisDay) {
 			echo ' selected="selected"';
 		}
 		echo '>'.$i.'</option>';
 	}
 	echo '</select>&nbsp;&nbsp;'.l('month').':&nbsp;<select name="fposting_month">';
 	$thisMonth = !empty($time) ? substr($time, 5, 2) : intval(date('m'));
-	for($i = 1; $i < 13; $i++) {
+	for ($i = 1; $i < 13; $i++) {
 		echo '<option value="'.$i.'"';
-		if($i == $thisMonth) {
+		if ($i == $thisMonth) {
 			echo ' selected="selected"';
 		}
 		echo '>'. $i .'</option>';
 	}
 	echo '</select>&nbsp;&nbsp;'.l('year').':&nbsp;<select name="fposting_year">';
-   	$PresentYear = intval(date('Y'));
-   	$thisYear = !empty($time) ? substr($time, 0, 4) : $PresentYear;
-   	for($i = $thisYear-3; $i < $PresentYear + 3; $i++) {
+	$PresentYear = intval(date('Y'));
+	$thisYear = !empty($time) ? substr($time, 0, 4) : $PresentYear;
+	for ($i = $thisYear-3; $i < $PresentYear + 3; $i++) {
 		echo '<option value="'.$i.'"';
-		if($i == $thisYear) {
+		if ($i == $thisYear) {
 			echo ' selected="selected"';
 		}
 		echo '>'.$i.'</option>';
 	}
 	echo '</select>&nbsp;&nbsp;'.l('hour').':&nbsp;<select name="fposting_hour">';
 	$thisHour = !empty($time) ? substr($time, 11, 2) : intval(date('H'));
-	for($i = 0; $i < 24; $i++) {
+	for ($i = 0; $i < 24; $i++) {
 		echo '<option value="'.$i.'"';
-		if($i == $thisHour) {
+		if ($i == $thisHour) {
 			echo ' selected="selected"';
 		}
 		echo '>'.$i.'</option>';
 	}
 	echo '</select>&nbsp;&nbsp;'.l('minute').':&nbsp;<select name="fposting_minute">';
 	$thisMinute = !empty($time) ? substr($time, 14, 2) : intval(date('i'));
-	for($i = 0; $i < 60; $i++) {
+	for ($i = 0; $i < 60; $i++) {
 		echo '<option value="'.$i.'"';
-		if($i == $thisMinute) {
+		if ($i == $thisMinute) {
 			echo ' selected="selected"';
 		}
 		echo '>'.$i.'</option>';
@@ -1773,14 +1783,12 @@ function posting_time($time='') {
 	return;
 }
 
-
-
 //BUTTONS
 function buttons(){
-   	echo '<div class="clearer"></div>
+	echo '<div class="clearer"></div>
 	<p>'.l('formatting').':
 	<br class="clearer" />';
-   	$formatting = array(
+	$formatting = array(
 		'strong' => '',
 		'em' => 'key',
 		'underline' => 'key',
@@ -1788,18 +1796,18 @@ function buttons(){
 		'p' => '',
 		'br' => ''
 	);
-   	foreach ($formatting as $key => $var) {
-      	$css = $var == 'key' ? $key :'buttons';
-      	echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\')" value="'.
+	foreach ($formatting as $key => $var) {
+		$css = $var == 'key' ? $key :'buttons';
+		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\')" value="'.
 		l($key.'_value').'" />';
 	}
-   	echo '</p><br class="clearer" /><p>'.l('insert').': <br class="clearer" />';
-   	$insert = array('img', 'link', 'include', 'func','intro');
-   	foreach ($insert as $key) {
-      	echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="buttons" onclick="tag(\''.
+	echo '</p><br class="clearer" /><p>'.l('insert').': <br class="clearer" />';
+	$insert = array('img', 'link', 'include', 'func','intro');
+	foreach ($insert as $key) {
+		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="buttons" onclick="tag(\''.
 		$key.'\')" value="'.l($key.'_value').'" />';
 	}
-   	echo '<br class="clearer" /></p>';
+	echo '<br class="clearer" /></p>';
 }
 
 // PREPARING ARTICLE FOR XML
@@ -1820,17 +1828,17 @@ function entity($item) {
 //FILE INCLUSION
 function file_include($text, $shorten) {
 	$fulltext = substr($text, 0, $shorten);
-   if(substr_count ($fulltext, '&')>0){$fulltext = str_replace('&', '&amp;', str_replace('&amp;', '&', $fulltext));}
+	if (substr_count ($fulltext, '&')>0){$fulltext = str_replace('&', '&amp;', str_replace('&amp;', '&', $fulltext));}
 	if ($shorten < 9999000 && preg_match('<p>',$fulltext)) {
 		if (substr_count ($fulltext, '<p>') > substr_count ($fulltext, '</p>')) {
 			$fulltext .='</p>';
 		}
 	}
-    $ins = strpos($fulltext, '[/func]');
-    if ($ins > 0) {
-       	$text = str_replace('[func]', '|&|', $fulltext);
-       	$text = str_replace('[/func]', '|&|', $text);
-       	$text = explode('|&|', $text);
+	$ins = strpos($fulltext, '[/func]');
+	if ($ins > 0) {
+		$text = str_replace('[func]', '|&|', $fulltext);
+		$text = str_replace('[/func]', '|&|', $text);
+		$text = explode('|&|', $text);
 		$num = count($text) - 1;
 		$i = 1;
 		while ($i <= $num) {
@@ -1844,7 +1852,7 @@ function file_include($text, $shorten) {
 			$i = $i + 2;
 		}
 		$fulltext = implode($text);
-    }
+	}
 	$inc = strpos($fulltext, '[/include]');
 	if ($inc > 0) {
 		$text = str_replace('[include]', '|&|', $fulltext);
@@ -1874,32 +1882,32 @@ function file_include($text, $shorten) {
 
 // BREAK TO NEW LINE
 function br2nl($text){
-    $text = str_replace('\r\n','',str_replace("<br />","\n",preg_replace('/<br\\\\s*?\\/??>/i', "\\n", $text)));
-    return $text;
+	$text = str_replace('\r\n','',str_replace("<br />","\n",preg_replace('/<br\\\\s*?\\/??>/i', "\\n", $text)));
+	return $text;
 }
 
 // SEND EMAIL
 function send_email($send_array) {
 	if (function_exists('mail')) {
 		foreach ($send_array as $var => $value) {$$var = $value;}
-	   	$body = isset($status) ? $status."\n" : '';
-	   	if (isset($message)) {
-	 		$text = l('message').': '."\n".br2nl($message)."\n";
-	   	}
-	   	if (isset($comment)) {
-	   		$text = l('comment').': '."\n".br2nl($comment)."\n";
-	   	}
-	   	$header = "MIME-Version: 1.0\n";
-	   	$header .= "Content-type: text/plain; charset=".s('charset')."\n";
-	   	$header .= "From: $name <$email>\r\nReply-To: $name <$email>\r\nReturn-Path: <$email>\r\n";
-	   	$body .= isset($name) ? l('name').': '.$name."\n" : '';
-	   	$body .= isset($email) ? l('email').': '.$email."\n" : '';
-	   	$body .= isset($url) && $url!='' ? l('url').': '.$url."\n\n" : '';
-	   	$body .= $text."\n";
-	   	$status = mail($to, $subject, $body, $header);
-	   	if ($status != false) {echo notification(0, l('contact_sent'), 'home'); return true;}
-	   	echo notification(1, l('contact_not_sent'), 'home');
-	   	return false;
+		$body = isset($status) ? $status."\n" : '';
+		if (isset($message)) {
+			$text = l('message').': '."\n".br2nl($message)."\n";
+		}
+		if (isset($comment)) {
+			$text = l('comment').': '."\n".br2nl($comment)."\n";
+		}
+		$header = "MIME-Version: 1.0\n";
+		$header .= "Content-type: text/plain; charset=".s('charset')."\n";
+		$header .= "From: $name <$email>\r\nReply-To: $name <$email>\r\nReturn-Path: <$email>\r\n";
+		$body .= isset($name) ? l('name').': '.$name."\n" : '';
+		$body .= isset($email) ? l('email').': '.$email."\n" : '';
+		$body .= isset($url) && $url!='' ? l('url').': '.$url."\n\n" : '';
+		$body .= $text."\n";
+		$status = mail($to, $subject, $body, $header);
+		if ($status != false) {echo notification(0, l('contact_sent'), 'home'); return true;}
+		echo notification(1, l('contact_not_sent'), 'home');
+		return false;
 	} else {
 		$message = l('contact_not_sent').'<p>'.l('mail_nexists').'</p>';
 		echo notification(1, $message, '');
@@ -1921,8 +1929,8 @@ function cleanSEF($string) {
 
 // CLEAN CHECK SEF
 function cleancheckSEF($string) {
-    $ret = !preg_match('/^[a-z0-9-_]+$/i', $string) ? 'notok' : 'ok';
-    return $ret;
+	$ret = !preg_match('/^[a-z0-9-_]+$/i', $string) ? 'notok' : 'ok';
+	return $ret;
 }
 
 // CENTER
@@ -1954,7 +1962,8 @@ function center() {
 			case 'archive'	: archive(); break;
 			case 'sitemap'	: sitemap(); break;
 			case 'contact'	: contact(); break;
-			case 'login'	: login(); break;
+			case 'login'	: login(); 	 break;
+			case 'searching': searchform2(); break;
 			case '404'		: show_404(); break;
 			default :
 				if (_ADMIN) {

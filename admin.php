@@ -10,67 +10,67 @@ if (!_ADMIN) {echo( notification(1,l('error_not_logged_in'),'login')); set_error
 function administration() {
 	foreach ($_POST as $key) {unset($_POST[$key]);}
 	echo '<div class="adminpanel">';
-	    echo '<p class="admintitle"><a href="http://snewscms.com/" title="sNews CMS">sNews</a> '.l('administration').'</p>';
-	    echo '<p>'.l('categories').': <a href="'._SITE.'admin_category/">'.l('add_new').'</a>';
-	    $link = ' '.l('divider').' <a href="'._SITE;
-	    $catnum = stats('categories', '');
-	    if ($catnum > 0) {echo $link.'snews_categories/">'.l('view').'</a>';}
-	    echo '</p><p>'.l('articles').': ';
-	    $art_new = $catnum > 0 ? '<a href="'._SITE.'article_new/">'.l('add_new').'</a>' : l('create_cat');
-	    echo $art_new;
-	    if (stats('articles','1') > 0) {
+		echo '<p class="admintitle"><a href="http://snewscms.com/" title="sNews CMS">sNews</a> '.l('administration').'</p>';
+		echo '<p>'.l('categories').': <a href="'._SITE.'admin_category/">'.l('add_new').'</a>';
+		$link = ' '.l('divider').' <a href="'._SITE;
+		$catnum = stats('categories', '');
+		if ($catnum > 0) {echo $link.'snews_categories/">'.l('view').'</a>';}
+		echo '</p><p>'.l('articles').': ';
+		$art_new = $catnum > 0 ? '<a href="'._SITE.'article_new/">'.l('add_new').'</a>' : l('create_cat');
+		echo $art_new;
+		if (stats('articles','1') > 0) {
 			echo $link.'snews_articles/">'.l('view').'</a>';
-	    }
-	    echo '</p><p>'.l('pages').': <a href="'._SITE.'page_new/">'.l('add_new').'</a>';
-	    if (stats('articles','3') > 0) {
+		}
+		echo '</p><p>'.l('pages').': <a href="'._SITE.'page_new/">'.l('add_new').'</a>';
+		if (stats('articles','3') > 0) {
 			echo $link.'snews_pages/">'.l('view').'</a>';
-	    }
-	    echo '</p>';
-	    if (s('enable_extras') == 'YES') {
-	        echo '<p class="admintitle">'.l('extra_contents').'</p>';
+		}
+		echo '</p>';
+		if (s('enable_extras') == 'YES') {
+			echo '<p class="admintitle">'.l('extra_contents').'</p>';
 			echo '<p>'.l('groupings').': <a href="'._SITE.'admin_groupings/">'.l('add_new').'</a>';
 			if (stats('extras','') > 0) {
-			    echo $link.'groupings/">'.l('view').'</a>';
+				echo $link.'groupings/">'.l('view').'</a>';
 			}
 			echo '</p>';
-	    }
-	    echo '<p>'.l('extra_contents').': <a href="'._SITE.'extra_new/">'.l('add_new').'</a>';
-	    if (stats('articles','2') > 0) {
+		}
+		echo '<p>'.l('extra_contents').': <a href="'._SITE.'extra_new/">'.l('add_new').'</a>';
+		if (stats('articles','2') > 0) {
 			echo $link.'extra_contents/">'.l('view').'</a>';
-	    }
-	    echo '</p>';
-	    # ADDONS
-	    echo '<p>'.l('admin_addons').': ';
-	    if (empty(readAddons())) {echo l('none');}
-	    else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
+		}
 		echo '</p>';
-	    echo '</div>';
-	    $query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';
-	    $unapproved = stats('comments', '', 'approved != \'True\'');
-	    if ($unapproved > 0) {
+		# ADDONS
+		echo '<p>'.l('admin_addons').': ';
+		if (empty(readAddons())) {echo l('none');}
+		else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
+		echo '</p>';
+		echo '</div>';
+		$query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';
+		$unapproved = stats('comments', '', 'approved != \'True\'');
+		if ($unapproved > 0) {
 			echo '<div class="adminpanel"><p class="admintitle">'.l('comments').'</p>';
 			echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('unapproved').'">
 				'.$unapproved.' '.l('wait_approval').'</a></p>';
 			echo '<div id="sub1" class="innerpanel" style="display: none;">';
 			if ($result = db() -> query($query)) {
 				while ($r = dbfetch($result)) {
-				    $articleTITLE = retrieve('title', 'articles', 'id', $r['articleid']);
-				    echo '<p class="spacelink">'.$r['name'].' (<strong>'.$articleTITLE.'</strong>) '.l('divider').'
+					$articleTITLE = retrieve('title', 'articles', 'id', $r['articleid']);
+					echo '<p class="spacelink">'.$r['name'].' (<strong>'.$articleTITLE.'</strong>) '.l('divider').'
 					<a href="'._SITE.'?action=editcomment&amp;commentid='.$r['id'].'">'.l('edit').'</a></p>';
 				}
 			} echo '</div></div>';
-	    }
-	    echo '<div class="message"><p class="admintitle">'.l('site_settings').'</p>';
-	    echo '<p><a href="'._SITE.'snews_settings/">'.l('settings').'</a>&nbsp;|&nbsp;
+		}
+		echo '<div class="message"><p class="admintitle">'.l('site_settings').'</p>';
+		echo '<p><a href="'._SITE.'snews_settings/">'.l('settings').'</a>&nbsp;|&nbsp;
 			<a href="'._SITE.'snews_files/">'.l('files').'</a></p></div>';
-	    echo '<div class="message"><p class="admintitle">'.l('login_status').'</p>';
-	    echo '<p><a href="'._SITE.'logout/">'.l('logout').'</a></p>';
+		echo '<div class="message"><p class="admintitle">'.l('login_status').'</p>';
+		echo '<p><a href="'._SITE.'logout/">'.l('logout').'</a></p>';
 	echo '</div>';
 }
 
 function showAdmAddons() {
 	echo '<div class="adminpanel">';
-    echo '<p class="admintitle">'.l('admin_addons').'</p>';
+	echo '<p class="admintitle">'.l('admin_addons').'</p>';
 	$funcs = readAddons();
 	if (!empty($funcs)) {
 		$list = explode(',', $funcs);
@@ -86,31 +86,31 @@ function showAdmAddons() {
 function settings() {
 	echo '<div class="adminpanel"><p class="admintitle">'.l('settings_title').'</p>';
 	echo html_input('form','','','','','','','','','','','','post', '?action=process&amp;task=save_settings','');
-	    # Expandable Settings
-	    echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
-	    echo '<div id="sub1" style="display: none;">';
+		# Expandable Settings
+		echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
+		echo '<div id="sub1" style="display: none;">';
 		echo html_input('text', 'website_title', 'webtitle', s('website_title'), l('a_website_title'),'','','','','','','','','','');
 		echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '', 
 			'onkeypress="return SEFrestrict(event);"','','','','','','','','');
 		echo html_input('text', 'website_description', 'wdesc', s('website_description'), l('a_description'),'','','','','','','','','','');
 		echo html_input('text', 'website_keywords', 'wkey', s('website_keywords'), l('a_keywords'),'','','','','','','','','','');
-	    echo '</div>';
+		echo '</div>';
 		# Expandable Contact
-	    echo '<p><a onclick="toggle(\'sub2\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_contact_info').'">'.l('a_contact_info').'</a></p>';
-	    echo '<div id="sub2" style="display: none;">';
+		echo '<p><a onclick="toggle(\'sub2\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_contact_info').'">'.l('a_contact_info').'</a></p>';
+		echo '<div id="sub2" style="display: none;">';
 		echo html_input('text', 'website_email', 'we', s('website_email'), l('a_website_email'),'','','','','','','','','','');
 		echo html_input('text', 'contact_subject', 'cs', s('contact_subject'), l('a_contact_subject'),'','','','','','','','','','');
-	    echo '</div>';
+		echo '</div>';
 		# Expandable Time & Locale
-	    echo '<p><a onclick="toggle(\'sub3\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_time_settings').'">'.l('a_time_settings').'</a></p>';
-	    echo '<div id="sub3" style="display: none;">';
+		echo '<p><a onclick="toggle(\'sub3\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('a_time_settings').'">'.l('a_time_settings').'</a></p>';
+		echo '<div id="sub3" style="display: none;">';
 		echo html_input('text', 'language', 'lang', s('language') == '' ? 'EN' : s('language'), l('a_language'),'','','','','','','','','','');
 		echo html_input('text', 'charset', 'char', s('charset') == '' ? 'UTF-8' : s('charset'), l('charset'),'','','','','','','','','','');
 		echo html_input('text', 'date_format', 'dt', s('date_format'), l('a_date_format'),'','','','','','','','','','');
-	    echo '</div>';
+		echo '</div>';
 		# Expandable Contents
-	    echo '<p><a onclick="toggle(\'sub4\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('contents').'">'.l('contents').'</a></p>';
-	    echo '<div id="sub4" style="display: none;">';
+		echo '<p><a onclick="toggle(\'sub4\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('contents').'">'.l('contents').'</a></p>';
+		echo '<div id="sub4" style="display: none;">';
 		echo html_input('text', 'article_limit', 'artl', s('article_limit'), l('a_article_limit'),'','','','','','','','','','');
 		echo html_input('text', 'rss_limit', 'rssl', s('rss_limit'), l('a_rss_limit'),'','','','','','','','','','');
 		echo '<p><label for="dp">'.l('a_display_page').':</label><br /> <select name="display_page" id="dp">';
@@ -119,8 +119,8 @@ function settings() {
 		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				echo '<option value="'.$r['id'].'"';
-			    if (s('display_page') == $r['id']) { echo ' selected="selected"'; }
-			    echo '>'.$r['title'].'</option>';
+				if (s('display_page') == $r['id']) {echo ' selected="selected"';}
+				echo '>'.$r['title'].'</option>';
 			}
 		}
 		echo '</select></p>';
@@ -134,10 +134,10 @@ function settings() {
 		echo html_input('text','file_ext','fileext',s('file_extensions'),l('file_extensions'),'','','','','','','','','','');
 		echo html_input('text','allowed_file','all_file',s('allowed_files'),l('allowed_files'),'','','','','','','','','','');
 		echo html_input('text','allowed_img','all_img',s('allowed_images'),l('allowed_images'),'','','','','','','','','','');
-	    echo '</div>';              
+		echo '</div>';
 		# Expandable Comments
-	    echo '<p><a onclick="toggle(\'sub5\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('comments').'">'.l('comments').'</a></p>';
-	    echo '<div id="sub5" style="display: none;">';
+		echo '<p><a onclick="toggle(\'sub5\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('comments').'">'.l('comments').'</a></p>';
+		echo '<div id="sub5" style="display: none;">';
 		echo html_input('checkbox','approve_comments','ac','',l('a_approve_comments'),'','','','',(s('approve_comments') == 'on' ? 'ok' : ''),'','','','','');
 		echo html_input('text','comment_repost_timer','crt',s('comment_repost_timer'),l('comment_repost_timer'),'','','','','','','','','','');
 		echo html_input('checkbox','mail_on_comments','mc','',l('a_mail_on_comments'),'','','','',(s('mail_on_comments') == 'on' ? 'ok' : ''),'','','','','');
@@ -153,20 +153,20 @@ function settings() {
 			(s('word_filter_enable') == 'on' ? 'ok' : ''),'','','','','');
 		echo html_input('text','word_filter_file','wff',s('word_filter_file'),l('a_word_filter_file'),'','','','','','','','','','');
 		echo html_input('text','word_filter_change','wfc',s('word_filter_change'),l('a_word_filter_change'),'','','','','','','','','','');
-	    echo '</div>';
-	    echo '<p>';
+		echo '</div>';
+		echo '<p>';
 		# Save Settings button
 		echo html_input('hidden', 'action', 'action', 'process', '', '', '', '', '', '', '', '', '', '', '');
-	    echo html_input('hidden', 'task', 'task', 'save_settings','','','','','','','','','','','');
-	    echo html_input('submit', 'save', 'save', l('save'),'','button','','','','','','','','','');
-	    echo '</p>';
+		echo html_input('hidden', 'task', 'task', 'save_settings','','','','','','','','','','','');
+		echo html_input('submit', 'save', 'save', l('save'),'','button','','','','','','','','','');
+		echo '</p>';
 	echo '</form>';
 	echo '</div>';
 	# Change Password panel
 	echo html_input('form','','','','','','','','','','','','post','?action=process&amp;task=changeup','');
 	echo '<div class="adminpanel">';
-	    echo '<p><a onclick="toggle(\'sub6\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('change_up').'">'.l('change_up').'</a>';
-	    echo '<div id="sub6" style="display: none;">';
+		echo '<p><a onclick="toggle(\'sub6\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('change_up').'">'.l('change_up').'</a>';
+		echo '<div id="sub6" style="display: none;">';
 		echo '<p>'.l('login_limit').'</p>';
 		echo html_input('text','uname','uname','',l('a_username'),'','','','','','','','','','');
 		echo html_input('password','pass1','pass1','',l('a_password'),'','','','','','','','','','');
@@ -175,17 +175,17 @@ function settings() {
 		# Save Password Change button
 		echo html_input('hidden','task','task_login','changeup','','','','','','','','','','','');
 		echo html_input('submit','submit_pass','submit_pass',l('save'),'','button','','','','','','','','','');
-	    echo '</p></div>';
+		echo '</p></div>';
 	echo '</div>';
 	echo '</form>';
 }
 
 // CATEGORIES - ADMIN LIST
 function admin_categories() {
-    $add = ' - <a href="'._SITE.'admin_category/">'.l('add_new').'</a>';
-    $link = '?action=admin_category';
-    $tab = 1;
-    echo '<div class="adminpanel">';
+	$add = ' - <a href="'._SITE.'admin_category/">'.l('add_new').'</a>';
+	$link = '?action=admin_category';
+	$tab = 1;
+	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.l('categories').$add.'</p>';
 	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', '?action=process&amp;task=reorder', '');
 	echo '<p><input type="hidden" name="order" id="order" value="snews_categories" /></p>';
@@ -201,7 +201,6 @@ function admin_categories() {
 					'.l('divider').' <a href="'._SITE.$link.'&amp;id='.$r['id'].'" title="'.$r['description'].'">'.l('edit').'</a> ';
 				echo $r['published'] != 'YES' ? ' '.l('divider').' ['.l('status').' '.l('unpublished').']' : '';
 				echo ' '.l('divider').' <a href="'._SITE.$link.'&amp;sub_id='.$r['id'].'" title="'.$r['description'].'">'.l('add_subcategory').'</a></p>';
-				
 				$subquery = 'SELECT id,name,description,published,catorder FROM '._PRE.'categories'.' WHERE subcat = '.$r['id'].' ORDER BY catorder,id ASC';
 				if ($res = db() -> query($subquery)) { $tab2 = 1;
 					while ($sub = dbfetch($res)) {
@@ -212,14 +211,14 @@ function admin_categories() {
 					    echo '</p>'; $tab2++;
 					}
 				} $tab++;
-		    }
+			}
 		}
 	}
 	echo html_input('hidden', 'action', 'process', 'process','','','','','','','','','','','');
 	echo html_input('hidden', 'task', 'task', 'reorder','','','','','','','','','','','');
 	echo '<p>'.html_input('submit', 'reorder', 'reorder', l('order_content'), '', 'button', '', '', '', '', '', '', '', '', '');
 	echo '</p></form>';
-    echo '</div>';
+	echo '</div>';
 }
 
 // CATEGORIES FORM
@@ -277,9 +276,9 @@ function form_categories($subcat = 'cat') {
 	if (!empty($sub_cat)) {
 		echo html_input('hidden', 'subcat', 'subcat', $sub_cat, '', '', '', '', '', '', '', '', '', '', '');
 	}
-   	echo html_input('hidden', 'catorder', 'catorder', $catorder, '', '', '', '', '', '', '', '', '', '', '');
-   	echo html_input('hidden', 'action', 'process', 'process','','','','','','','','','','','');
-   	echo html_input('hidden', 'task', 'task', 'admin_category', '', '', '', '', '', '', '', '', '', '', '');
+	echo html_input('hidden', 'catorder', 'catorder', $catorder, '', '', '', '', '', '', '', '', '', '', '');
+	echo html_input('hidden', 'action', 'process', 'process','','','','','','','','','','','');
+	echo html_input('hidden', 'task', 'task', 'admin_category', '', '', '', '', '', '', '', '', '', '', '');
 	echo html_input('submit', $frm_task, $frm_task, $frm_submit, '', 'button', '', '', '', '', '', '', '', '', '');
 	if (!empty($categoryid)) {
 		echo '&nbsp;&nbsp;';
@@ -366,11 +365,11 @@ function form_groupings() {
 
 // ADMIN GROUPINGS
 function admin_groupings() {
-    if (s('enable_extras') == 'YES') {
+	if (s('enable_extras') == 'YES') {
 		if (stats('extras', '') > 0) {
-		    $add = ' - <a href="'._SITE.'admin_groupings/" title="'.l('add_new').'">'.l('add_new').'</a>';
+			$add = ' - <a href="'._SITE.'admin_groupings/" title="'.l('add_new').'">'.l('add_new').'</a>';
 		} else {
-		    $add = '';
+			$add = '';
 		}
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle">'.l('groupings').$add.'</p>';
@@ -499,31 +498,31 @@ function form_articles($contents) {
 		    echo '<p class="admintitle"><a onclick="toggle(\'edit_article\')" style="cursor: pointer;" title="'.$frm_fieldset.'">'.$frm_fieldset.'</a></p>';
 		    echo '<div id="edit_article" style="display: none;">';
 		} else {
-		     echo '<p class="admintitle">'.$frm_fieldset.'</p>';
+			echo '<p class="admintitle">'.$frm_fieldset.'</p>';
 		}
 		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 
 			'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 		if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
-		    echo '<div style="display: none;">';
-		    echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
-		    echo '</div>';
+			echo '<div style="display: none;">';
+			echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
+			echo '</div>';
 		} else {
-		    echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
+			echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
 		}
 		echo html_input('textarea', 'text', 'txt', $frm_text, l('text'), '', '', '', '', '', '2', '100', '', '', '');
 		buttons();
 		if ($contents != 'page_new' && (empty($edit_option) || $edit_option != 3)) {
-		    echo '<p><label for="cat">';
+			echo '<p><label for="cat">';
 			$article_category = isset($article_category) ? $article_category : -1;
-		    echo ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) ?  l('appear_category') : l('category');
-		    if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
+			echo ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) ?  l('appear_category') : l('category');
+			if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
 				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'extra\');">';
 				echo '<option value="-1"'.($article_category == -1 ? ' selected="selected"' : '').'>'.l('all').'</option>';
 				echo '<option value="-3"'.($article_category == -3 ? ' selected="selected"' : '').'>'.l('page_only').'</option>';
-		    } else {echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'snews_articles\');">';}
-		    $category_query = 'SELECT id,name,subcat FROM '._PRE.'categories'.'
+			} else {echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'snews_articles\');">';}
+			$category_query = 'SELECT id,name,subcat FROM '._PRE.'categories'.'
 				WHERE published = \'YES\' AND subcat = 0 ORDER BY catorder,id ASC';
-		    if ($cat_result = db() -> query($category_query)) {
+			if ($cat_result = db() -> query($category_query)) {
 				while ($cat = dbfetch($cat_result)) {
 					echo '<option value="'.$cat['id'].'"';
 					if ($article_category == $cat['id']) {
@@ -707,7 +706,7 @@ function admin_articles($contents) {
 		echo l('see').' ('.$link.'">'.l('all').'</a>) - '.l('filter').' ('.$link.l('year').'">'.l('year').'</a> / ';
 		echo $link.l('month').'">'.l('month').'</a>)</legend>';
 		if ($sqr = db() -> query($query)) {
-		    while ($r = dbfetch($sqr)) {
+			while ($r = dbfetch($sqr)) {
 			 	$ryear = $r['dyear'];
 				echo ($subcatSEF == l('month') ? '<span style="color: #0000FF">'.$r['dyear'].'</span>' :
 					$link.l('year').'='.$r['dyear'].'">'.$r['dyear'].'</a> ');
@@ -719,26 +718,25 @@ function admin_articles($contents) {
 						while ($rx = dbfetch($rqx)) {
 							$m = $rx['dmonth'] - 1;
 							echo ' '.l('divider').' '.$link.l('year').'='.$r['dyear'].';'.l('month').'='.$rx['dmonth'].'">'.$month_names[$m].'</a> ';
-					    }	
+						}	
 					}
-				    
-				    
+				
 				}
 				echo '<br />';
-		    }
+			}
 		}
 		echo '</div>';
 		return;
 	}
 	$txtYear = l('year');
 	$txtMonth = l('month');
-  	if (substr($subcatSEF, 0, strlen($txtYear)) == $txtYear) {
-  		$year = substr($subcatSEF, strlen($txtYear)+1, 4);
-  	}
-  	$find = strpos($subcatSEF,l('month'));
-  	if ($find > 0) {
-  		$month = substr($subcatSEF, $find + strlen($txtMonth) + 1, 2);
-  	}
+	if (substr($subcatSEF, 0, strlen($txtYear)) == $txtYear) {
+		$year = substr($subcatSEF, strlen($txtYear)+1, 4);
+	}
+	$find = strpos($subcatSEF,l('month'));
+	if ($find > 0) {
+		$month = substr($subcatSEF, $find + strlen($txtMonth) + 1, 2);
+	}
 	$filterquery = !empty($year) ? "AND YEAR(date)='".$year."' " : '';
 	$filterquery .= !empty($month) ? "AND MONTH(date)='".$month."' " : '';
 	$no_content = !empty($filterquery) ? '<p>'.l('no_content_for_filter').'</p>' : '<p>'.l('article_not_exist').'</p>';
@@ -749,22 +747,22 @@ function admin_articles($contents) {
 	if ($contents == 'extra_view') {
 		$cat_array_irregular = array('-1','-3');
 	 	foreach ($cat_array_irregular as $cat_value) {
-	 	    $legend_label = $cat_value == -3 ? l('pages') : l('all');
-	 	    $page_only_xsql = $cat_value == -3 ? 'page_extra ASC,' : '';
-	 	    $sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page, page_extra
+			$legend_label = $cat_value == -3 ? l('pages') : l('all');
+			$page_only_xsql = $cat_value == -3 ? 'page_extra ASC,' : '';
+			$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page, page_extra
 	 			FROM "._PRE.'articles'."
 	 			WHERE category = $cat_value
 	 				AND position = $p $filterquery
 	 			ORDER BY $page_only_xsql artorder ASC, date DESC ";
-	 	    $num_rows = stats('articles', '', 'category = '.$cat_value.' AND position = '.$p.' '.$filterquery);
-	 	    $tab = 1;
-	 	    echo '<div class="innerpanel">';
-		    echo '<p class="admintitle">'.$legend_label.'</p>';
+			$num_rows = stats('articles', '', 'category = '.$cat_value.' AND position = '.$p.' '.$filterquery);
+			$tab = 1;
+			echo '<div class="innerpanel">';
+			echo '<p class="admintitle">'.$legend_label.'</p>';
 			if ($num_rows == 0) {
-			    echo $no_content;
+				echo $no_content;
 			} else {
-			    $lbl_filter = -5;
-			    if ($result = db() -> query($sql)) {
+				$lbl_filter = -5;
+				if ($result = db() -> query($sql)) {
 					while ($r = dbfetch($result)) {
 					    if ($cat_value == -3) {
 							if ($lbl_filter != $r['page_extra']) {
@@ -793,11 +791,11 @@ function admin_articles($contents) {
 					}
 				}
 			}
-		    echo '</div>';
+			echo '</div>';
 		}
 	}
- 	if ($contents == 'article_view' || $contents == 'extra_view') {
- 	 	$item = $contents == 'extra_view' ? 'extra_contents': 'snews_articles';
+	if ($contents == 'article_view' || $contents == 'extra_view') {
+	 	$item = $contents == 'extra_view' ? 'extra_contents': 'snews_articles';
 		$num = stats('categories', '', 'subcat = 0');
 		if ($num == 0) {
 			echo '<p>'.l('no_categories').'</p>';
@@ -809,7 +807,7 @@ function admin_articles($contents) {
 					AND position = $p $subquery
 					ORDER BY artorder ASC, date DESC ";
 			if ($num_rows > 0) {
-			    echo '<div class="innerpanel">';
+				echo '<div class="innerpanel">';
 				echo '<p class="admintitle">'.l('no_category_set').'</p>';
 				if ($res = db() -> query($sql)) {
 					while ($O = dbfetch($res)) {
@@ -819,9 +817,9 @@ function admin_articles($contents) {
 							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$O['id'].'">'.l('edit').'</a> ';
 						}
 						$visiblity = $O['visible'] == 'YES' ?
-	               	 		'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
-	               	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
-	               			echo ' '.l('divider').' '.$visiblity;
+							'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
+							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
+							echo ' '.l('divider').' '.$visiblity;
 						if ($O['published'] == 2) {
 							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
 						}
@@ -832,12 +830,12 @@ function admin_articles($contents) {
 						$tab++;
 					}
 				}
-			    echo '</div>';
+				echo '</div>';
 			}
 			$cat_query = "SELECT id, name, seftitle FROM "._PRE.'categories'." WHERE subcat = 0";
 			if ($cat_res = db() -> query($cat_query)) {
 				while ($row = dbfetch($cat_res)) {
-				    echo '<div class="adminpanel">';
+					echo '<div class="adminpanel">';
 					echo '<p class="admintitle">'.$row['name'].'</p>';
 					$sql1 = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
 						FROM "._PRE.'articles'."
@@ -858,9 +856,9 @@ function admin_articles($contents) {
 								echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
 							}
 							$visiblity = $r['visible'] == 'YES' ?
-		               	 		'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-		               	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-		               			echo ' '.l('divider').' '.$visiblity;
+								'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+								l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
+							echo ' '.l('divider').' '.$visiblity;
 							if ($r['published'] == 2) {
 								echo  l('divider').' ['.l('status').' '.l('future_posting').']';
 							}
@@ -896,10 +894,10 @@ function admin_articles($contents) {
 										<a href="'._SITE.$catSEF.'/'.$ca_r2['seftitle'].'/">'.l('view').'</a> ';
 									echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$ca_r2['id'].'">'.l('edit').'</a> ';
 									$visiblity2 = $ca_r2['visible'] == 'YES' ?
-						       	 		'<a href="'._SITE.'?action=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
-			            	   	 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
-			            	   	 			'.l('show').'</a> )';
-			       					echo ' '.l('divider').' '.$visiblity2;
+										'<a href="'._SITE.'?action=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
+									l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
+										'.l('show').'</a> )';
+									echo ' '.l('divider').' '.$visiblity2;
 									if ($ca_r2['published'] == 2) {
 										echo  l('divider').' ['.l('status').' '.l('future_posting').']';
 									}
@@ -913,7 +911,7 @@ function admin_articles($contents) {
 							$tab2++;
 						}
 					}
-				    echo '</div>';
+					echo '</div>';
 				}
 			}
 		}
@@ -936,8 +934,8 @@ function admin_articles($contents) {
 					echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
 				}
 				$visiblity = $r['visible'] == 'YES' ?
-	                '<a href="'._SITE.'?action=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-	                l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
+					'<a href="'._SITE.'?action=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
+					l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
 				echo ' '.l('divider').' '.$visiblity;
 				if ($r['published'] == 2) {
 					echo  l('divider').' ['.l('status').' '.l('future_posting').']';
@@ -978,10 +976,10 @@ function edit_comment() {
 
 // FILES
 function files() {
- 	$upload_file = isset($_POST['upload']) ? $_POST['upload'] : null;
- 	$ip = (isset($_POST['ip']) && $_POST['ip'] == $_SERVER['REMOTE_ADDR']) ? $_POST['ip'] : null;
- 	$time = (isset($_POST['time']) && (time() - $_POST['time']) > 4) ? $_POST['time'] : null;
- 	if ($ip && $time && $upload_file && _ADMIN) {
+	$upload_file = isset($_POST['upload']) ? $_POST['upload'] : null;
+	$ip = (isset($_POST['ip']) && $_POST['ip'] == $_SERVER['REMOTE_ADDR']) ? $_POST['ip'] : null;
+	$time = (isset($_POST['time']) && (time() - $_POST['time']) > 4) ? $_POST['time'] : null;
+	if ($ip && $time && $upload_file && _ADMIN) {
 		$ignore = explode(',', l('ignored_items'));
 		$file_types = explode(',', s('allowed_files'));
 		$image_types = explode(',', s('allowed_images'));
@@ -1126,32 +1124,32 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 
 // HIDE/SHOW
 function visibility($mode) {
-    $id = clean(cleanXSS($_GET['id']));
-    $item = clean(cleanXSS($_GET['item']));
-    $back = isset($_GET['back']) ? $_GET['back'] : '';
-    $no_yes = $mode == 'hide' ? 'NO' : 'YES';
-    switch ($item) {
-        case 'snews_articles':
-        	$order = 'artorder';
-        	$link = empty($back) ? 'snews_articles' : $back;
-        	break;
-        case 'extra_contents':
-        	$order = 'artorder';
-        	$link = empty($back) ? 'extra_contents' : $back;
-        	break;
-        case 'snews_pages':
-        	$order = 'artorder';
-        	$link = empty($back) ? 'snews_pages' : $back;
-        	break;
-    }
-    $query = "UPDATE "._PRE."articles SET visible = ?  WHERE id = ? ";
-    if ($result = db() -> prepare($query)) {
-    	$result = dbbind($result, array($no_yes, $id), 'si'); 
+	$id = clean(cleanXSS($_GET['id']));
+	$item = clean(cleanXSS($_GET['item']));
+	$back = isset($_GET['back']) ? $_GET['back'] : '';
+	$no_yes = $mode == 'hide' ? 'NO' : 'YES';
+	switch ($item) {
+		case 'snews_articles':
+			$order = 'artorder';
+			$link = empty($back) ? 'snews_articles' : $back;
+			break;
+		case 'extra_contents':
+			$order = 'artorder';
+			$link = empty($back) ? 'extra_contents' : $back;
+			break;
+		case 'snews_pages':
+			$order = 'artorder';
+			$link = empty($back) ? 'snews_pages' : $back;
+			break;
+	}
+	$query = "UPDATE "._PRE."articles SET visible = ?  WHERE id = ? ";
+	if ($result = db() -> prepare($query)) {
+		$result = dbbind($result, array($no_yes, $id), 'si'); 
 		$result = dbfetch($result, true);
 	} echo notification(0, l('please_wait'));
 	$link = $link != 'home' ? $link : '';
-    echo '<meta http-equiv="refresh" content="1; url='._SITE.$link.'/">';
- }
+	echo '<meta http-equiv="refresh" content="1; url='._SITE.$link.'/">';
+}
 
 /*** PROCESSING (CATEGORIES, CONTENTS, COMMENTS) ***/
 function processing() {
@@ -1159,45 +1157,45 @@ function processing() {
 		echo (notification(1,l('error_not_logged_in'),'home'));
 	} else {
 	$action = clean(cleanXSS($_GET['action']));
-  	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) :  0;
-  	$commentid = isset($_POST['commentid']) ? $_POST['commentid'] : 0;
-  	$approved = isset($_POST['approved']) && $_POST['approved'] == 'on' ? 'True' : '';
-  	$name = isset($_POST['name']) ? clean(entity($_POST['name'])) : '';
-  	$category = !empty($_POST['define_category']) ? $_POST['define_category'] : 0;
-  	$subcat = isset($_POST['subcat']) ? $_POST['subcat'] : 0;
-  	$page = isset($_POST['define_page']) ? $_POST['define_page'] : '';
-  	$def_extra = isset($_POST['define_extra']) ? $_POST['define_extra'] : '';
-  	$description = isset($_POST['description']) ? clean(entity($_POST['description'])) : '';
-  	$title = isset($_POST['title']) ? clean(entity($_POST['title'])) : '';
-  	$seftitle = isset($_POST['seftitle']) ? $_POST['seftitle'] : '';
+	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) :  0;
+	$commentid = isset($_POST['commentid']) ? $_POST['commentid'] : 0;
+	$approved = isset($_POST['approved']) && $_POST['approved'] == 'on' ? 'True' : '';
+	$name = isset($_POST['name']) ? clean(entity($_POST['name'])) : '';
+	$category = !empty($_POST['define_category']) ? $_POST['define_category'] : 0;
+	$subcat = isset($_POST['subcat']) ? $_POST['subcat'] : 0;
+	$page = isset($_POST['define_page']) ? $_POST['define_page'] : '';
+	$def_extra = isset($_POST['define_extra']) ? $_POST['define_extra'] : '';
+	$description = isset($_POST['description']) ? clean(entity($_POST['description'])) : '';
+	$title = isset($_POST['title']) ? clean(entity($_POST['title'])) : '';
+	$seftitle = isset($_POST['seftitle']) ? $_POST['seftitle'] : '';
 	$url = isset($_POST['url']) ? cleanXSS($_POST['url']) : '';
 	$comment = isset($_POST['editedcomment']) ? $_POST['editedcomment'] : '';
 	$text = isset($_POST['text']) ? clean_mysql($_POST['text']) : '';
-  	$date = date('Y-m-d H:i:s');
-  	$description_meta = isset($_POST['description_meta']) ? entity($_POST['description_meta']) : '';
+	$date = date('Y-m-d H:i:s');
+	$description_meta = isset($_POST['description_meta']) ? entity($_POST['description_meta']) : '';
 	$keywords_meta = isset($_POST['keywords_meta']) ? entity($_POST['keywords_meta']) : '';
-  	$display_title = isset($_POST['display_title']) && $_POST['display_title'] == 'on' ? 'YES' : 'NO';
+	$display_title = isset($_POST['display_title']) && $_POST['display_title'] == 'on' ? 'YES' : 'NO';
 	$display_info = isset($_POST['display_info']) && $_POST['display_info'] == 'on' ? 'YES' : 'NO';
-  	$commentable = isset($_POST['commentable']) && $_POST['commentable'] == 'on' ? 'YES' : 'NO';
+	$commentable = isset($_POST['commentable']) && $_POST['commentable'] == 'on' ? 'YES' : 'NO';
 	$freez = isset($_POST['freeze']) && $_POST['freeze'] == 'on' ? 'YES' : 'NO';
-  	if ($freez == 'YES' && $commentable == 'YES') {
-  		$commentable = 'FREEZ';
-  	}
+	if ($freez == 'YES' && $commentable == 'YES') {
+		$commentable = 'FREEZ';
+	}
 	$position = isset($_POST['position']) && $_POST['position']> 0 ? $_POST['position'] : 1;
-  	$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
-  	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
+	$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
+	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
 	$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
 	$publish_category = isset($_POST['publish']) && $_POST['publish'] == 'on' ? 'YES' : 'NO';
-  	$fpost_enabled = false;
-    if (isset($_POST['fposting']) && $_POST['fposting'] == 'on') {
+	$fpost_enabled = false;
+	if (isset($_POST['fposting']) && $_POST['fposting'] == 'on') {
 		$fpost_enabled = true;
 		$date = $_POST['fposting_year'].'-'.$_POST['fposting_month'].'-'.$_POST['fposting_day'].' '.
 		$_POST['fposting_hour'].':'.$_POST['fposting_minute'].':00';
-     	if (date('Y-m-d H:i:s') < $date) $publish_article = 2;
-    }
-    $task = isset($_POST['task']) ? clean(cleanXSS($_POST['task'])) : '';
+		if (date('Y-m-d H:i:s') < $date) $publish_article = 2;
+	}
+	$task = isset($_POST['task']) ? clean(cleanXSS($_POST['task'])) : '';
 	switch ($task) {
- 		case 'save_settings':
+		case 'save_settings':
 	 		if (isset($_POST['save'])) {
 				$website_title = $_POST['website_title'];
 				$home_sef = $_POST['home_sef'];
@@ -1260,10 +1258,10 @@ function processing() {
 					'file_extensions' => $file_ext,
 					'allowed_files' => $allowed_file,
 					'allowed_images' => $allowed_img
-			 );
-		 	while (list($key, $value) = each($ufield)) {
-		 		$sql = "UPDATE "._PRE.'settings'." SET value = ? WHERE name = ?";
-		 		if ($result = db() -> prepare($sql)) {
+			);
+			while (list($key, $value) = each($ufield)) {
+				$sql = "UPDATE "._PRE.'settings'." SET value = ? WHERE name = ?";
+				if ($result = db() -> prepare($sql)) {
 					$result = dbbind($result, array($value, $key), 'ss'); 
 					$r = dbfetch($result, true);
 					unset($result);
@@ -1295,9 +1293,9 @@ function processing() {
 						unset($res2);
 					}
 					echo notification(0,'','administration');
-        		} else {
+				} else {
 					die(notification(2,l('pass_mismatch'),'snews_settings'));
-        		}
+				}
 			}
 		break;
 		case 'admin_groupings':
@@ -1323,7 +1321,7 @@ function processing() {
 					form_groupings();
 					break;
 				default:
-			  		switch (true) {
+					switch (true) {
 						case (isset($_POST['add_groupings'])):
 							$sql1 = "INSERT INTO "._PRE.'extras'."(name, seftitle, description)
 								VALUES(?, ?, ?)";
@@ -1352,7 +1350,7 @@ function processing() {
 								$r = dbfetch($result, true);
 							}
 							break;
-			  		}
+					}
 				echo notification(0,'','groupings');
 			}
 			break;
@@ -1634,7 +1632,7 @@ function processing() {
 			$articleCAT = retrieve('category','articles','id', $articleid);
 			$postCat = cat_rel($articleCAT, 'seftitle');
 			$link = $postCat.'/'.$articleSEF;
-       		delete_item('comments', 'id', $commentid);
+			delete_item('comments', 'id', $commentid);
 			echo notification(0,'', $link);
 			echo '<meta http-equiv="refresh" content="1; url='._SITE.$postCat.'/'.$articleSEF.'/">';
 			break;
