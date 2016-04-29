@@ -1,6 +1,6 @@
 <?php
 /*------------------------------------------------------------------------------
-  sNews Version:	1.8.0
+  sNews Version:	1.8.0 - Official
   CodeName:			REBORN
   Developper: 		Rui Mendes
   Copyright (C):	Solucija.com
@@ -13,9 +13,8 @@ session_start();
 # SECURITY KEYS
 	define('SECURE_ID', '1234');
 
-//error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(E_ALL ^ E_NOTICE);	// 0 - No Error Reporting
-include('report_errors.php');		// FILE TO DEBUG ERRORS FINAL VERSION ERASE FILE AND THIS LINE
+// error_reporting(E_ALL ^ E_NOTICE);
+error_reporting(0);		// 0 - No Error Reporting
 
 // CONFIGURE DATABASE VARIABLES (eBookCMS.com)
 function db_cfg($field) { static $dbcfg;
@@ -27,7 +26,7 @@ function db_cfg($field) { static $dbcfg;
 			'database' => 'snews18',
 			'username' => 'root',
 			'password' => '',
-			'dbpath' => 'snews.db3', // only sqlite
+			'dbpath' => 'snews.db3', // only sqlite PS: For security reasons rename this database and put your filename
 			'prefix' => ''
 		);
 	} return $dbcfg[$field];
