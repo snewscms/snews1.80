@@ -239,6 +239,8 @@ function l($var) { static $lang; global $l;
 		$lang['js_inc'] = 'login,contact'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
 		# DIVIDER CHARACTER
 		$lang['divider'] = '&middot;';
+		# Ignore Pages like "home,archive,contact,sitemap"
+		$lang['ignored_pages'] = '';
 		# used in article pagination links
 		$lang['paginator'] = 'p_';
 		$lang['comment_pages'] = 'c_';
@@ -599,11 +601,19 @@ function subcategories($parent) {
 // DISPLAY PAGES
 function pages() {
 	global $categorySEF;
+	$ignore = explode(',', l('ignored_pages'));
 	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
-	$class = empty($categorySEF) ? ' class="current"' : '';
-	echo '<li><a'.$class.' href="'._SITE.'">'.l('home').'</a></li>';
-	$class = ($categorySEF == 'archive') ? ' class="current"' : '';
-	echo '<li><a'.$class.' href="'._SITE.'archive/">'.l('archive').'</a></li>';
+	# HOME
+	if (!in_array('home', $ignore)) {
+		$class = empty($categorySEF) ? ' class="current"' : '';
+		echo '<li><a'.$class.' href="'._SITE.'">'.l('home').'</a></li>';	
+	}
+	# ARCHIVE
+	if (!in_array('archive', $ignore)) {
+		$class = ($categorySEF == 'archive') ? ' class="current"' : '';
+		echo '<li><a'.$class.' href="'._SITE.'archive/">'.l('archive').'</a></li>';
+	}
+	# PAGES YOU CREATED	
 	$query = "SELECT id, seftitle, title FROM "._PRE.'articles'." WHERE position = 3 $qwr ORDER BY artorder ASC, id";
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
@@ -614,10 +624,16 @@ function pages() {
 			}
 		}
 	}
-	$class = ($categorySEF == 'contact') ? ' class="current"' : '';
-	echo '<li><a'.$class.' href="'._SITE.'contact/">'.l('contact').'</a></li>';
-	$class = ($categorySEF == 'sitemap') ? ' class="current"' : '';
-	echo '<li><a'.$class.' href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
+	# CONTACT
+	if (!in_array('contact', $ignore)) {
+		$class = ($categorySEF == 'contact') ? ' class="current"' : '';
+		echo '<li><a'.$class.' href="'._SITE.'contact/">'.l('contact').'</a></li>';
+	}
+	# SITEMAP
+	if (!in_array('sitemap', $ignore)) {
+		$class = ($categorySEF == 'sitemap') ? ' class="current"' : '';
+		echo '<li><a'.$class.' href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
+	}
 }
 
 // EXTRA CONTENT
