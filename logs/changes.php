@@ -48,3 +48,5 @@ LANGUAGE VARIABLES
 - fix mysql_* (deprecated) for PDO or msqli
 - fix characters, spaces and some variables
 - rewritten function
+- it is possible hide some internal pages like "home,archive,contact,sitemap", find ($lang['ignored_pages']) to do it
+
