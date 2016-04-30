@@ -14,7 +14,7 @@ session_start();
 	define('SECURE_ID', '1234');
 
 // error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(0);		// 0 - No Error Reporting
+error_reporting(0);	// 0 - No Error Reporting
 
 // CONFIGURE DATABASE VARIABLES (eBookCMS.com)
 function db_cfg($field) { static $dbcfg;

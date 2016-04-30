@@ -447,16 +447,18 @@ function form_articles($contents) {
 		$frm_commentable = ($com == 'YES' || $com == 'FREEZ') ? 'ok' : '';
 		$frm_task = 'edit_article';
 		$frm_submit = l('edit_button');
+		$pos = $edit_option;
 	} else {
 		switch ($contents) {
 			case 'article_new':
+				$edit_option = 1;
 				$frm_fieldset = l('article_new');
 				$toggle_div='';
 				$pos = 1;
 				$frm_position1 = 'selected="selected"';
 				break;
 			case 'extra_new':
-				$edit_option = 0;
+				$edit_option = 2;
 				$edit_page = 0;
 				$frm_fieldset = l('extra_new');
 				$toggle_div='';
@@ -464,6 +466,7 @@ function form_articles($contents) {
 				$frm_position2 = 'selected="selected"';
 				break;
 			case 'page_new':
+				$edit_option = 3;
 				$frm_fieldset = l('page_new');
 				$toggle_div='';
 				$pos = 3;
@@ -502,7 +505,7 @@ function form_articles($contents) {
 		}
 		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 
 			'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
-		if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
+		if ($contents == 'extra_new' || $edit_option == 2) {
 			echo '<div style="display: none;">';
 			echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
 			echo '</div>';
@@ -511,11 +514,12 @@ function form_articles($contents) {
 		}
 		echo html_input('textarea', 'text', 'txt', $frm_text, l('text'), '', '', '', '', '', '2', '100', '', '', '');
 		buttons();
-		if ($contents != 'page_new' && (empty($edit_option) || $edit_option != 3)) {
+		# ARTICLE OR EXTRA
+		if ($contents != 'page_new' && $edit_option != 3) {
 			echo '<p><label for="cat">';
 			$article_category = isset($article_category) ? $article_category : -1;
-			echo ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) ?  l('appear_category') : l('category');
-			if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
+			echo ($contents == 'extra_new' || $edit_option == 2) ?  l('appear_category') : l('category');
+			if ($contents == 'extra_new' || $edit_option == 2) {
 				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'extra\');">';
 				echo '<option value="-1"'.($article_category == -1 ? ' selected="selected"' : '').'>'.l('all').'</option>';
 				echo '<option value="-3"'.($article_category == -3 ? ' selected="selected"' : '').'>'.l('page_only').'</option>';
@@ -544,7 +548,8 @@ function form_articles($contents) {
 				}
 			}
 			echo '</select></p>';
-			if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
+			# EXTRA
+			if ($contents == 'extra_new' || $edit_option == 2) {
 				$none_display = $article_category == -1 ? 'none' : 'inline';
 				echo '<div id="def_page" style="display:'.$none_display.';"><p><label for="dp">'.l('appear_page').':</label>
 					<br /><select name="define_page" id="dp">';
@@ -563,7 +568,7 @@ function form_articles($contents) {
 				html_input('checkbox', 'show_in_subcats', 'asc', 'YES', l('show_in_subcats'), '', '', '', '', $show_in_subcats, '', '', '', '', '').'</p></div>';
 			}
 		}
-		if ($contents == 'article_new' || (isset($edit_option) && $edit_option == 1)) {
+		if ($contents == 'article_new' || $edit_option == 1) {
 		 	echo html_input('checkbox', 'show_on_home', 'sho', 'YES', l('show_on_home'), '', '', '', '', $frm_showonhome, '', '', '', '', '');
 		}
 		echo html_input('checkbox', 'publish_article', 'pu', 'YES', l('publish_article'), '', '', '', '', $frm_publish, '', '', '', '', '');
@@ -571,7 +576,6 @@ function form_articles($contents) {
 			echo '</div>';
 		}
 		echo '</div>';
-	
 		echo '<div class="adminpanel">';
 			echo '<p class="admintitle"><a onclick="toggle(\'preview\')" style="cursor: pointer;" title="'.l('preview').'">'.l('preview').'</a></p>';
 			echo '<div id="preview" style="display: none;"></div>';
@@ -579,8 +583,8 @@ function form_articles($contents) {
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle"><a onclick="toggle(\'customize\')" style="cursor: pointer;" title="'.l('customize').'">'.l('customize').'</a></p>';
 		echo '<div id="customize" style="display: none;">';
-		# NEW EXTRA
-		if ($contents == 'extra_new' || (isset($edit_option) && $edit_option == 2)) {
+		# EXTRA
+		if ($contents == 'extra_new' || $edit_option == 2) {
 			if (s('enable_extras') == 'YES') {
 				echo '<p><label for="ext">'.l('define_extra').'</label><br />';
 				echo '<select name="define_extra" id="ext">';
@@ -599,6 +603,7 @@ function form_articles($contents) {
 				echo html_input('hidden', 'define_extra', 'ext', 1, '', '', '', '', '', '', '', '', '', '', '');
 			}
 		}
+		# NEW
 		if (!empty($id)) {
 			echo '<p><label for="pos">'.l('position').':</label>
 				<br /><select name="position" id="pos">';
@@ -610,12 +615,12 @@ function form_articles($contents) {
 			$pos = $contents == 'article_new' ? 1 : ($contents == 'extra_new' ? 2 : 3);
 			echo html_input('hidden', 'position', 'position', $pos, '', '', '', '', '', '', '', '', '', '', '');
 		}
-		if ($contents != 'extra_new' && isset($edit_option) && $edit_option != '2') {
+		if ($contents != 'extra_new' && $edit_option != '2') {
 			echo html_input('text', 'description_meta', 'dm', $frm_meta_desc, l('description_meta'), '', '', '', '', '', '', '', '', '', '');
 			echo html_input('text', 'keywords_meta', 'km', $frm_meta_key, l('keywords_meta'), '', '', '', '', '', '', '', '', '', '');
 		}
 		echo html_input('checkbox', 'display_title', 'dti', 'YES', l('display_title'), '', '', '', '', $frm_display_title, '', '', '', '', '');
-		if ($contents != 'extra_new' && isset($edit_option) && $edit_option != '2') {
+		if ($contents != 'extra_new' && $edit_option != '2') {
 			echo html_input('checkbox', 'display_info', 'di', 'YES', l('display_info'), '', '', '', '', $frm_display_info, '', '', '', '', '');
 			echo html_input('checkbox', 'commentable', 'ca', 'YES', l('enable_commenting'), '', '', '', '', $frm_commentable, '', '', '', '', '');
 				if (!empty($id)) {
@@ -632,7 +637,7 @@ function form_articles($contents) {
 			}
 		echo '</div></div>';
 		
-		if ($contents == 'article_new' || (isset($edit_option) && $edit_option == 1)) {
+		if ($contents == 'article_new' || $edit_option == 1) {
 			echo '<div class="adminpanel">';
 			echo '<p class="admintitle">';
 				echo '<a onclick="toggle(\'admin_publish_date\')" style="cursor: pointer;" title="'.l('publish_date').'">'.l('publish_date').'</a>';
@@ -663,6 +668,7 @@ function form_articles($contents) {
 function admin_articles($contents) {
 	global $categorySEF, $subcatSEF;
 	$link = '<a href="'._SITE.$categorySEF.'/';
+	$item = $contents == 'extra_view' ? 'extra_contents': 'snews_articles';
 	switch ($contents) {
 		case 'article_view':
 			$title = l('articles');
@@ -674,7 +680,7 @@ function admin_articles($contents) {
 		case 'extra_view':
 			$title = l('extra_contents');
 			$sef = 'extra_new';
-			$goto = 'extra_contents';$p = '2';
+			$goto = 'extra_contents'; $p = '2';
 			$qw = 'position = 2 ';
 		break;
 		case 'page_view':
@@ -744,8 +750,9 @@ function admin_articles($contents) {
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.$title.$add.'</p>';
 	echo '<p><input type="hidden" name="order" id="order" value="'.$goto.'" /></p>';
+	# EXTRA
 	if ($contents == 'extra_view') {
-		$cat_array_irregular = array('-1','-3');
+		$cat_array_irregular = array('-1', '-3');
 	 	foreach ($cat_array_irregular as $cat_value) {
 			$legend_label = $cat_value == -3 ? l('pages') : l('all');
 			$page_only_xsql = $cat_value == -3 ? 'page_extra ASC,' : '';
@@ -766,7 +773,7 @@ function admin_articles($contents) {
 					while ($r = dbfetch($result)) {
 					    if ($cat_value == -3) {
 							if ($lbl_filter != $r['page_extra']) {
-							    $assigned_page = retrieve('title','articles','id',$r['page_extra']);
+							    $assigned_page = retrieve('title','articles', 'id', $r['page_extra']);
 							    echo !$assigned_page ? l('all_pages') : $assigned_page;
 							}
 					    }
@@ -794,8 +801,8 @@ function admin_articles($contents) {
 			echo '</div>';
 		}
 	}
+	# ARTICLE
 	if ($contents == 'article_view' || $contents == 'extra_view') {
-	 	$item = $contents == 'extra_view' ? 'extra_contents': 'snews_articles';
 		$num = stats('categories', '', 'subcat = 0');
 		if ($num == 0) {
 			echo '<p>'.l('no_categories').'</p>';
@@ -803,7 +810,7 @@ function admin_articles($contents) {
 			$num_rows = stats('articles', '', 'category = 0 AND position = '.$p.' '.$subquery);
 			$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
 				FROM "._PRE.'articles'."
-				WHERE category = '0'
+				WHERE (category = '0' OR category = '-1' OR category = -3)
 					AND position = $p $subquery
 					ORDER BY artorder ASC, date DESC ";
 			if ($num_rows > 0) {
@@ -813,7 +820,7 @@ function admin_articles($contents) {
 					while ($O = dbfetch($res)) {
 						$order_input = '<input type="text" name="page_'.$O['id'].'" value="'.$O['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
 						echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($O['date'])).'">'.$O['title'].'</strong> ';
-						if (isset($r['default_page']) && $r['default_page'] != 'YES'){
+						if ($O['default_page'] != 'YES'){
 							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$O['id'].'">'.l('edit').'</a> ';
 						}
 						$visiblity = $O['visible'] == 'YES' ?
@@ -915,6 +922,7 @@ function admin_articles($contents) {
 				}
 			}
 		}
+	# PAGE
 	} elseif ($contents == 'page_view') {
 		$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
 			FROM "._PRE.'articles'."
@@ -948,6 +956,8 @@ function admin_articles($contents) {
 			}
 		}
 	}
+	echo html_input('hidden', 'action', 'action', 'process', '', '', '', '', '', '', '', '', '', '', '');
+	echo html_input('hidden', 'task', 'task', 'reorder', '', '', '', '', '', '', '', '', '', '', '');
 	echo '<p>'.html_input('submit', 'reorder', 'reorder', l('order_content'), '', 'button', '', '', '', '', '', '', '', '', '');
 	echo '</p></div></form>';
 }
@@ -1522,9 +1532,7 @@ function processing() {
 					unset($_SESSION[_SITE.'temp']);
 					break;
 				default:
-					$sub = !empty($category) ? ' AND category = '.$category : '';
-					$curr_artorder = retrieve('artorder', 'articles', 'id', $id);
-					$artorder = !$curr_artorder ? 1 : $curr_artorder;
+					$artorder = stats('articles', '', ' category = '.$category)+1;	
 					switch (true) {
 						case (isset($_POST['add_article'])):
 							$query = "INSERT INTO "._PRE.'articles '."(
