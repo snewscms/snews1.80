@@ -14,7 +14,7 @@ session_start();
 	define('SECURE_ID', '1234');
 
 // error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(0);	// 0 - No Error Reporting
+error_reporting(0); // 0 - No Error Reporting
 
 // CONFIGURE DATABASE VARIABLES (eBookCMS.com)
 function db_cfg($field) { static $dbcfg;
@@ -444,7 +444,7 @@ if ($_GET) {
 					unset($subcatSEF, $articleSEF);
 					set_error();
 				}
-			} update_articles();
+			} else {$_TYPE = 11;} update_articles();
 		}
 	// ADMIN
 	} if (_ADMIN && isset($_GET['action'])) {
@@ -1259,7 +1259,7 @@ function comment($freeze_status) {
 							echo $edit_link.'editcomment&amp;commentid='.$r['id'].'"
 								title="'.l('edit').' '.l('comment').'">'.l('edit').'</a> ';
 							echo $edit_link.'process&amp;task=deletecomment&amp;commentid='.$r['id'].'"
-								title="'.l('delete').' '.l('comment').'" onclick="return pop()">'.l('delete').'</a>';
+								title="'.l('delete').' '.l('comment').'" onclick="return pop(\''.l('js_delete2').'\')">'.l('delete').'</a>';
 							break;
 						case ($tag == 'edit'): ;
 							break;
@@ -1963,6 +1963,7 @@ function center() {
 			case isset($_POST['comment']) 		: comment('comment_posted'); return; break;
 			case isset($_POST['contactform'])	: contact(); return; break;
 			case isset($_POST['Loginform'])		: administration(); return; break;
+			case isset($_POST['process'])		: if (_ADMIN) {processing();} return; break;
 			case isset($_POST['action']) 		: if (_ADMIN && $_POST['action'] == 'process') {processing();} else {set_error();} return; break;
 			default : 
 				if (isset($_POST['addon']) && function_exists('public_'.$categorySEF)) {
@@ -2000,6 +2001,7 @@ function center() {
 						case 'extra_new'		:	form_articles('extra_new'); break;
 						case 'page_new'			:	form_articles('page_new'); break;
 						case 'editcomment'		:	edit_comment(); break;
+						case 'process'			:	processing(); break;
 						case 'admin_addons'		:	showAdmAddons();break;
 						case 'snews_files'		:	files(); return; break;
 						case 'hide'				:	visibility('hide'); break;
