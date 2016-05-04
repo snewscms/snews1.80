@@ -369,13 +369,18 @@ function load_lang() {
   	// MISSING LINES - snews 1.7.1
   	$l['please_wait'] = 'Please wait';
   	$l['admin_article'] = 'Admin article';
+  	$l['admin_groupings'] = 'Admin Groupings';
   	$l['article_new'] = 'New Article';
+  	$l['extra_new'] = 'New Extra';
   	$l['article_category'] = 'Article Category';
   	$l['hidden'] = 'Hidden';
   	
   	// NEW LINES sNews 1.80
+  	$l['extra'] = 'Extra';
   	$l['mail_nexists'] = 'Your server does not support mail function.';
   	$l['admin_addons'] = 'Admin Addons';
+  	$l['verify'] = 'Loging In';
+  	$l['login_success'] = 'Logging successfully!';
 
 // Editing may end here
 

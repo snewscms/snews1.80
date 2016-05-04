@@ -56,6 +56,7 @@ include('snews.php');
 					<ul>
 						<?php new_comments(5, 30); ?>
 					</ul>
+					<?php other_function(); ?>
 			</div>
 		</div>
 	</div>

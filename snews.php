@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Developper: 		Rui Mendes
+  Developpers: 		Rui Mendes, Nukpana
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
 -------------------------------------------------------------------------------- */
@@ -10,84 +10,58 @@
 // Start sNews session
 session_start();
 
-# SECURITY KEYS
-	define('SECURE_ID', '1234');
-
 // error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(0); // 0 - No Error Reporting
+error_reporting(0);	//0 - No Error Reporting
 
-// CONFIGURE DATABASE VARIABLES (eBookCMS.com)
-function db_cfg($field) { static $dbcfg;
-	if (!$dbcfg) {
-		$dbcfg = array(
-			'driver' => 'pdo',		// by default is pdo but if your database is mysql (mysqli/pdo)
-			'dbtype' => 'sqlite',	// database type
-			'server' => 'localhost',
-			'database' => 'snews18',
-			'username' => 'root',
-			'password' => '',
-			'dbpath' => 'snews.db3', // only sqlite PS: For security reasons rename this database and put your filename
-			'prefix' => ''
-		);
-	} return $dbcfg[$field];
+// RETURN VALUE FROM ARRAY
+function value($key, array $array) {
+	return isset($array[$key]) ? $array[$key]: false;
+}
+
+// RETURN INI FILE
+function ini_value($section, $key, $file = 'config.php') {
+	static $ini, $array;
+	if( $ini !== $file ) {	
+		$ini   = $file;		
+		$array = parse_ini_file($file, TRUE);
+	} $value = isset($array[$section][$key]) ? $array[$section][$key] : '';
+	return $value;
 }
 
 // DATABASE CONNECTION
-function db() { static $conn;
-	if (!$conn) { $conn = false;
-		$driver = db_cfg('driver');
-		$server = db_cfg('server');
-		$dbtype = db_cfg('dbtype');
-		$database = db_cfg('database');
-		$username = db_cfg('username');
-		$password = db_cfg('password');
-		$dbpath = db_cfg('dbpath');
-		// DATABASE TYPE
-		switch($dbtype) {
-			case "mysql"  : $dbconn = "mysql:host=$server;dbname=$database;"; break;
-			case "sqlite" : $dbconn = "sqlite:$dbpath"; break;
-			case "postgresql" : $dbconn = "pgsql:host=$server dbname=$database"; break;
-			case "sqlexpress" : $dbconn = "mssql:host=$server dbname=$database"; break;
-			case "firebird" : $dbconn = "firebird:dbname=$server:$dbpath"; break;
+function db() {
+	static $db;
+	if( !$db ) {
+		$db = FALSE;
+		try {
+			$db = new PDO(
+						ini_value('DATABASE', 'dsn'),
+						ini_value('DATABASE', 'user'),
+						ini_value('DATABASE', 'pass'),
+				(array) ini_value('DATABASE', 'options')
+			);
+		} catch( PDOException $e ) {
+			die($e->getMessage());
 		}
-		if ($driver == 'pdo' || $driver == 'PDO') {
-			try {$conn = new PDO($dbconn, $username, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));}
-			catch (PDOException $msg) {die ('Connection error, because: '.$msg->getMessage());}
-		} else if ($driver == 'mysqli' || $driver == 'MYSQLI') {
-			$conn = new mysqli($server, $username, $password, $database);
-			if (mysqli_connect_errno()) {printf("Connect failed: %s\n", mysqli_connect_error()); exit();}
-		} else {die('<h1>Driver Error.</h1><p>Check your db_cfg (<b>DB_DRIVER</b>)</p>');}
-	} return $conn;
-}
-
-// eBookCMS - Mysqli Bind and PDO
-function dbbind($result, $args, $binds) {
-	$driver = db_cfg('driver') != 'mysqli' ? true : false;
-	$mysqlnd = function_exists('mysqli_fetch_all');
-	if ($driver !== false) {try {$result -> execute($args);} catch (PDOException $msg) {
-		die ('Connection error, because: '.$msg->getMessage());} return $result;
-	} else {
-		$count = is_array($args) ? count($args) : 0;
-		$bindParamsMethod = new ReflectionMethod('mysqli_stmt', 'bind_param');
-		$bindParamsReferences = array();
-		foreach ($args as $key => $value) {$bindParamsReferences[$key] = &$args[$key];}
-		array_unshift($bindParamsReferences, $binds);
-		$bindParamsMethod -> invokeArgs($result, $bindParamsReferences);
-		$result -> execute();
-		if ($mysqlnd) {return $result -> get_result();} else {return $result;}
 	}
+	return $db;
 }
+db()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+db()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+db()->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
-// eBookCMS - FETCH
-function dbfetch($result, $prepared = false) {
-	$driver = db_cfg('driver');
-	$mysqlnd = function_exists('mysqli_fetch_all');
+// FETCH
+function dbfetch($result, $prepared = false, $args = '') {
 	if (!isset($result)) {return null;}
-	if ($driver == 'pdo') {return $result -> fetch(PDO::FETCH_ASSOC);} else
-	if ($prepared && $driver == 'mysqli' && $mysqlnd) {return $result -> fetch_assoc();} else
-	if ($prepared && $driver == 'mysqli' && !$mysqlnd) {
-		echo 'Extension "mysqlnd" is disable or not installed. Please use PDO see db_cfg)'; return;
-	} else if ($driver == 'mysqli') {return mysqli_fetch_assoc($result);}
+	if ($prepared != true) {
+		return $result->fetch(PDO::FETCH_ASSOC);
+	} else {
+		try {
+			$result -> execute($args);
+		} catch (PDOException $msg) {
+			die ('Connection error, because: '.$msg->getMessage());
+		} return $result;
+	}
 }
 
 // SESSION TOKEN
@@ -116,10 +90,11 @@ function retrieve($column, $table, $field, $value) {
 		if (!$retr_init) {populate_retr_cache(); $retr_init = true;}
 		if ($column == 'name') {return $retr_cache_cat_sef[$value];}
 		else if ($column == 'seftitle') {return $retr_cache_cat_id[$value];}
-	} $retrieve = '';
+	} $retrieve = null;
 	$query = "SELECT $column FROM "._PRE."$table WHERE $field = '$value'";
 	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {$retrieve = $r[$column];}
+		$rows = $result->fetchAll(PDO::FETCH_ASSOC);
+		if (isset($rows[0])) {$retrieve = $rows[0];}
 	} return $retrieve;
 }
 
@@ -143,9 +118,13 @@ function tags($tag) { static $tags;
 
 // CONSTANTS
 	# Website
-	define('_SITE',site());
+	define('_SITE', site());
+	# DATABASE TYPE
+	define('DBTYPE', strtolower(ini_value('DATABASE', 'engine')));
+	# SECURITY KEYS
+	define('SECURE_ID', ini_value('SECURITY', 'key_ID'));
 	# Prefix
-	define('_PRE', db_cfg('prefix'));
+	define('_PRE', ini_value('DATABASE', 'prefix'));
 	# Set login constant
 	define('_ADMIN',(isset($_SESSION[_SITE.'Logged_In']) && $_SESSION[_SITE.'Logged_In'] == token() ? true : false));
 
@@ -162,7 +141,7 @@ function s($var) { static $site_settings;
 	return $value;
 }
 
-// eBookCMS - CLEAN URL TO AVOID INJECTION HACK
+// CLEAN URL TO AVOID INJECTION HACK
 function clean($text) {
 	if (get_magic_quotes_gpc()) {$text = stripslashes($text);}
 	$text = strip_tags(htmlspecialchars($text));
@@ -229,7 +208,7 @@ function l($var) { static $lang; global $l;
 	if (!$lang) {
 		$lang = load_lang();
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
-		$lang['cat_listSEF'] = 'archive,contact,sitemap,login,searching';
+		$lang['cat_listSEF'] = 'archive,contact,sitemap,login,searching,verify';
 		if (_ADMIN) {
 			$lang['cat_listSEF'] .= ',administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories,admin_mods';
 			$lang['cat_listSEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
@@ -237,14 +216,14 @@ function l($var) { static $lang; global $l;
 		# SET FOCUS
 		$lang['js_inc'] = 'login,contact'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
 		# DIVIDER CHARACTER
-		$lang['divider'] = '&middot;';
+		$lang['divider'] = ini_value('OPTIONS', 'divider');
 		# Ignore Pages like "home,archive,contact,sitemap"
-		$lang['ignored_pages'] = '';
+		$lang['ignored_pages'] = ini_value('OPTIONS', 'ignore_pages');
 		# used in article pagination links
-		$lang['paginator'] = 'p_';
-		$lang['comment_pages'] = 'c_';
+		$lang['paginator'] = ini_value('OPTIONS', 'paginator');
+		$lang['comment_pages'] = ini_value('OPTIONS', 'comment_pages');
 		# list of files & folders ignored by upload/file list routine
-		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,'.s('language').'.php';
+		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,config.php,'.s('language').'.php';
 		while (list($key, $value) = each($l)) {$lang[$key] = $value;}
 	} return $lang[$var];
 }
@@ -257,13 +236,24 @@ function update_articles() {
 	$now = strtotime("now");
 	if ($dif_time > 1200 || empty($last_date)) {
 		$sql1 = 'UPDATE '._PRE.'articles 
-			SET published = ? 
-			WHERE published = ?	AND date <= ?';
-		if ($q1 = db() -> prepare($sql1)) {$q1 = dbbind($q1, array('1', '2', $now), 'iis');}
+			SET published = :pub1 
+			WHERE published = :pub2	AND date <= :date';
+		if ($q1 = db() -> prepare($sql1)) {
+			$q1 = dbfetch($q1, true, [
+				':pub1' => '1', 
+				':pub2' => '2', 
+				':date' => $now
+			]);
+		}
 		$sql2 = 'UPDATE '._PRE.'settings
-			SET value = ?
-			WHERE name = ?';
-		if ($q2 = db() -> prepare($sql2)) {$q2 = dbbind($q2, array($now, 'last_date'), 'ss');}
+			SET value = :val
+			WHERE name = :name';
+		if ($q2 = db() -> prepare($sql2)) {
+			$q2 = dbfetch($q2, true, [
+				':val' => $now, 
+				':name' => $last_date
+			]);
+		}
 	}
 }
 
@@ -319,28 +309,11 @@ function notification($error = 0, $note = '', $link = '') {
 	}
 	if ($error == 2) {
 		$_SESSION[_SITE.'fatal'] = $note == '' ? '' : '<h3>'.$title.'</h3>'.$note.$goto;
-		echo '<meta http-equiv="refresh" content="0; url='._SITE.$link.'/">';
+		echo '<meta http-equiv="refresh" content="3; url='._SITE.$link.'/">';
 		return;
 	} else {
 		$output = '<h3>'.$title.'</h3>'.$note.$goto;
 		return $output;
-	}
-}
-
-if ($_POST) {
-	# CHECK LOGIN CREDENTIALS
-	if (isset($_POST['Loginform'])  && !_ADMIN) {
-		$user = checkUserPass($_POST['uname']);
-		$pass = checkUserPass($_POST['pass']);
-		unset($_POST['uname'],$_POST['pass']);
-		if (checkMathCaptcha() && md5($user) === s('username') && md5($pass) === s('password')) {
-			$_SESSION[_SITE.'Logged_In'] = token();
-			notification(2, '', 'administration');
-		} else { die( notification(2, l('err_Login'), 'login')); }
-	}
-	# SUBMIT BUT NOT LOGGED
-	if (isset($_POST['submit_text']) && !_ADMIN) {
-		die (notification(2, l('error_not_logged_in'), 'home'));
 	}
 }
 
@@ -523,16 +496,6 @@ function breadcrumbs() {
 	}
 }
 
-// LOGIN LOGOUT LINK
-function login_link() {
-	$login = '<a href="'._SITE;
-	$must_login = 'login/" title="'.l('login').'">'.l('login');
-	$login .= _ADMIN ? 'administration/" title="'.l('administration').'">'.l('administration').'</a> '.l('divider') : $must_login;
-	$login .= _ADMIN ? ' <a href="'._SITE.'logout/" title="'.l('logout').'">'.l('logout') : '';
-	$login .= '</a>';
-	echo $login;
-}
-
 // DISPLAY CATEGORIES
 function categories() {
 	global $categorySEF;
@@ -636,10 +599,11 @@ function pages() {
 }
 
 // EXTRA CONTENT
-function extra($mode='', $styleit = 0, $classname = '', $idname = '') {
+function extra($mode = '', $styleit = 0, $classname = '', $idname = '') {
 	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $_catID;
 	if (empty($mode)) {
-		$mode = retrieve('seftitle', 'extras', 'id' ,1);
+		$mode = retrieve('seftitle', 'extras', 'id' , '1');
+		$mode = isset($mode['sefitle']) ? $mode['seftitle'] : '';
 	}
 	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
 	$mode = strtolower($mode);
@@ -764,16 +728,16 @@ function paginator($pageNum, $maxPage, $pagePrefix) {
 
 // SET TO ONE ERROR
 function set_error() {
-	echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-	<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-		<head>
-			<title>Error: 404</title>
-			<meta http-equiv="refresh" content="0; url='.site().'404/" />
-		</head>
-		<body>
-			<p class="warning">'.l('error_404').'</p>
-		</body>
+	echo '
+	<!DOCTYPE>
+		<html lang="en">
+			<head>
+				<title>Error: 404</title>
+				<meta http-equiv="refresh" content="0; url='.site().'404/" />
+			</head>
+			<body>
+				<p class="warning">'.l('error_404').'</p>
+			</body>
 	</html>';
 	exit;
 }
@@ -1159,9 +1123,16 @@ function comment($freeze_status) {
 				unset($_SESSION[_SITE.'poster']);
 				$approved = s('approve_comments') != 'on'|| _ADMIN ? 'True' : '';
 				$query = 'INSERT INTO '._PRE.'comments (articleid, name, url, comment, time, approved) 
-					VALUES (?, ?, ?, ?, ?, ?)';
+					VALUES (:articleid, :name, :url, :comment, :time, :approved)';
 				if ($sql = db() -> prepare($query)) {
-					$sql = dbbind($sql, array($post_article_id, $name, $url, $comment, $time, $approved), 'isssss');
+					dbfetch($sql, true, [
+						':articleid'	=>	$post_article_id,
+						':name'			=>	$name,
+						':url'			=>	$url,
+						':comment'		=>	$comment,
+						':time'			=>	$time,
+						':approved'		=>	$approved
+					]);
 					unset($sql); $fail = false;
 				} else {$fail = true;}
 				$_SESSION[_SITE.'poster']['article']="$comment:|:$post_article_id";
@@ -1673,17 +1644,48 @@ function rss_links() {
 	}
 }
 
+// LOGIN/LOGOUT LINK
+function login_link() {
+	$login = '<a href="'._SITE;
+	$must_login = 'login/" title="'.l('login').'">'.l('login');
+	$login .= _ADMIN ? 'administration/" title="'.l('administration').'">'.l('administration').'</a> '.l('divider') : $must_login;
+	$login .= _ADMIN ? ' <a href="'._SITE.'logout/" title="'.l('logout').'">'.l('logout') : '';
+	$login .= '</a>';
+	echo $login;
+}
+
+// VERIFY LOGIN
+function verify_login() {
+	if ($_POST && isset($_POST['Loginform'])  && !_ADMIN) {
+		# CHECK LOGIN CREDENTIALS
+			$user = checkUserPass($_POST['uname']);
+			$pass = checkUserPass($_POST['pass']);
+			$key = md5(ini_value('SECURITY', 'string_hash'));
+			$sid1 = isset($_POST['sid']) ? $_POST['sid'] : '';
+			$sid2 = substr(session_id(), 2, 7); 
+			$salt = crypt($sid2, '$6$'.$key) == $sid1 ? true : false;
+			unset($_POST['uname'], $_POST['pass'], $_POST['sid']);
+			if (checkMathCaptcha() && md5($user) === s('username') && md5($pass) === s('password') && $salt) {
+				$_SESSION[_SITE.'Logged_In'] = token();
+				echo '<h3>'.l('login_success').'</h3>';
+				echo '<meta http-equiv="refresh" content="2; url='._SITE.'administration/">';
+			} else {echo notification(1, l('err_Login'), 'login'); return;}
+	} else {set_error();}
+}
+
 // LOGIN
 function login() {
 	if (!_ADMIN) {
 		echo '<div class="adminpanel">
 		<h2>'.l('login').'</h2>';
-		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', _SITE.'administration/', '');
+		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', _SITE.'verify/', '');
 		echo '<p>'.l('login_limit').'</p>';
 		echo html_input('text', 'uname', 'uname', '', l('username'), 'text', '', '', '', '', '', '', '', '', '');
 		echo html_input('password', 'pass', 'pass', '', l('password'), 'text', '', '', '', '', '', '', '', '', '');
 		echo mathCaptcha();
 		echo '<p>';
+		$sid = substr(session_id(), 2, 7); $key = md5(ini_value('SECURITY', 'string_hash'));
+		echo html_input('hidden', 'sid', 'sid', crypt($sid, '$6$'.$key), '', '', '', '', '', '', '', '', '', '', '');
 		echo html_input('hidden', 'Loginform', 'Loginform', 'True', '', '', '', '', '', '', '', '', '', '', '');
 		echo html_input('submit', 'submit', 'submit', l('login'), '', 'button', '', '', '', '', '', '', '', '', '');
 		echo '</p></form></div>';
@@ -1928,7 +1930,6 @@ function send_email($send_array) {
 		echo notification(1, $message, '');
 		return false;
 	}
-	
 }
 
 // MAKE A CLEAN SEF URL
@@ -1962,9 +1963,11 @@ function center() {
 			case isset($_POST['search_query'])	: search(); return; break;
 			case isset($_POST['comment']) 		: comment('comment_posted'); return; break;
 			case isset($_POST['contactform'])	: contact(); return; break;
-			case isset($_POST['Loginform'])		: administration(); return; break;
+			case isset($_POST['Loginform'])		: verify_login(); return; break;
 			case isset($_POST['process'])		: if (_ADMIN) {processing();} return; break;
-			case isset($_POST['action']) 		: if (_ADMIN && $_POST['action'] == 'process') {processing();} else {set_error();} return; break;
+			case isset($_POST['action']) 		: 
+				if (_ADMIN && $_POST['action'] == 'process') {processing();} else {set_error();} return; break;
+			
 			default : 
 				if (isset($_POST['addon']) && function_exists('public_'.$categorySEF)) {
 					$func = 'public_'.$categorySEF;

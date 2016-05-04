@@ -58,13 +58,13 @@
 	</p>
 	<div id="wrap">
 		<h1>sNews 1.8.0 Readme</h1>
-		<h3>Updated: April 30, 2016</h3>
-		<p>Welcome to <a href="http://snewscms.com/">sNews 1.8.0</a> a single engine file, template independant, <a href="http://www.php.net/">PHP</a> and <a href="http://www.mysql.com/">MySQL</a> powered, standards compliant <a href="http://en.wikipedia.org/wiki/Content_management_system">Content Management System</a> (CMS). sNews consists of one engine file (snews.php), one admin file (admin.php), one language file (EN.php), one XHTML file (index.php) for content presentation, one stylesheet (style.css) for content styling and one javascript file for functionality. This makes sNews the lightest and one of the most user-friendly CMSs available today.</p>
+		<h3>Updated: May 04, 2016</h3>
+		<p>Welcome to <a href="http://snewscms.com/">sNews 1.8.0</a> a single engine file, template independant, <a href="http://www.php.net/">PHP</a> and <a href="http://www.mysql.com/">MySQL</a> powered, standards compliant <a href="http://en.wikipedia.org/wiki/Content_management_system">Content Management System</a> (CMS). sNews consists of one engine file (snews.php), one config file (config.php), one admin file (admin.php), one language file (EN.php), one XHTML file (index.php) for content presentation, one stylesheet (style.css) for content styling and one javascript file for functionality. This makes sNews the lightest and one of the most user-friendly CMSs available today.</p>
 		<p><strong>Before installing, please check that your server meets the minimum system requirements:</strong></p>
 		<div class="important">
 			<ul>
 				<li><a href="http://www.apache.org/">Apache Server</a> with <strong>mod_rewrite</strong> module enabled</li>
-				<li><a href="#">Database</a> MySQL, sQlite, firebird</li>
+				<li><a href="#">Database</a> MySQL, sQlite, ...</li>
 				<li><a href="http://www.php.net/">PHP</a>: Hypertext Preprocessor, minimum version 5.1</li>
 			</ul>
 		</div>
@@ -85,33 +85,53 @@
 <p><strong>Make a back-up copy of the SQL files</strong> in a safe place, so you always have spares on hand. Open the file you wish to use in your good code editor... add your <em>prefix</em> as noted above... and save your file with a unique file-name. Import the modified file to populate (or modify) your database with the table-data.</p>
 		
 <h3>2. Edit Settings</h3>
-<p><strong>Edit "snews.php"</strong> and <strong>enter your settings</strong> at the top of the file:</p>
+<p><strong>Edit "config.php"</strong> and <strong>enter your settings</strong> at the top of the file:</p>
 <p><em class="redtext">Please Note: If you decide to use sQLite just rename your (snews.db3) and put correct filename in step 2.8. and ignore steps (2.4, 2.5 and 2.6).<br />For other databases the parts that may need changing to suit your installation are shown in red italic.</em></p>
 <div class="sky">
+			<h4>[DATABASE]</h4>
 			
-			<p><span class="bluetext">2.1</span> - <em class="graytext">Driver to be used: Class pdo support all databases. For MySQL choose pdo/msqli</em><br />
-			'<strong>driver</strong>' 	=> '<em class="redtext">pdo</em>',</p>
+			<p><span class="bluetext">2.1</span> - <em class="graytext">Database engine (mysql,sqlite)</em><br />
+			<strong>engine </strong> 	= "<em class="redtext">sqlite</em>"</p>
 			
-			<p><span class="bluetext">2.2</span> - <em class="graytext">Database type: sqlite, mysql, postgresql, sqlexpress, firebird</em><br />
-			'<strong>dbtype</strong>' 	=> '<em class="redtext">sqlite</em>',</p>
+			<p><span class="bluetext">2.2</span> - <em class="graytext">Database connection: example("mysql:host=localhost;dbname=snews17")</em><br />
+			<strong>dsn</strong> 	= "<em class="redtext">sqlite:snews.db3</em>"</p>
 
-			<p><span class="bluetext">2.3</span> - <em class="graytext">MySQL Host: provided by hosting company. This is usually "localhost":</em><br />
-			'<strong>dbhost</strong>' 	=> '<em class="redtext">localhost</em>',</p>
-
-			<p><span class="bluetext">2.4</span> - <em class="graytext">Database Name: created in <strong>phpMyAdmin</strong> or similar database editor:</em><br />
-			'<strong>dbname</strong>' 	=> '<em class="redtext">snews18</em>',</p>
-
-			<p><span class="bluetext">2.5</span> - <em class="graytext">Database Username: created in phpMyAdmin or similar database editor:</em><br />
-			'<strong>dbuname</strong>' 	=> '<em class="redtext">root</em>',</p>
-
-			<p><span class="bluetext">2.6</span> - <em class="graytext">Database password: created in phpMyAdmin or similar database editor:</em><br />
-			'<strong>dbpass</strong>' 	=> '<em class="redtext">root</em>',</p>
+			<p><span class="bluetext">2.3</span> - <em class="graytext">Database User:</em><br />
+			<strong>user</strong> 	= "<em class="redtext">root</em>"</p>
 			
-			<p><span class="bluetext">2.7</span> - <em class="graytext">Database path: put here your (path + filename) only for sqlite and firebird:</em><br />
-			'<strong>dbpath</strong>' 	=> '<em class="redtext">snews.db3</em>',</p>
+			<p><span class="bluetext">2.4</span> - <em class="graytext">Database Password:</em><br />
+			<strong>pass</strong> 	= "<em class="redtext">password</em>"</p>
 
-			<p><span class="bluetext">2.8</span> - <em class="graytext">Database prefix: should end with an underscore (ex: 'snews_'); created in phpMyAdmin or similar database editor, usually used when a hosting company provides only one database:</em><br />
-			'<strong>prefix' 	=> ''</p>
+			<p><span class="bluetext">2.5</span> - <em class="graytext">Database Options:</em><br />
+			<strong>options[PDO::ATTR_AUTOCOMMIT] </strong> 	= "<em class="redtext">false</em>"</p>
+			
+			<p><span class="bluetext">2.6</span> - <em class="graytext">Database Prefix:</em><br />
+			<strong>prefix</strong> 	= "<em class="redtext"></em>"</p>
+			
+			<hr />
+			<h4>[SECURITY]</h4>
+			
+			<p><span class="bluetext">2.7</span> - <em class="graytext">KEY SECURE_ID. Do not forget put same value in admin.php (line n.6):</em><br />
+			<strong>key_ID</strong> 	= "<em class="redtext">1234</em>"</p>
+
+			<p><span class="bluetext">2.8</span> - <em class="graytext">HASH string use silly strings:</em><br />
+			<strong>string_hash</strong> 	= "<em class="redtext">use_silly_strings</em>"</p>
+			
+			<hr />
+			<h4>[OPTIONS]</h4>
+			
+			<p><span class="bluetext">2.9</span> - <em class="graytext">Ignore pages (home, sitemap, contact,...):</em><br />
+			<strong>ignore_pages</strong> 	= "<em class="redtext"></em>"</p>
+			
+			<p><span class="bluetext">2.10</span> - <em class="graytext">Divider character:</em><br />
+			<strong>divider</strong> 	= "<em class="redtext">&amp;middot;</em>"</p>
+			
+			<p><span class="bluetext">2.11</span> - <em class="graytext">Used in article pagination links:</em><br />
+			<strong>paginator</strong> 	= "<em class="redtext">'p_'</em>"</p>
+			
+			<p><span class="bluetext">2.12</span> - <em class="graytext">Used in comments pagination links:</em><br />
+			<strong>comment_pages</strong> 	= "<em class="redtext">c_</em>"</p>
+
 			
 		</div>
 
