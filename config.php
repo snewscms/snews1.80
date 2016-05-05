@@ -27,7 +27,7 @@ prefix	= ""
 ; KEY SECURE_ID. Do not forget put same value in admin.php (line n.6)
 key_ID = '1234'
 
-; HASH string use silly strings
+; Your HASH String
 string_hash = "use_silly_strings"
 
 
@@ -36,6 +36,10 @@ string_hash = "use_silly_strings"
 [OPTIONS]
 ; Ignore pages (home, sitemap, contact,...)
 ignore_pages = ""
+
+; Ignore category + sub-Categories
+ignore_cats = ""
+
 
 ; Divider character
 divider = '&middot;'

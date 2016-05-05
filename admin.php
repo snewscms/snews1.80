@@ -401,6 +401,33 @@ function admin_groupings() {
 	}
 }
 
+//BUTTONS
+function buttons(){
+	echo '<div class="clearer"></div>
+	<p>'.l('formatting').':
+	<br class="clearer" />';
+	$formatting = array(
+		'strong' => '',
+		'em' => 'key',
+		'underline' => 'key',
+		'del' => 'key',
+		'p' => '',
+		'br' => ''
+	);
+	foreach ($formatting as $key => $var) {
+		$css = $var == 'key' ? $key :'buttons';
+		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\')" value="'.
+		l($key.'_value').'" />';
+	}
+	echo '</p><br class="clearer" /><p>'.l('insert').': <br class="clearer" />';
+	$insert = array('img', 'link', 'include', 'func','intro');
+	foreach ($insert as $key) {
+		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="buttons" onclick="tag(\''.
+		$key.'\')" value="'.l($key.'_value').'" />';
+	}
+	echo '<br class="clearer" /></p>';
+}
+
 // ARTICLES FORM
 function form_articles($contents) {
  	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
@@ -807,7 +834,7 @@ function admin_articles($contents) {
 					while ($r = dbfetch($result)) {
 					    if ($cat_value == -3) {
 							if ($lbl_filter != $r['page_extra']) {
-							    $assigned_page = retrieve('title','articles', 'id', $r['page_extra']);
+							    $assigned_page = retrieve('title', 'articles', 'id', $r['page_extra']);
 							    echo !$assigned_page ? l('all_pages') : $assigned_page;
 							}
 					    }
@@ -1499,8 +1526,8 @@ function processing() {
 								} break;
 							# DELETE CATEGORY
 							case (isset($_POST['delete_category'])):
-								$any_subcats = stats('categories', '', 'subcat = '.$id); //retrieve('COUNT(id)','categories','subcat',$id);
-								$any_articles = stats('articles', '', 'category = '.$id); //retrieve('COUNT(id)','articles','category',$id);
+								$any_subcats = stats('categories', '', 'subcat = '.$id);
+								$any_articles = stats('articles', '', 'category = '.$id);
 								if ($any_subcats > 0 || $any_articles > 0) {
 									echo notification(1,l('warn_catnotempty'),'');
 									echo '<p><a href="'._SITE.'administration/" title="'.l('administration').'">
@@ -1635,7 +1662,7 @@ function processing() {
 								break;
 							case (isset($_POST['edit_article'])):
 								$category = $position == 3 ? 0 : $category;
-								$old_pos = retrieve('position','articles','id',$id);
+								$old_pos = retrieve('position', 'articles', 'id', $id);
 								// Only do this if page is changed to art/extra
 								if ($position != $old_pos && $old_pos == 3) {
 									$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
@@ -1737,7 +1764,8 @@ function processing() {
 						$d2 = dbfetch($r2, true,[
 							':name'		=>	$name,
 							':url'		=>	$url,
-							':comment'	=>	$approved, 
+							':comment'	=>	$comment, 
+							':approved' =>	$approved,
 							':id'		=>	$commentid
 						]);
 					}
@@ -1764,11 +1792,12 @@ function processing() {
 				break;
 			} 
 		} else if ($_GET && $action == 'process') {
-			$id = intval(clean(cleanXSS($_GET['id'])));
 			$task = clean(cleanXSS($_GET['task']));
 			switch ($task) {
 				# DELETE CATEGORY AND ALL ARTICLES
 				case 'delete_category_all':
+					$id = isset($_GET['id']) ? intval(clean(cleanXSS($_GET['id']))) : 0;
+					if ($id == 0) {return;}
 					$query = "SELECT c.id AS subcat, a.id 
 						FROM "._PRE."categories AS c
 						LEFT JOIN "._PRE."articles AS a
@@ -1786,9 +1815,11 @@ function processing() {
 				# DELETE COMMENT
 				case 'deletecomment':
 					$commentid = $_GET['commentid'];
+					$commentid = isset($_GET['commentid']) ? intval(clean(cleanXSS($_GET['commentid']))) : 0;
+					if ($commentid == 0) {return;}
 					$articleid = retrieve('articleid', 'comments', 'id', $commentid);
 					$articleSEF = retrieve('seftitle', 'articles', 'id', $articleid);
-					$articleCAT = retrieve('category','articles','id', $articleid);
+					$articleCAT = retrieve('category', 'articles', 'id', $articleid);
 					$postCat = cat_rel($articleCAT, 'seftitle');
 					$link = $postCat.'/'.$articleSEF;
 					delete_item('comments', 'id', $commentid);

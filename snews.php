@@ -2,6 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
+  Last Update		May 5, 2016 - 13:05 GMT+0
   Developpers: 		Rui Mendes, Nukpana
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -85,7 +86,7 @@ function populate_retr_cache() { global $retr_cache_cat_id, $retr_cache_cat_sef;
 
 // RETRIEVE FUNCTION
 function retrieve($column, $table, $field, $value) {
-	if (is_null($value)) {return null;}
+	if (is_null($value)) {return null;} $list = explode(',', $column);
 	if ($table == 'categories') { global $retr_cache_cat_id, $retr_cache_cat_sef, $retr_init;
 		if (!$retr_init) {populate_retr_cache(); $retr_init = true;}
 		if ($column == 'name') {return $retr_cache_cat_sef[$value];}
@@ -94,7 +95,7 @@ function retrieve($column, $table, $field, $value) {
 	$query = "SELECT $column FROM "._PRE."$table WHERE $field = '$value'";
 	if ($result = db() -> query($query)) {
 		$rows = $result->fetchAll(PDO::FETCH_ASSOC);
-		if (isset($rows[0])) {$retrieve = $rows[0];}
+		if (isset($rows[0])) {$retrieve = count($list)> 1 ? $rows[0] : $rows[0][$column];}
 	} return $retrieve;
 }
 
@@ -214,11 +215,13 @@ function l($var) { static $lang; global $l;
 			$lang['cat_listSEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
 		}
 		# SET FOCUS
-		$lang['js_inc'] = 'login,contact'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
+		$lang['js_inc'] = 'login,contact,article_new'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
 		# DIVIDER CHARACTER
 		$lang['divider'] = ini_value('OPTIONS', 'divider');
 		# Ignore Pages like "home,archive,contact,sitemap"
 		$lang['ignored_pages'] = ini_value('OPTIONS', 'ignore_pages');
+		# Ignore Categories
+		$lang['ignore_cats'] =ini_value('OPTIONS', 'ignore_cats');
 		# used in article pagination links
 		$lang['paginator'] = ini_value('OPTIONS', 'paginator');
 		$lang['comment_pages'] = ini_value('OPTIONS', 'comment_pages');
@@ -266,15 +269,16 @@ function check_category($category) {
 
 // GET PARENT/CHILD FROM AN id
 function cat_rel($var, $column) {
-	$categoryid = $var; $parent = '';
-	$sub = "SELECT $column FROM "._PRE.'categories'." WHERE id = $categoryid";
-	$join = "SELECT parent.$column FROM "._PRE.'categories'." as child
+	$categoryid = $var;	$parent = '';
+	$join = "SELECT parent.$column 
+		FROM "._PRE.'categories'." as child
 		INNER JOIN "._PRE.'categories'." as parent
 			ON parent.id = child.subcat
 		WHERE child.id = $categoryid";
 	if ($result = db() -> query($join)) {
 		while ($r = dbfetch($result)) {$parent = $r[$column].'/';}
 	}
+	$sub = "SELECT $column FROM "._PRE.'categories'." WHERE id = $categoryid";
 	if ($res = db() -> query($sub)) {
 		while ($c = dbfetch($res)) {$child = $c[$column];}
 	} return $parent.$child;
@@ -508,6 +512,7 @@ function categories() {
 		$count = '';
 		$join = '';
 	}
+	$ignore = explode(',', l('ignore_cats'));
 	$query = 'SELECT c.seftitle, c.name, description, c.id AS parent'.$count.'
 		FROM '._PRE.'categories'.' AS c '.$join.'
 		WHERE c.subcat = 0 AND c.published = \'YES\'
@@ -519,10 +524,12 @@ function categories() {
 			$r['name'] = (s('language')!='EN' && $r['name'] == 'Uncategorized' && $r['parent']==1) ? l('uncategorised') : $r['name'];
 			$class = $category_title == $categorySEF ? ' class="current"' : '';
 			if (isset($r['total'])) {$num=' ('.$r['total'].')';}
-			echo '<li><a'.$class.' href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
-			$parent = $r['parent'];
-			if ($category_title == $categorySEF) {subcategories($parent);}
-			echo '</li>';
+			if (!in_array($category_title, $ignore)) {
+				echo '<li><a'.$class.' href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
+				$parent = $r['parent'];
+				if ($category_title == $categorySEF) {subcategories($parent);}
+				echo '</li>';
+			}
 		}
 	} else {
 		echo '<li>'.l('no_categories').'</li>';
@@ -541,6 +548,7 @@ function subcategories($parent) {
 		$count = '';
 		$join = '';
 	}
+	$ignore = explode(',', l('ignore_cats'));
 	$query = 'SELECT c.seftitle AS subsef, description, name'.$count.'
 		FROM '._PRE.'categories'.' AS c '.$join.'
 		WHERE c.subcat = '.$parent.' AND c.published = \'YES\'
@@ -552,9 +560,11 @@ function subcategories($parent) {
 				$subSEF = $s['subsef'];
 				$class = $subSEF == $subcatSEF ? ' class="current"' : '';
 				$num = isset($s['total']) ? ' ('.$s['total'].')' : '';
-				echo '<li class="subcat">';
-					echo '<a'.$class.' href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
-				echo '</li>';
+				if (!in_array($subSEF, $ignore)) {
+					echo '<li class="subcat">';
+						echo '<a'.$class.' href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
+					echo '</li>';
+				}
 			}
 		echo '</ul>';
 	}
@@ -581,7 +591,7 @@ function pages() {
 		while ($r = dbfetch($result)) {
 			$title = $r['title'];
 			$class = ($categorySEF == $r['seftitle'])? ' class="current"' : '';
-			if ($r['id'] != s('display_page')) {
+			if ($r['id'] != s('display_page') && !in_array($r['seftitle'], $ignore)) {
 				echo '<li><a'.$class.' href="'._SITE.$r['seftitle'].'/">'.$title.'</a></li>';
 			}
 		}
@@ -1175,7 +1185,7 @@ function comment($freeze_status) {
 			echo '<p>'.$commentReason.'</p>';
 		}
 		$postArt = clean(cleanXSS($_POST['article']));
-		$postArtID = retrieve('category','articles','id',$post_article_id);
+		$postArtID = retrieve('category', 'articles', 'id', $post_article_id);
 		if ($postArtID == 0) {
 			$postCat = '' ;
 		} else {
@@ -1800,34 +1810,7 @@ function posting_time($time='') {
 	return;
 }
 
-//BUTTONS
-function buttons(){
-	echo '<div class="clearer"></div>
-	<p>'.l('formatting').':
-	<br class="clearer" />';
-	$formatting = array(
-		'strong' => '',
-		'em' => 'key',
-		'underline' => 'key',
-		'del' => 'key',
-		'p' => '',
-		'br' => ''
-	);
-	foreach ($formatting as $key => $var) {
-		$css = $var == 'key' ? $key :'buttons';
-		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\')" value="'.
-		l($key.'_value').'" />';
-	}
-	echo '</p><br class="clearer" /><p>'.l('insert').': <br class="clearer" />';
-	$insert = array('img', 'link', 'include', 'func','intro');
-	foreach ($insert as $key) {
-		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="buttons" onclick="tag(\''.
-		$key.'\')" value="'.l($key.'_value').'" />';
-	}
-	echo '<br class="clearer" /></p>';
-}
-
-// PREPARING ARTICLE FOR XML
+// PREPARING ARTICLE FOR XML USED ON FEED
 function strip($text) {
 	$search = array('/\[include\](.*?)\[\/include\]/', '/\[func\](.*?)\[\/func\]/', '/\[break\]/', '/</', '/>/');
 	$replace = array('', '', '', '<', '>');

@@ -49,7 +49,8 @@ The Official Package version number changed to 1.7.1 on October 22, 2010.
 1.8.0
 -----
 Merge all pevious patches inside New version.
+Created config.php and admin.php
 All mysql_* functions are officially deprecated (PHP V5.5.0) and will be removed in the future,
-sNews Reborn (1.8.0) has written to PDO/Mysqli to Keep Snews alive
+sNews Reborn (1.8.0) has written with PDO to Keep Snews alive
 
 Patches listed in this file will be divided into sections for easier reference.
