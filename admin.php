@@ -774,15 +774,8 @@ function admin_articles($contents) {
 			}
 		} echo '</p></div>'; return;
 	}
-	$txtYear = l('year');
-	$txtMonth = l('month');
-	if (substr($subcatSEF, 0, strlen($txtYear)) == $txtYear) {
-		$year = substr($subcatSEF, strlen($txtYear)+1, 4);
-	}
-	$find = strpos($subcatSEF,l('month'));
-	if ($find > 0) {
-		$month = substr($subcatSEF, $find + strlen($txtMonth) + 1, 2);
-	}
+	$year = isset($option['year']) ? $option['year'] : '';
+	$month = isset($option['month']) ? $option['month'] : '';
 	$filterquery = !empty($year) ? "AND ".$filter_year."='".$year."' " : '';
 	$filterquery .= !empty($month) ? "AND ".$filter_month."='".$month."' " : '';
 	$no_content = !empty($filterquery) ? '<p>'.l('no_content_for_filter').'</p>' : '<p>'.l('article_not_exist').'</p>';
