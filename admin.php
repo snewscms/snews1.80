@@ -1,12 +1,12 @@
 <?php
 
 // NO HACK PLEASE
-$pagename = substr($_SERVER['SCRIPT_NAME'], strripos($_SERVER['SCRIPT_NAME'], '/')+1);
+$pagename = substr($_SERVER['SCRIPT_NAME'], strripos($_SERVER['SCRIPT_NAME'], DIRECTORY_SEPARATOR)+1);
 if ($pagename == 'admin.php') {die('Bye bye');}
 if (!defined('SECURE_ID') || SECURE_ID != '1234') { // SECURE_ID MUST BE THE SAME AS config.php
 	die('ACCESS DENIED');
-}
-if (!_ADMIN) {echo( notification(1, l('error_not_logged_in'), 'login')); set_error();}
+} if (!_ADMIN) {echo( notification(1, l('error_not_logged_in'), 'login')); set_error();}
+
 
 // ADMINISTRATION
 function administration() {
@@ -88,7 +88,7 @@ function showAdmAddons() {
 // SETTINGS FORM
 function settings() {
 	echo '<div class="adminpanel"><p class="admintitle">'.l('settings_title').'</p>';
-	echo html_input('form','','','','','','','','','','','','post', '?action=process&amp;task=save_settings','');
+	echo html_input('form','','post','','','','','','','','','','post', '?action=process&amp;task=save_settings','');
 		# Expandable Settings
 		echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
 		echo '<div id="sub1" style="display: none;">';
@@ -166,7 +166,7 @@ function settings() {
 	echo '</form>';
 	echo '</div>';
 	# Change Password panel
-	echo html_input('form','','','','','','','','','','','','post','?action=process&amp;task=changeup','');
+	echo html_input('form','','post','','','','','','','','','','post','?action=process&amp;task=changeup','');
 	echo '<div class="adminpanel">';
 		echo '<p><a onclick="toggle(\'sub6\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('change_up').'">'.l('change_up').'</a>';
 		echo '<div id="sub6" style="display: none;">';
@@ -191,7 +191,7 @@ function admin_categories() {
 	$tab = 1;
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.l('categories').$add.'</p>';
-	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', '?action=process&amp;task=reorder', '');
+	echo html_input('form', '', '', '', '', '', '', '', '', '', '', '', 'post', '?action=process&amp;task=reorder', '');
 	echo '<p><input type="hidden" name="order" id="order" value="snews_categories" /></p>';
 	$num_cat = stats('categories', '', 'subcat = 0');
 	if ($num_cat == 0) {
@@ -431,7 +431,7 @@ function buttons(){
 // ARTICLES FORM
 function form_articles($contents) {
  	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-		$id = $_GET['id'];
+		$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
 		$frm_position1 = ''; $frm_position2 = ''; $frm_position3 = '';
  		$query = 'SELECT * FROM '._PRE.'articles'.' WHERE id = '.$id;
  		if ($result = db() -> query($query)) {
@@ -449,6 +449,7 @@ function form_articles($contents) {
 				$published = $r['published'];
 				$showSub = $r['show_in_subcats'];
 				$showHome = $r['show_on_home'];
+				$artorder = $r['artorder'];
 				$com = $r['commentable'];
 				switch ($edit_option) {
 					case 1:
@@ -514,6 +515,7 @@ function form_articles($contents) {
 		if (empty($frm_fieldset)) {
 			$frm_fieldset =  l('article_new');
 		}
+		$artorder = 0;
 		$frm_action = _SITE.'?action=process&amp;task=admin_article';
 		$frm_title = isset($_SESSION[_SITE.'temp']['title']) ? $_SESSION[_SITE.'temp']['title'] : '';
 		$frm_sef_title = isset($_SESSION[_SITE.'temp']['seftitle']) ?cleanSEF($_SESSION[_SITE.'temp']['seftitle']) : '';
@@ -681,7 +683,7 @@ function form_articles($contents) {
 			echo '<div id="admin_publish_date" style="display: none;">';
 			$onoff_status = isset($r['published']) && $r['published'] == '2' ? 'ok' : ''; // Variable inserted in check-box string show is as checked if enabled.
 			echo html_input('checkbox', 'fposting', 'fp', 'YES', l('enable'), '', '', '', '', $onoff_status, '', '', '', '', '');
-			echo '<p>'.l('server_time').': '.date('d.m.Y. H:i:s').'</p>';
+			echo '<p>'.l('server_time').': '.date('Y-m-d H:i:s').'</p>';
 			echo '<p>'.l('article_date').'</p>';
 			!empty($id) ? posting_time($r['date']) : posting_time();
 			echo '</div></div>';
@@ -691,6 +693,7 @@ function form_articles($contents) {
 		echo html_input('hidden', 'task', 'task', 'admin_article', '', '', '', '', '', '', '', '', '', '', '');
 		echo html_input('submit', $frm_task, $frm_task, $frm_submit, '', 'button', '', '', '', '', '', '', '', '', '');
 		if (!empty($id)) {
+			echo html_input('hidden', 'artorder', 'artorder', $artorder, '', '', '', '', '', '', '', '', '', '', '');
 			echo html_input('hidden', 'article_category', 'article_category', $article_category, '', '', '', '', '', '', '', '', '', '', '');
 			echo html_input('hidden', 'id', 'id', $id, '', '', '', '', '', '', '', '', '', '', '').' ';
 			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '', 'button', 
@@ -1195,7 +1198,7 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 
 // HIDE/SHOW
 function visibility($mode) {
-	$id = clean(cleanXSS($_GET['id']));
+	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
 	$item = clean(cleanXSS($_GET['item']));
 	$back = isset($_GET['back']) ? $_GET['back'] : '';
 	$no_yes = $mode == 'hide' ? 'NO' : 'YES';
@@ -1230,17 +1233,17 @@ function processing() {
 		echo (notification(1,l('error_not_logged_in'),'home')); return;
 	} else {
 	$action = clean(cleanXSS($_GET['action']));
-	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) :  0;
-	$commentid = isset($_POST['commentid']) ? $_POST['commentid'] : 0;
+	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
+	$commentid = isset($_POST['commentid']) ? intval(clean(cleanXSS($_POST['commentid']))) : 0;
 	$approved = isset($_POST['approved']) && $_POST['approved'] == 'on' ? 'True' : '';
 	$name = isset($_POST['name']) ? clean(entity($_POST['name'])) : '';
-	$category = !empty($_POST['define_category']) ? $_POST['define_category'] : 0;
-	$subcat = isset($_POST['subcat']) ? $_POST['subcat'] : 0;
+	$category = !empty($_POST['define_category']) ? intval(clean(cleanXSS($_POST['define_category']))) : 0;
+	$subcat = isset($_POST['subcat']) ? intval(clean(cleanXSS($_POST['subcat']))) : 0;
 	$page = isset($_POST['define_page']) ? $_POST['define_page'] : '';
 	$def_extra = isset($_POST['define_extra']) ? $_POST['define_extra'] : '';
 	$description = isset($_POST['description']) ? clean(entity($_POST['description'])) : '';
 	$title = isset($_POST['title']) ? clean(entity($_POST['title'])) : '';
-	$seftitle = isset($_POST['seftitle']) ? $_POST['seftitle'] : '';
+	$seftitle = isset($_POST['seftitle']) ? clean($_POST['seftitle']) : '';
 	$url = isset($_POST['url']) ? cleanXSS($_POST['url']) : '';
 	$comment = isset($_POST['editedcomment']) ? $_POST['editedcomment'] : '';
 	$text = isset($_POST['text']) ? clean_mysql($_POST['text']) : '';
@@ -1254,7 +1257,7 @@ function processing() {
 	if ($freez == 'YES' && $commentable == 'YES') {
 		$commentable = 'FREEZ';
 	}
-	$position = isset($_POST['position']) && $_POST['position']> 0 ? $_POST['position'] : 1;
+	$position = isset($_POST['position']) && $_POST['position'] > 0 ? intval($_POST['position']) : 1;
 	$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
 	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
 	$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
@@ -1296,7 +1299,7 @@ function processing() {
 					$word_filter_change = $_POST['word_filter_change'];
 					$enable_extras = isset($_POST['enable_extras']) && $_POST['enable_extras'] == 'on' ? 'YES' : 'NO';
 					$enable_comments = isset($_POST['enable_comments']) && $_POST['enable_comments'] == 'on' ? 'YES' : 'NO';
-					$comment_repost_timer = is_numeric($_POST['comment_repost_timer']) ? $_POST['comment_repost_timer'] : '15';
+					$comment_repost_timer = is_numeric($_POST['comment_repost_timer']) ? intval($_POST['comment_repost_timer']) : '15';
 					$freeze_comments = isset($_POST['freeze_comments']) && $_POST['freeze_comments'] == 'on' ? 'YES' : 'NO';
 					$file_ext = $_POST['file_ext'];
 					$allowed_file = $_POST['allowed_file'];
@@ -1626,7 +1629,8 @@ function processing() {
 						unset($_SESSION[_SITE.'temp']);
 						break;
 					default:
-						$artorder = stats('articles', '', ' category = '.$category)+1;	
+						$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ? intval($_POST['artorder']) :
+							stats('articles', '', ' category = '.$category.' AND position = '.$position)+1;
 						switch (true) {
 							case (isset($_POST['add_article'])):
 								$query = "INSERT INTO "._PRE.'articles '."(
@@ -1666,7 +1670,7 @@ function processing() {
 								// Only do this if page is changed to art/extra
 								if ($position != $old_pos && $old_pos == 3) {
 									$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
-										WHERE position = 2 AND category = -3 AND  page_extra = :id";
+										WHERE position = 2 AND category = -3 AND page_extra = :id";
 									if ($rextra = db() -> prepare($chk_extra_query)) {
 										while ($xtra = dbfetch($rextra, true, [':id'=> $id])) {
 											$xtra_id = $xtra['id'];
@@ -1700,13 +1704,13 @@ function processing() {
 										':text'		=> $text,
 										':cat'		=> $category,
 										':pos'		=> $position,
-										':extraid'	=> $def_extra, 
+										':extraid'	=> $def_extra,
 										':page_extra'	=> $page,
-										':disp_title'	=> $display_title, 
+										':disp_title'	=> $display_title,
 										':disp_info'	=> $display_info,
-										':comment'		=> $commentable, 
-										':pub'			=> $publish_article, 
-										':dmeta'			=> $description_meta, 
+										':comment'		=> $commentable,
+										':pub'			=> $publish_article,
+										':dmeta'		=> $description_meta,
 										':keyw'			=> $keywords_meta,
 										':shome'		=> $show_on_home,
 										':ssubcat'		=> $show_in_subcats,
@@ -1814,7 +1818,7 @@ function processing() {
 					} echo notification(0, '', 'snews_categories'); break;
 				# DELETE COMMENT
 				case 'deletecomment':
-					$commentid = $_GET['commentid'];
+					$commentid = intval(clean(cleanXSS($_GET['commentid'])));
 					$commentid = isset($_GET['commentid']) ? intval(clean(cleanXSS($_GET['commentid']))) : 0;
 					if ($commentid == 0) {return;}
 					$articleid = retrieve('articleid', 'comments', 'id', $commentid);

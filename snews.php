@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		May 5, 2016 - 13:05 GMT+0
+  Last Update		May 14, 2016 - 18:20 GMT+0
   Developpers: 		Rui Mendes, Nukpana
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -11,13 +11,8 @@
 // Start sNews session
 session_start();
 
-// error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(0);	//0 - No Error Reporting
-
-// RETURN VALUE FROM ARRAY
-function value($key, array $array) {
-	return isset($array[$key]) ? $array[$key]: false;
-}
+// error_reporting(E_ALL ^ E_NOTICE)
+error_reporting(0);
 
 // RETURN INI FILE
 function ini_value($section, $key, $file = 'config.php') {
@@ -74,23 +69,25 @@ function token() {
 }
 
 // SMART RETRIEVE FUNCTION
-function populate_retr_cache() { global $retr_cache_cat_id, $retr_cache_cat_sef;
-	$query = 'SELECT id, seftitle, name FROM '._PRE.'categories';
-	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {
-			$retr_cache_cat_id[$r['id']] = $r['seftitle'];
-			$retr_cache_cat_sef[$r['seftitle']] = $r['name'];
-		}
-	}
-} $retr_init = false;
+function populate_retr_cache($selector, $value) {
+	static $retr_cache_cat_id, $retr_cache_cat_sef;
+	if (!$retr_cache_cat_id && !$retr_cache_cat_sef) {
+		$query = 'SELECT id, seftitle, name FROM '._PRE.'categories';
+		if ($result = db() -> query($query)) {
+			foreach ($result as $r ) {
+				$retr_cache_cat['id'][$r['id']] = $r['seftitle'];
+				$retr_cache_cat['seftitle'][$r['seftitle']] = $r['name'];
+			}
+		}	
+	} return isset($retr_cache_cat[$selector][$value]) ? $retr_cache_cat[$selector][$value] : '';
+}
 
 // RETRIEVE FUNCTION
 function retrieve($column, $table, $field, $value) {
 	if (is_null($value)) {return null;} $list = explode(',', $column);
-	if ($table == 'categories') { global $retr_cache_cat_id, $retr_cache_cat_sef, $retr_init;
-		if (!$retr_init) {populate_retr_cache(); $retr_init = true;}
-		if ($column == 'name') {return $retr_cache_cat_sef[$value];}
-		else if ($column == 'seftitle') {return $retr_cache_cat_id[$value];}
+	if ($table == 'categories') {
+		if ($column == 'name') {return populate_retr_cache('seftitle', $value);}
+		else if ($column == 'seftitle') {return populate_retr_cache('id', $value);}
 	} $retrieve = null;
 	$query = "SELECT $column FROM "._PRE."$table WHERE $field = '$value'";
 	if ($result = db() -> query($query)) {
@@ -134,7 +131,7 @@ function s($var) { static $site_settings;
 	if (!$site_settings) {
 		$query = 'SELECT name,value FROM '._PRE.'settings';
 		if ($result = db()->query($query)) {
-			while ($r = dbfetch($result)) {
+			foreach ($result as $r ) {
 				$site_settings[$r['name']] = $r['value'];
 			}
 		}
@@ -221,12 +218,13 @@ function l($var) { static $lang; global $l;
 		# Ignore Pages like "home,archive,contact,sitemap"
 		$lang['ignored_pages'] = ini_value('OPTIONS', 'ignore_pages');
 		# Ignore Categories
-		$lang['ignore_cats'] =ini_value('OPTIONS', 'ignore_cats');
+		$lang['ignore_cats'] = ini_value('OPTIONS', 'ignore_cats');
 		# used in article pagination links
 		$lang['paginator'] = ini_value('OPTIONS', 'paginator');
 		$lang['comment_pages'] = ini_value('OPTIONS', 'comment_pages');
 		# list of files & folders ignored by upload/file list routine
-		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,config.php,'.s('language').'.php';
+		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,config.php';
+		$lang['ignored_items'].= ','.s('language').'.php';
 		while (list($key, $value) = each($l)) {$lang[$key] = $value;}
 	} return $lang[$var];
 }
@@ -238,24 +236,18 @@ function update_articles() {
 	$dif_time = time() - $updatetime;
 	$now = strtotime("now");
 	if ($dif_time > 1200 || empty($last_date)) {
-		$sql1 = 'UPDATE '._PRE.'articles 
-			SET published = :pub1 
-			WHERE published = :pub2	AND date <= :date';
-		if ($q1 = db() -> prepare($sql1)) {
-			$q1 = dbfetch($q1, true, [
-				':pub1' => '1', 
-				':pub2' => '2', 
-				':date' => $now
-			]);
+		$sql1 = "UPDATE "._PRE."articles 
+			SET published = 1 
+			WHERE published = 2	AND date <= datetime($now)";
+		if ($q1 = db() -> query($sql1)) {
+			$q1->fetch();
 		}
-		$sql2 = 'UPDATE '._PRE.'settings
-			SET value = :val
-			WHERE name = :name';
-		if ($q2 = db() -> prepare($sql2)) {
-			$q2 = dbfetch($q2, true, [
-				':val' => $now, 
-				':name' => $last_date
-			]);
+		$date = date('Y-m-d H:i:s');
+		$sql2 = "UPDATE "._PRE."settings
+			SET value = '$date'
+			WHERE name = 'last_date' AND value = '$last_date'";
+		if ($q2 = db() -> query($sql2)) {
+			$q2->fetch();
 		}
 	}
 }
@@ -772,7 +764,7 @@ function clean_mysql($text) {
 		(ini_get('magic_quotes_sybase') && (strtolower(ini_get('magic_quotes_sybase')) != "off"))) {
 			$text = stripslashes(addslashes($text));
 			$text = str_replace('\\\"', '"', $text);
-	} else { // If use another RTE you must clean text before save text, ebookrte doesn`t need
+	} else { // if you use some RTE maybe you need clean some characters before save to database
 		$text = urldecode($text);
 		$text = str_replace('\\\"', '"', $text);
 		/*$find = array('<', '>');
@@ -1451,9 +1443,9 @@ function contact() {
 		$count = $magic = 0;
 		if (get_magic_quotes_gpc()) {$magic = 1;}
 		foreach ($_POST as $k => $v){
-			if ($count === 8 ) die;
-			if ($magic) $k = stripslashes($v);
-			else $$k = $v;
+			if ($count === 8 ) {die;}
+			if ($magic) {$k = stripslashes($v);}
+			else {$$k = $v;}
 			++$count;
 		}
 		$to = s('website_email');

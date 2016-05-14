@@ -1,61 +1,34 @@
 // *************************************************************************************
-// Add new EVENT
-// *************************************************************************************
-function addEvent(element, event, func) {
-	if (element.addEventListener) {
-		element.addEventListener(event, func);
-	} else if (element.attachEvent) {
-		element.attachEvent('on'+event, func);
-	} else {
-		element["on"+event] = func;
-	}
-};
-
-// *************************************************************************************
-// SET FOCUS ON FIRST FIELD
+// SET FOCUS ON FIRST FIELD - (id = "post") must exists
 // *************************************************************************************
 head_onload = function(env) {
-	if (!document.getElementById) {return;}
-	var forms1 = new Array("post");
-	for (var i=0; i< forms1.length; i++) {
-		if (forms1[i]) {
-			var myelement = document.getElementById(forms1[i]);
-			if (myelement !== null ) {
-				var num = myelement.length;
-				var found = false;
-				for (var j=0; j<num; j++) {
-					if ((myelement[j].type=='text' || myelement[j].type=='password' || myelement[j].type=='email') && myelement[j].value === ""){
-						myelement[j].focus();
-						found = true;
-						break;
-					}
-				}
-				if (found !== true) {
-					for (var j=0; j<num; j++) {
-						if (myelement[j].type=='text' || myelement[j].type=='password' || myelement[j].type=='email'){
-							myelement[j].focus();
-							break;
-						}
-					}	
-				}
-			}
+	if (!document.getElementById || !document.getElementById("post")) {return;}
+	var num = document.getElementById("post").elements.length;
+	var myelement, el_id = '', name, type, found = false;
+	for (var i=0; i < num; i++) {
+		myelement = document.getElementById("post").elements[i];
+		if ((myelement.type == 'text' || myelement.type == 'password' || myelement.type == 'email') && myelement.value === ""){
+			myelement.focus();
+			found = true;
+			break;
 		}
 	}
 };
-
 // *************************************************************************************
-// SET FOCUS - ADD EVENTS
+// SET FOCUS - ADD EVENT
 // *************************************************************************************
 if (document.addEventListener) {
 	document.addEventListener( "DOMContentLoaded", head_onload, false );
 } else if (window.attachEvent) {
-	window.onload = function (evt){head_onload(evt);};
-} window.onload = function (evt) {head_onload(evt);};
+	window.onload = function (evt) {head_onload(evt);};
+}
+
+
 
 
 
 // *************************************************************************************
-// OLD JAVASCRIPT snews 1.71
+// OLD JAVASCRIPT snews 1.71 fixeed and verified by lint
 // *************************************************************************************
 	var allowsef = /new|add|_ar|_ca/.test("new");
 	var allowpreview = /new|_add|_ar|/.test("");
@@ -65,13 +38,16 @@ if (document.addEventListener) {
 	var get_info = navigator.appVersion;
 	var version = parseFloat(get_info);
 
-	if (allowpreview == true && browser != "Microsoft Internet Explorer" && browser!="Netscape" && version>=4) {
-		window.onload = startPreview();
+	if (allowpreview === true && browser != "Microsoft Internet Explorer" && browser!="Netscape" && version>=4) {
+		/*window.onload = startPreview();
 		function startPreview() { 
 			window.self.setInterval("updatePreview()", 1500);
-		}
+		}*/
+		window.onload = function() { 
+			window.self.setInterval("updatePreview()", 1500);
+		};
 	}
-	if (allowpreview == true && (browser == "Microsoft Internet Explorer" || browser=="Netscape") && version>=4) {
+	if (allowpreview === true && (browser == "Microsoft Internet Explorer" || browser=="Netscape") && version>=4) {
 	  	window.onload = function() {
 	  		window.self.setInterval("updatePreview()", 1500);
 	  	};
@@ -79,7 +55,7 @@ if (document.addEventListener) {
 
 	// generate SEF url
    	function genSEF(from,to) {
-    	if (allowsef == true) {
+    	if (allowsef === true) {
          	var str = from.value.toLowerCase();
          	str = str.replace(/[\xc0-\xc5\xe0-\xe5\u0100-\u0105\u0386\u0391\u03ac\u03b1\u0410\u0430\u05d0]/g,'a');
          	str = str.replace(/[\xc8-\xcb\xe8-\xeb\u0116-\u011b\u0112\u0113\u0388\u0395\u03ad\u03b5\u042d\u044d]/g,'e');
@@ -130,13 +106,7 @@ if (document.addEventListener) {
 
 	// settings home SEF restrict to alphanumeric
 	function SEFrestrict(x) {
-		if (window.event) {
-			var key = window.event.keyCode;
-		} else if (x) {
-			key = x.which;
-		} else {
-			return true;
-		}
+		var key = event.which || event.keyCode;
 		var keychar = String.fromCharCode(key);
 		keychar.toLowerCase();
 		if (key == (null || 0 || 8 || 13 || 27) || ("abcdefghijklmnopqrstuvwxyz0123456789-_").indexOf(keychar) > -1) {
@@ -175,7 +145,7 @@ if (document.addEventListener) {
 				url = prompt("<?php echo l('js_func1'); ?>", '');
 				//params, seperated by comma.
 				title = prompt("<?php echo l('js_func2'); ?>", "");
-				if (url != null) {
+				if (url !== null) {
 					start = '[func]'+url+':|:'; 
 					end = '[\/func]';
 				} else {
@@ -187,7 +157,7 @@ if (document.addEventListener) {
 			// function use end
 			case 'include':
 				url = prompt("<?php echo l('js_file'); ?>", '');
-				start = url !=null ? '[include]'+url+'[\/include]' : '';
+				start = url !== null ? '[include]'+url+'[\/include]' : '';
 				end = '';
 				break;
 			case 'br': 
@@ -197,13 +167,13 @@ if (document.addEventListener) {
 			case 'img':
 				url = prompt("<?php echo l('js_image1'); ?>", '');
 				alt = prompt("<?php echo l('js_image2'); ?>", '');
-				start = url != null ? '<img src="'+url+'" alt="'+alt+'" \/>' : '';
+				start = url !== null ? '<img src="'+url+'" alt="'+alt+'" \/>' : '';
 				end = '';
 				break;
 			case 'link':
 				url = prompt("<?php echo l('js_link1'); ?>", '');
 				title = prompt("<?php echo l('js_link2'); ?>", '');
-				if (url != null) {
+				if (url !== null) {
 					start = '<a href="'+url+'" title="'+title+'">'; 
 					end = '<\/a>';
 				} else {
@@ -215,28 +185,28 @@ if (document.addEventListener) {
 			default: 
 				start = '<'+tag+'>'; 
 				end = '<\/'+tag+'>\n';
-		}
+		} var codetext = '';
 		if (!src.setSelectionRange) {
          	var selected = document.selection.createRange().text;
          	src.focus();
          	if (selected.length <= 0) {
-         		var codetext = start + title + end;
+         		codetext = start + title + end;
          	} else {
-         		var codetext = start + selected + end;
+         		codetext = start + selected + end;
          	}
          	document.selection.createRange().text = codetext;
       	} else {
         	var h = src.scrollTop;
          	var pretext = src.value.substring(0, src.selectionStart);
-         	var codetext = start + src.value.substring(src.selectionStart, src.selectionEnd) + end;
+         	codetext = start + src.value.substring(src.selectionStart, src.selectionEnd) + end;
          	var posttext = src.value.substring(src.selectionEnd, src.value.length);
          	if (codetext == start + end) {
          		codetext = start + title + end;
          	}
          	src.value = pretext + codetext + posttext;
          	document.getElementById("txt").scrollTop = h;
-         	src.selectionStart=pretext.length;
-         	src.selectionEnd=pretext.length+codetext.length;
+         	src.selectionStart = pretext.length;
+         	src.selectionEnd = pretext.length+codetext.length;
          	src.focus();
 		}
 	}
@@ -244,18 +214,18 @@ if (document.addEventListener) {
 	// toggle dynamic divs
 	function toggle(div) {
 		var elem = document.getElementById(div);
-		if (elem.style.display=='') {
-			elem.style.display='none'; 
+		if (elem.style.display === '') {
+			elem.style.display = 'none'; 
 			return;
 		}
-		elem.style.display='';
+		elem.style.display = '';
 	}
 	// dependancy limiter
 	function dependancy(extra) {
-		var category = document.forms['post']['define_category'];
+		var category = document.forms.post.define_category;//document.forms['post']['define_category'];
 		var page = document.getElementById('def_page');
 		// extra edit
-		if (extra=='extra') {
+		if (extra == 'extra') {
 			page.style.display = category.options[category.selectedIndex].value == '-3' ? 'inline' : 'none';
 		}
 	}
