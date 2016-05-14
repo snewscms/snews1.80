@@ -4,6 +4,7 @@ Updates - for final version
 -------------------------
 *** 14 May ***
 - Javascript rewrite focus and verified by lint (Noje + Gulp + gulp-jshint)
+- Javascript compressed (compress.js) same as admin.js
 - [update_articles] fixed
 - [value] removed, not used
 - variable: artorder fixed on articles
