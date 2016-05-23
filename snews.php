@@ -98,7 +98,9 @@ function retrieve($column, $table, $field, $value) {
 
 // SITE - Automatically detects the scripts location.
 function site() {
-	$host = 'http://'.$_SERVER['HTTP_HOST'];
+	// try to guess protocol (tested with Apache 2) - default is http
+	$httpproto = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? 'https://' : 'http://';
+	$host = $httpproto.$_SERVER['HTTP_HOST'];
 	$directory = dirname($_SERVER['SCRIPT_NAME']);
 	$website = $directory == '/' ? $host.'/' : $host.$directory.'/';
 	return $website;
