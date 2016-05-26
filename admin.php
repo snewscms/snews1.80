@@ -86,7 +86,6 @@ function showAdmAddons() {
 	echo '</div>';
 }
 
-
 // SETTINGS FORM
 function settings() {
 	echo '<div class="adminpanel"><p class="admintitle">'.l('settings_title').'</p>';
