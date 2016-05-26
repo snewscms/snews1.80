@@ -72,18 +72,20 @@ function administration() {
 
 // SHOW ADDONS IN ADMIN
 function showAdmAddons() {
+	global $l;
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.l('admin_addons').'</p>';
 	$funcs = readAddons();
 	if (!empty($funcs)) {
 		$list = explode(',', $funcs);
 		for ($i=0; $i < count($list); $i++) {
-			$name = str_replace('admin_', '', $list[$i]);
-			echo '<p>'.l('hello_title').': <a href="'._SITE.'?action='.$list[$i].'">Admin</a>';
+			$name = $l[str_replace('admin_', '', $list[$i]).'_title'];
+			echo '<p>'.$name.': <a href="'._SITE.'?action='.$list[$i].'">Admin</a>';
 		}
 	}
 	echo '</div>';
 }
+
 
 // SETTINGS FORM
 function settings() {
