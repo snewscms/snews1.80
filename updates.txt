@@ -11,5 +11,7 @@ Updates - for final version
 
 
 *** 27 May ***
-skiane report update_articles issue
-- fixed for sqlite and mysql
+Thanks to skiane - issue/commits/pull requests
+- [update_articles] - fixed support for sqlite and mysql
+- [site] - add support for https
+- [showAdmAddons] - Fix add name in admin section

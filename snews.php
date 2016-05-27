@@ -2,8 +2,9 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		May 27, 2016 - 18:40 GMT+0
+  Last Update		May 27, 2016 - 22:45 GMT+0
   Developpers: 		Rui Mendes, Nukpana
+  Contributors:		Skiane
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
 -------------------------------------------------------------------------------- */
@@ -98,7 +99,8 @@ function retrieve($column, $table, $field, $value) {
 
 // SITE - Automatically detects the scripts location.
 function site() {
-	$host = 'http://'.$_SERVER['HTTP_HOST'];
+	$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? 'https://' : 'http://';
+	$host = $protocol.$_SERVER['HTTP_HOST'];	
 	$directory = dirname($_SERVER['SCRIPT_NAME']);
 	$website = $directory == '/' ? $host.'/' : $host.$directory.'/';
 	return $website;
