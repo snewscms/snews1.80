@@ -8,3 +8,8 @@ Updates - for final version
 - [update_articles] fixed
 - [value] removed, not used
 - variable: artorder fixed on articles
+
+
+*** 27 May ***
+skiane report update_articles issue
+- fixed for sqlite and mysql

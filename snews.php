@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		May 14, 2016 - 18:20 GMT+0
+  Last Update		May 27, 2016 - 18:40 GMT+0
   Developpers: 		Rui Mendes, Nukpana
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -234,11 +234,12 @@ function update_articles() {
 	$last_date = s('last_date');
 	$updatetime = !empty($last_date) ? strtotime($last_date) : time();
 	$dif_time = time() - $updatetime;
-	$now = strtotime("now");
 	if ($dif_time > 1200 || empty($last_date)) {
+		$now = defined('DBTYPE') && DBTYPE == 'sqlite' ? 
+			'datetime('.strtotime("now").')' : 'NOW()';
 		$sql1 = "UPDATE "._PRE."articles 
 			SET published = 1 
-			WHERE published = 2	AND date <= datetime($now)";
+			WHERE published = 2 AND date <= ".$now;
 		if ($q1 = db() -> query($sql1)) {
 			$q1->fetch();
 		}
