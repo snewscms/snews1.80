@@ -21,7 +21,8 @@ function ini_value($section, $key, $file = 'config.php') {
 	if( $ini !== $file ) {	
 		$ini   = $file;		
 		$array = parse_ini_file($file, TRUE);
-	} $value = isset($array[$section][$key]) ? $array[$section][$key] : '';
+	}
+	$value = isset($array[$section][$key]) ? $array[$section][$key] : '';
 	return $value;
 }
 
@@ -57,7 +58,8 @@ function dbfetch($result, $prepared = false, $args = '') {
 			$result -> execute($args);
 		} catch (PDOException $msg) {
 			die ('Connection error, because: '.$msg->getMessage());
-		} return $result;
+		}
+		return $result;
 	}
 }
 
@@ -80,21 +82,25 @@ function populate_retr_cache($selector, $value) {
 				$retr_cache_cat['seftitle'][$r['seftitle']] = $r['name'];
 			}
 		}	
-	} return isset($retr_cache_cat[$selector][$value]) ? $retr_cache_cat[$selector][$value] : '';
+	}
+	return isset($retr_cache_cat[$selector][$value]) ? $retr_cache_cat[$selector][$value] : '';
 }
 
 // RETRIEVE FUNCTION
 function retrieve($column, $table, $field, $value) {
-	if (is_null($value)) {return null;} $list = explode(',', $column);
+	if (is_null($value)) {return null;}
+	$list = explode(',', $column);
 	if ($table == 'categories') {
 		if ($column == 'name') {return populate_retr_cache('seftitle', $value);}
 		else if ($column == 'seftitle') {return populate_retr_cache('id', $value);}
-	} $retrieve = null;
+	}
+	$retrieve = null;
 	$query = "SELECT $column FROM "._PRE."$table WHERE $field = '$value'";
 	if ($result = db() -> query($query)) {
 		$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 		if (isset($rows[0])) {$retrieve = count($list)> 1 ? $rows[0] : $rows[0][$column];}
-	} return $retrieve;
+	}
+	return $retrieve;
 }
 
 // SITE - Automatically detects the scripts location.
@@ -104,16 +110,19 @@ function site() {
 	$directory = dirname($_SERVER['SCRIPT_NAME']);
 	$website = $directory == '/' ? $host.'/' : $host.$directory.'/';
 	return $website;
-} $_TYPE = 0;
+}
+$_TYPE = 0;
 
 // INFO LINE TAGS
-function tags($tag) { static $tags;
+function tags($tag) {
+	static $tags;
 	if (!$tags) {
 		$tags = array(
 			'infoline' => '<p class="date">,readmore,comments,date,edit,</p>',
 			'comments' => '<p class="meta">,name, '.l('on').' ,date,edit,</p>,<p class="comment">,comment,</p>'
 		);
-	} return $tags[$tag];
+	}
+	return $tags[$tag];
 }
 
 // CONSTANTS
@@ -137,7 +146,8 @@ function s($var) { static $site_settings;
 				$site_settings[$r['name']] = $r['value'];
 			}
 		}
-	} $value = $site_settings[$var];
+	}
+	$value = $site_settings[$var];
 	return $value;
 }
 
@@ -155,7 +165,8 @@ function checkMathCaptcha() {
 	unset($_SESSION[_SITE.'mathCaptcha-digit']);
 	if (is_numeric($testNumber) && is_numeric($_POST['calc']) && ($testNumber == $_POST['calc'])) {
 		$result = true;
-	} return $result;
+	}
+	return $result;
 }
 
 // MATH CAPTCHA
@@ -196,15 +207,20 @@ function readAddons() { static $admin_mods; global $l;
 					$admin_mods[] = 'admin_'.$name;
 				}
 			}
-		} closedir($fd); return;
+		}
+		closedir($fd);
+		return;
 	} else {return implode('', $admin_mods);}
-} readAddons();
+}
+readAddons();
 
 // LANGUAGE VARIABLES
 	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
 
 // LANGUAGE
-function l($var) { static $lang; global $l;
+function l($var) {
+	static $lang;
+	global $l;
 	if (!$lang) {
 		$lang = load_lang();
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
@@ -228,7 +244,8 @@ function l($var) { static $lang; global $l;
 		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,config.php';
 		$lang['ignored_items'].= ','.s('language').'.php';
 		while (list($key, $value) = each($l)) {$lang[$key] = $value;}
-	} return $lang[$var];
+	}
+	return $lang[$var];
 }
 
 // ARTICLES - FUTURE POSTING
@@ -276,7 +293,8 @@ function cat_rel($var, $column) {
 	$sub = "SELECT $column FROM "._PRE.'categories'." WHERE id = $categoryid";
 	if ($res = db() -> query($sub)) {
 		while ($c = dbfetch($res)) {$child = $c[$column];}
-	} return $parent.$child;
+	}
+	return $parent.$child;
 }
 
 // CONTENTS COUNTER OR MAX
@@ -285,9 +303,10 @@ function stats($table, $position, $other = '', $count = true) {
 	$pos = !empty($position) ? " WHERE position = $position" : "";
 	$alternative = empty($position) && !empty($other)? " WHERE ".$other : "";
 	$query = 'SELECT '.$field.' as num FROM '._PRE.$table.$pos.$alternative;
+	$numrows = 0;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {$numrows = $r['num'];}
-	} else {$numrows = 0;}
+	}
 	return $numrows;
 }
 
@@ -385,7 +404,8 @@ if ($_GET) {
 					AND c.seftitle = "'.$subcatSEF.'"
 					'.$pub_c.$pub_x ;
 				$_TYPE = 3;
-			} unset($num);
+			}
+			unset($num);
 		} else {
 			# [TYPE = 4] - PAGINATOR
 			if (substr($categorySEF, 0, 2) == l('paginator')) {$MainQuery = ''; $_TYPE = 4;}
@@ -416,10 +436,12 @@ if ($_GET) {
 					unset($subcatSEF, $articleSEF);
 					set_error();
 				}
-			} else {$_TYPE = 11;} update_articles();
+			} else {$_TYPE = 11;}
+			update_articles();
 		}
+	}
 	// ADMIN
-	} if (_ADMIN && isset($_GET['action'])) {
+	if (_ADMIN && isset($_GET['action'])) {
 		$url = explode('/', clean($_GET['action']));
 		$categorySEF = $url[0];
 	}
@@ -428,7 +450,8 @@ if ($_GET) {
 } else {
 	if (s('display_page') !== 0) {$_ID = s('display_page'); $_TYPE = 7;}
 	else {$_TYPE = 8;}
-} unset($Try_Article, $MainQuery, $result, $pub_a, $pub_b, $pub_c, $pub_x);
+}
+unset($Try_Article, $MainQuery, $result, $pub_a, $pub_b, $pub_c, $pub_x);
 
 // GLOBAL DATA
 if (isset($R)) {
@@ -773,7 +796,8 @@ function clean_mysql($text) {
 		/*$find = array('<', '>');
 		$replace = array('&lt;', '&gt;');
 		$text = str_replace($find, $replace, $text);*/
-	} return $text;
+	}
+	return $text;
 }
 
 // MENU ARTICLES
@@ -810,14 +834,16 @@ function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 				echo  '<li><a href="'._SITE.$link.'/'.$r['asef'].'/"
 					title="'.$r['name'].' / '.$r['title'].' ('.$date.')">'.$r['title'].$name.'</a>
 				</li>'; $n++;
-			} if ($n == 0) {echo $no_articles;}
+			}
+			if ($n == 0) {echo $no_articles;}
 		} else {echo $no_articles;}
 }
 
 // ARTICLES
 function articles() {
 	global $categorySEF, $subcatSEF, $_NAME, $articleSEF, $_ID, $_POS, $_catID, $_XNAME, $_TYPE;
-	$frontpage = s('display_page'); $num = 0;
+	$frontpage = s('display_page');
+	$num = 0;
 	$display = intval(s('display_page'));
 	$admin = '<a href="'._SITE.'administration/" title="'.l('administration').'">'.l('administration').'</a>';
 	$title_not_found  = '<h2>'.l('none_yet').'</h2>';
@@ -997,7 +1023,8 @@ function xss_clean() { static $BlackList;
 			'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart',
 			'onstop', 'onsubmit', 'onunload');
 		$BlackList = array_merge($ra1, $ra2);
-	} return $BlackList;
+	}
+	return $BlackList;
 }
 $XSS_cache = array();
 
@@ -1070,7 +1097,8 @@ function filterTags($source) {
 function cleanXSS($val) {
 	if ($val != "") {
 		global $XSS_cache;
-		if (!empty($XSS_cache) && array_key_exists($val, $XSS_cache)) return $XSS_cache[$val];
+		if (!empty($XSS_cache) && array_key_exists($val, $XSS_cache))
+			return $XSS_cache[$val];
 		$source = html_entity_decode($val, ENT_QUOTES, 'ISO-8859-1');
 		$source = preg_replace('/&#38;#(\d+);/mi','chr(\\1)', $source);
 		$source = preg_replace('/&#38;#x([a-f0-9]+);/mi','chr(0x\\1)', $source);
@@ -1300,7 +1328,8 @@ function archive($start = 0, $size = 200) {
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$Or_id[] = 'a.id ='.$r['id'];
-		} $last = '';
+		}
+		$last = '';
 		$Or_id = implode(' OR ', $Or_id);
 		$qwr = 'SELECT
 				title,a.seftitle AS asef,a.date AS date,
@@ -1497,7 +1526,8 @@ function new_comments($number = 5, $stringlen = 30) {
 			AND approved = \'True\'
 		ORDER BY co.id DESC LIMIT '.$number;
 	if ($result = db() -> query($query)) {
-	 	$comlim = s('comment_limit'); $num = 0;
+		$comlim = s('comment_limit');
+		$num = 0;
 	 	$comment_limit = $comlim < 1 ? 1 : $comlim;
 	 	$comments_order = s('comments_order');
 	 	while ($r = dbfetch($result)) {
@@ -1902,12 +1932,11 @@ function send_email($send_array) {
 		$status = mail($to, $subject, $body, $header);
 		if ($status != false) {echo notification(0, l('contact_sent'), 'home'); return true;}
 		echo notification(1, l('contact_not_sent'), 'home');
-		return false;
 	} else {
 		$message = l('contact_not_sent').'<p>'.l('mail_nexists').'</p>';
 		echo notification(1, $message, '');
-		return false;
 	}
+	return false;
 }
 
 // MAKE A CLEAN SEF URL
@@ -1950,7 +1979,8 @@ function center() {
 				if (isset($_POST['addon']) && function_exists('public_'.$categorySEF)) {
 					$func = 'public_'.$categorySEF;
 					$func(); return; break;
-				} else {set_error();} return; break;
+				} else {set_error();}
+				return; break;
 		}
 	# CHECK GET NOW
 	} else if ($_GET) {
@@ -1996,7 +2026,8 @@ function center() {
 								if (function_exists('public_'.$categorySEF)) {
 									$func = 'public_'.$categorySEF;
 									$func(); return;
-								} articles();
+								}
+								articles();
 							}
 					}
 				} else {
