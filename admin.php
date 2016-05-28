@@ -1197,7 +1197,7 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {$rows = $r['total'];}
 	}
-	return ($rows == 0);
+	return ($rows > 0);
 }
 
 // HIDE/SHOW
