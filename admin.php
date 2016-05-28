@@ -5,7 +5,8 @@ $pagename = substr($_SERVER['SCRIPT_NAME'], strripos($_SERVER['SCRIPT_NAME'], DI
 if ($pagename == 'admin.php') {die('Bye bye');}
 if (!defined('SECURE_ID') || SECURE_ID != '1234') { // SECURE_ID MUST BE THE SAME AS config.php
 	die('ACCESS DENIED');
-} if (!_ADMIN) {echo( notification(1, l('error_not_logged_in'), 'login')); set_error();}
+}
+if (!_ADMIN) {echo( notification(1, l('error_not_logged_in'), 'login')); set_error();}
 
 
 // ADMINISTRATION
@@ -216,7 +217,8 @@ function admin_categories() {
 					    echo ($sub['published'] != 'YES' ? ' '.l('divider').' ['.l('status').' '.l('unpublished').']' : '');
 					    echo '</p>'; $tab2++;
 					}
-				} $tab++;
+				}
+				$tab++;
 			}
 		}
 	}
@@ -1191,11 +1193,11 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 			break;
 	}
 	$query = 'SELECT count(DISTINCT id) as total FROM '.$sql;
+	$rows = 0;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {$rows = $r['total'];}
-	} else {$rows = 0;}
-	if ($rows == 0) {return false;} 
-	else {return true;}
+	}
+	return ($rows == 0);
 }
 
 // HIDE/SHOW
@@ -1264,9 +1266,8 @@ function processing() {
 	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
 	$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
 	$publish_category = isset($_POST['publish']) && $_POST['publish'] == 'on' ? 'YES' : 'NO';
-	$fpost_enabled = false;
-	if (isset($_POST['fposting']) && $_POST['fposting'] == 'on') {
-		$fpost_enabled = true;
+	$fpost_enabled = isset($_POST['fposting']) && $_POST['fposting'] == 'on';
+	if ($fpost_enabled) {
 		$date = $_POST['fposting_year'].'-'.$_POST['fposting_month'].'-'.$_POST['fposting_day'].' '.
 		$_POST['fposting_hour'].':'.$_POST['fposting_minute'].':00';
 		if (date('Y-m-d H:i:s') < $date) $publish_article = 2;
@@ -1528,7 +1529,8 @@ function processing() {
 										':cat_order'=> $catorder,
 										':id'	=> $id
 									]);
-								} break;
+								}
+								break;
 							# DELETE CATEGORY
 							case (isset($_POST['delete_category'])):
 								$any_subcats = stats('categories', '', 'subcat = '.$id);
@@ -1688,7 +1690,7 @@ function processing() {
 										}
 									}
 								}
-								if ($fpost_enabled == true) {
+								if ($fpost_enabled) {
 									$future = "date = '$date',";
 									//allows backdating of article
 									$publish_article = strtotime($date) < time() ? 1 : $publish_article;
@@ -1815,7 +1817,8 @@ function processing() {
 							delete_item('comments', 'articleid', $r['id']);
 							delete_item('articles', 'id', $r['id']);
 							if (isset($r['subcat'])) {$list[] = $r['subcat'];}
-						} delete_item('categories', 'subcat', $id);
+						}
+						delete_item('categories', 'subcat', $id);
 						delete_cat($id);
 					} echo notification(0, '', 'snews_categories'); break;
 				# DELETE COMMENT
