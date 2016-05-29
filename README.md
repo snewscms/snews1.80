@@ -11,7 +11,7 @@ sNews consists of one engine file (snews.php), one config file (config.php), one
 **Before installing, please check that your server meets the minimum system requirements:**
 
   - [Apache Server] with mod_rewrite module enabled
-  - One Database : [MySQL] / [sQLite] ...
+  - One Database with PDO connection: [MySQL] / [sQLite] ...
   - [PHP] : Hypertext Preprocessor, minimum version 5.1
  
 
