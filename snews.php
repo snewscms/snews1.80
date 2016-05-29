@@ -111,7 +111,8 @@ function site() {
 	$directory = dirname($_SERVER['SCRIPT_NAME']);
 	$website = $directory == '/' ? $host.'/' : $host.$directory.'/';
 	return $website;
-} $_TYPE = 0;
+}
+$_TYPE = 0;
 
 // INFO LINE TAGS
 function tags($tag) {
@@ -214,9 +215,15 @@ function readAddons() {
 		}
 		closedir($fd);
 		return;
+<<<<<<< HEAD
 	}
 	else {return implode('', $admin_mods);}
 } readAddons();
+=======
+	} else {return implode('', $admin_mods);}
+}
+readAddons();
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 
 // LANGUAGE VARIABLES
 	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
@@ -307,10 +314,14 @@ function stats($table, $position, $other = '', $count = true) {
 	$pos = !empty($position) ? " WHERE position = $position" : "";
 	$alternative = empty($position) && !empty($other)? " WHERE ".$other : "";
 	$query = 'SELECT '.$field.' as num FROM '._PRE.$table.$pos.$alternative;
+	$numrows = 0;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {$numrows = $r['num'];}
 	}
+<<<<<<< HEAD
 	else {$numrows = 0;}
+=======
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 	return $numrows;
 }
 
@@ -419,8 +430,12 @@ if ($_GET) {
 				$_TYPE = 3;
 			}
 			unset($num);
+<<<<<<< HEAD
 		}
 		else {
+=======
+		} else {
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 			# [TYPE = 4] - PAGINATOR
 			if (substr($categorySEF, 0, 2) == l('paginator')) {$MainQuery = ''; $_TYPE = 4;}
 			else {
@@ -450,8 +465,12 @@ if ($_GET) {
 					unset($subcatSEF, $articleSEF);
 					set_error();
 				}
+<<<<<<< HEAD
 			}
 			else {$_TYPE = 11;}
+=======
+			} else {$_TYPE = 11;}
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 			update_articles();
 		}
 	}
@@ -817,7 +836,8 @@ function clean_mysql($text) {
 		/*$find = array('<', '>');
 		$replace = array('&lt;', '&gt;');
 		$text = str_replace($find, $replace, $text);*/
-	} return $text;
+	}
+	return $text;
 }
 
 // MENU ARTICLES
@@ -845,6 +865,7 @@ function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 			'.$subcat.'
 		ORDER BY date DESC
 			LIMIT '."$start, $size";
+<<<<<<< HEAD
 	if ($result = db() -> query($query)) {
 		$n = 0;
 		while ($r = dbfetch($result)) {
@@ -859,6 +880,20 @@ function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 		if ($n == 0) {echo $no_articles;}
 	}
 	else {echo $no_articles;}
+=======
+		if ($result = db() -> query($query)) {
+			$n = 0;
+			while ($r = dbfetch($result)) {
+				$name = s('show_cat_names') == 'on' ? ' ('.$r['name'].')' : '';
+				$date = date(s('date_format'), strtotime($r['date']));
+				$link = isset($r['xsef']) ? $r['xsef'].'/'.$r['csef'] : $r['csef'];
+				echo  '<li><a href="'._SITE.$link.'/'.$r['asef'].'/"
+					title="'.$r['name'].' / '.$r['title'].' ('.$date.')">'.$r['title'].$name.'</a>
+				</li>'; $n++;
+			}
+			if ($n == 0) {echo $no_articles;}
+		} else {echo $no_articles;}
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 }
 
 // ARTICLES
@@ -1123,9 +1158,14 @@ function filterTags($source) {
 function cleanXSS($val) {
 	if ($val != "") {
 		global $XSS_cache;
+<<<<<<< HEAD
 		if (!empty($XSS_cache) && array_key_exists($val, $XSS_cache))  {
 			return $XSS_cache[$val];
 		}
+=======
+		if (!empty($XSS_cache) && array_key_exists($val, $XSS_cache))
+			return $XSS_cache[$val];
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 		$source = html_entity_decode($val, ENT_QUOTES, 'ISO-8859-1');
 		$source = preg_replace('/&#38;#(\d+);/mi','chr(\\1)', $source);
 		$source = preg_replace('/&#38;#x([a-f0-9]+);/mi','chr(0x\\1)', $source);
@@ -1571,7 +1611,11 @@ function new_comments($number = 5, $stringlen = 30) {
 			AND approved = \'True\'
 		ORDER BY co.id DESC LIMIT '.$number;
 	if ($result = db() -> query($query)) {
+<<<<<<< HEAD
 	 	$comlim = s('comment_limit');
+=======
+		$comlim = s('comment_limit');
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 		$num = 0;
 	 	$comment_limit = $comlim < 1 ? 1 : $comlim;
 	 	$comments_order = s('comments_order');
@@ -1991,8 +2035,12 @@ function send_email($send_array) {
 		$status = mail($to, $subject, $body, $header);
 		if ($status != false) {echo notification(0, l('contact_sent'), 'home'); return true;}
 		echo notification(1, l('contact_not_sent'), 'home');
+<<<<<<< HEAD
 	}
 	else {
+=======
+	} else {
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 		$message = l('contact_not_sent').'<p>'.l('mail_nexists').'</p>';
 		echo notification(1, $message, '');
 	}
@@ -2042,6 +2090,7 @@ function center() {
 			default :
 				if (isset($_POST['addon']) && function_exists('public_'.$categorySEF)) {
 					$func = 'public_'.$categorySEF;
+<<<<<<< HEAD
 					$func();
 					return;
 					break;
@@ -2049,6 +2098,11 @@ function center() {
 				else {set_error();}
 			return;
 			break;
+=======
+					$func(); return; break;
+				} else {set_error();}
+				return; break;
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 		}
 	}
 	# CHECK GET NOW
@@ -2095,8 +2149,12 @@ function center() {
 								}
 								if (function_exists('public_'.$categorySEF)) {
 									$func = 'public_'.$categorySEF;
+<<<<<<< HEAD
 									$func();
 									return;
+=======
+									$func(); return;
+>>>>>>> b781ea8a44ce6d5efd2adb0c2b98713b44e96677
 								}
 								articles();
 							}
