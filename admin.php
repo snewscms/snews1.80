@@ -444,7 +444,8 @@ function form_articles($contents) {
 				$edit_option = $r['position'] == 0 ? 1 : $r['position'];
 				$edit_page = $r['page_extra'];
 				$extraid = $r['extraid'];
-				$title = $r['seftitle'];
+				$title = $r['title'];
+				$seftitle = $r['seftitle'];
 				$text = $r['text'];
 				$dmeta = $r['description_meta'];
 				$keywords = $r['keywords_meta'];
@@ -476,7 +477,7 @@ function form_articles($contents) {
 		}
 		$frm_action = _SITE.'?action=process&amp;task=admin_article&amp;id='.$id;
 		$frm_title = isset($_SESSION[_SITE.'temp']['title']) ? $_SESSION[_SITE.'temp']['title'] : $title;
-		$frm_sef_title = isset($_SESSION[_SITE.'temp']['seftitle']) ? cleanSEF($_SESSION[_SITE.'temp']['seftitle']) : $title;
+		$frm_sef_title = isset($_SESSION[_SITE.'temp']['seftitle']) ? cleanSEF($_SESSION[_SITE.'temp']['seftitle']) : $seftitle;
 		$frm_text = isset($_SESSION[_SITE.'temp']['text']) ? str_replace('&', '&amp;', $_SESSION[_SITE.'temp']['text']) : $text;
 		$frm_meta_desc = isset($_SESSION[_SITE.'temp']['description_meta']) ?
 			cleanSEF($_SESSION[_SITE.'temp']['description_meta']) : $dmeta;
