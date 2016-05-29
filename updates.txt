@@ -15,3 +15,8 @@ Thanks to skiane - issue/commits/pull requests
 - [update_articles] - fixed support for sqlite and mysql
 - [site] - add support for https
 - [showAdmAddons] - Fix add name in admin section
+
+*** 29 May ***
+- remove block "# DELETE ARTICLES FROM SUB-CATEGORY" in admin.php not used
+- improved lisibility by skiane and Rui
+- title replaced by seftitleby @RobsWebsites - fixed by skiane
