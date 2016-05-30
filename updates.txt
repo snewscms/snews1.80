@@ -20,3 +20,8 @@ Thanks to skiane - issue/commits/pull requests
 - remove block "# DELETE ARTICLES FROM SUB-CATEGORY" in admin.php not used
 - improved lisibility by skiane and Rui
 - title replaced by seftitleby @RobsWebsites - fixed by skiane
+
+*** 30 May ***
+- [search] - Skiane report "fixed number of search result (uninitialized var)"
+- With this Pull I found an issue for non existing query 
+- Repport and issue fixed - Now is working for mysql and sqlite

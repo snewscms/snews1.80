@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		May 29, 2016 - 13:10 GMT+0
+  Last Update		May 30, 2016 - 6:45 GMT+0
   Developpers: 		Rui Mendes, Nukpana, Skiane
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
@@ -1641,7 +1641,7 @@ function search($limit = 20) {
 	else {
 		$keywords = explode(' ', $search_query);
 		$keyCount = count($keywords);
-		$query = 'SELECT a.id
+		$query = 'SELECT a.id, COUNT(DISTINCT a.id) as total
 			FROM '._PRE.'articles'.' AS a
 			LEFT OUTER JOIN '._PRE.'categories'.' as c
 				ON a.category = c.id AND c.published =\'YES\'
@@ -1671,9 +1671,15 @@ function search($limit = 20) {
 		}
 		$query = $query.' ORDER BY a.id DESC LIMIT '.$limit;
 		if ($result = db() -> query($query)) {
-			$numrows = $result->rowCount();
+			while ($r = dbfetch($result)) {
+				$Or_id[] = 'a.id ='.$r['id'];
+				$numrows = $r['total'];
+			}
+			if ($numrows == 0) {
+				echo '<p>'.l('noresults').'<strong>'.stripslashes($search_query).'</strong>.</p>';
+				return;
+			}
 			echo '<p><strong>'.$numrows.'</strong> '.l('resultsfound').' <strong>'.stripslashes($search_query).'</strong>.</p>';
-			while ($r = dbfetch($result)) {$Or_id[] = 'a.id ='.$r['id'];}
 			$Or_id = implode(' OR ',$Or_id);
 			$sql = 'SELECT
 					title, a.seftitle AS asef, a.date AS date,
@@ -1698,9 +1704,6 @@ function search($limit = 20) {
 					echo '<p><a href="'._SITE.$link.$s['asef'].'/">'.$s['title'].$name.'</a> - '.$date.'</p>';
 				}
 			}
-		}
-		else {
-			echo '<p>'.l('noresults').'<strong>'.stripslashes($search_query).'</strong>.</p>';
 		}
 	}
 	echo '<p><a href="'._SITE.'">'.l('backhome').'</a></p>';
