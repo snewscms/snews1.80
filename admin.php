@@ -12,6 +12,38 @@ if (!_ADMIN){
 	set_error();
 }
 
+// FORM GENERATOR
+function html_input($type, $name, $id, $value, $label, $css, $script1, $script2, $script3, $checked, $rows, $cols, $method, $action, $legend) {
+	$lbl = !empty($label) ? '<label for="'.$id.'">'.$label.'</label>' : '';
+	$ID = !empty($id) ? ' id="'.$id.'"' : '';
+	$style = !empty($css) ? ' class="'.$css.'"' : '';
+	$js1 = !empty($script1) ? ' '.$script1 : '';
+	$js2 = !empty($script2) ? ' '.$script2 : '';
+	$js3 = !empty($script3) ? ' '.$script3 : '';
+	$attribs = $ID.$style.$js1.$js2.$js3;
+	$val = ' value="'.$value.'"';
+	$input = '<input type="'.$type.'" name="'.$name.'"'.$attribs;
+	switch ($type) {
+		case 'form': $output = (!empty($method) && $method != 'end') ?
+			'<form method="'.$method.'" action="'.$action.'"'.$attribs.' accept-charset="'.s('charset').'">' : '</form>'; break;
+		case 'fieldset': $output = (!empty($legend) && $legend != 'end') ?
+			'<fieldset><legend'.$attribs.'>'.$legend.'</legend>' : '</fieldset>'; break;
+		case 'text':
+		case 'password': $output = '<p>'.$lbl.':<br />'.$input.$val.' /></p>'; break;
+		case 'checkbox':
+		case 'radio': $check = $checked == 'ok' ? ' checked="checked"' : ''; $output = '<p>'.$input.$check.' /> '.$lbl.'</p>'; break;
+		case 'hidden':
+		case 'submit':
+		case 'reset':
+		case 'button': $output = $input.$val.' />'; break;
+		case 'textarea':
+			$output = '<p>'.$lbl.':<br />
+			<textarea name="'.$name.'" rows="'.$rows.'" cols="'.$cols.'"'.$attribs.'>'.$value.
+			'</textarea></p>';
+			break;
+	}
+	return $output;
+}
 
 // ADMINISTRATION
 function administration() {
@@ -1785,7 +1817,7 @@ function processing() {
 										}
 									}
 									delete_item('articles', 'id', $id);
-									delete_item('articles', 'articleid', $id);
+									delete_item('comments', 'articleid', $id);
 									if ($id == s('display_page')) {
 										$qwr1 = "UPDATE "._PRE.'settings'." SET VALUE = :val WHERE name = :name";
 										if ($r1 = db() -> prepare($qwr1)) {

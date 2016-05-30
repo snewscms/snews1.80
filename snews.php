@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		May 30, 2016 - 7:20 GMT+0
+  Last Update		May 30, 2016 - 20:00 GMT+0
   Developpers: 		Rui Mendes, Nukpana, Skiane
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
@@ -216,7 +216,8 @@ function readAddons() {
 		return;
 	}
 	else {return implode('', $admin_mods);}
-} readAddons();
+}
+readAddons();
 
 // LANGUAGE VARIABLES
 	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
@@ -1330,22 +1331,29 @@ function comment($freeze_status) {
 			}
 			// end var retrieval
 			$art_value = empty($articleSEF) ? $subcatSEF : $articleSEF;
-			echo '<div class="commentsbox"><h2>'.l('addcomment').'</h2>'."\r\n";
-			echo '<p>'.l('required').'</p>'."\r\n";
-			echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', _SITE, '')."\r\n";
-			echo html_input('text', 'name', 'name', $name, '* '.l('name'), 'text', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('text', 'url', 'url', $url, l('url'), 'text', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('textarea', 'text', 'text', $comment, '* '.l('comment'), '', '', '', '', '', '5', '5', '', '', '')."\r\n";
-			echo mathCaptcha()."\r\n";
-			echo '<p>';
-			echo html_input('hidden', 'category', 'category', $categorySEF, '', '', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('hidden', 'id', 'id', $_ID, '', '', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('hidden', 'article', 'article', $art_value, '', '', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('hidden', 'commentspage', 'commentspage', $back_to_page, '', '', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('hidden', 'ip', 'ip', $_SERVER['REMOTE_ADDR'], '', '', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo html_input('hidden', 'time', 'time', time(), '', '', '', '', '', '', '', '', '', '', '');
-			echo html_input('submit', 'comment', 'comment', l('submit'), '', 'button', '', '', '', '', '', '', '', '', '')."\r\n";
-			echo '</p></form></div>';
+			echo '
+				<div class="commentsbox">
+					<h2>'.l('addcomment').'</h2>
+					<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
+						<p>'.l('required').'</p>
+						<p><label for="name">* ',l('name'),'</label>:<br />
+						<input type="text" name="name" id="name" maxlength="50" class="text" value="'.$name.'" /></p>
+						<p><label for="url">* ',l('url'),'</label>:<br />
+						<input type="text" name="url" id="url" maxlength="100" class="text" value="'.$url.'" /></p>
+						<p><label for="url">* ',l('comment'),'</label>:<br />
+						<textarea name="text" id="text" rows="5" cols="5">'.$comment.'</textarea></p>
+						',mathCaptcha(),'
+						<p>
+							<input type="hidden" name="category" id="category" value="',$categorySEF,'" />
+							<input type="hidden" name="id" id="id" value="',$_ID,'" />
+							<input type="hidden" name="article" id="article" value="',$art_value,'" />
+							<input type="hidden" name="commentspage" id="commentspage" value="',$back_to_page,'" />
+							<input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
+							<input type="hidden" name="time" id="time" value="',time(),'" />
+							<input type="submit" name="comment" id="comment" class="button" value="',l('submit'),'" />
+						</p>
+					</form>
+				</div>';
 		}
 		else {
 			echo '<p>'.l('frozen_comments').'</p>';
@@ -1492,27 +1500,26 @@ function sitemap() {
 // CONTACT FORM
 function contact() {
 	if (!isset($_POST['contactform'])) {
-	$_SESSION[_SITE.'time'] = $time = time();
-	echo
-	'<div class="commentsbox">
-		<h2>'.l('contact').'</h2>
-		<p>'.l('required').'</p>
-		<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
-			<p><label for="name">* ',l('name'),'</label>:<br />
-			<input type="text" name="name" id="name" maxlength="100" class="text" value="" /></p>
-			<p><label for="email">* ',l('email'),'</label>:<br />
-			<input type="text" name="email" id="email" maxlength="320" class="text" value="" /></p>
-			<p><label for="weblink">',l('url'),'</label>:<br />
-			<input type="text" name="weblink" id="weblink"  maxlength="160" class="text" value="" /></p>
-			<p><label for="message">* ',l('message'),'</label>:<br />
-			<textarea name="message" rows="5" cols="5" id="message"></textarea></p>
-			',mathCaptcha(),'
-			<p><input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
-			<input type="hidden" name="time" id="time" value="',time(),'" />
-			<input type="submit" name="contactform" id="contactform" class="button" value="',l('submit'),'" /></p>
-		</form>
-	</div>';
-
+		$_SESSION[_SITE.'time'] = $time = time();
+		echo '
+			<div class="contactbox">
+				<h2>'.l('contact').'</h2>
+				<p>'.l('required').'</p>
+				<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
+					<p><label for="name">* ',l('name'),'</label>:<br />
+					<input type="text" name="name" id="name" maxlength="100" class="text" value="" /></p>
+					<p><label for="email">* ',l('email'),'</label>:<br />
+					<input type="text" name="email" id="email" maxlength="320" class="text" value="" /></p>
+					<p><label for="weblink">',l('url'),'</label>:<br />
+					<input type="text" name="weblink" id="weblink"  maxlength="160" class="text" value="" /></p>
+					<p><label for="message">* ',l('message'),'</label>:<br />
+					<textarea name="message" rows="5" cols="5" id="message"></textarea></p>
+					',mathCaptcha(),'
+					<p><input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
+					<input type="hidden" name="time" id="time" value="',time(),'" />
+					<input type="submit" name="contactform" id="contactform" class="button" value="',l('submit'),'" /></p>
+				</form>
+			</div>';
 	}
 	else if (isset($_SESSION[_SITE.'time'])) {
 		$count = $magic = 0;
@@ -1556,19 +1563,19 @@ function contact() {
 // NEW COMMENTS
 function new_comments($number = 5, $stringlen = 30) {
 	$query = 'SELECT
-			a.id AS aid,title,a.seftitle AS asef,
-			category,co.id,articleid,co.name AS coname,comment,
+			a.id AS aid,a.title,a.seftitle AS asef,
+			a.category,co.id,co.articleid,co.name AS coname,co.comment,
 			c.name,c.seftitle AS csef,c.subcat,
 			x.name,x.seftitle AS xsef
 		FROM '._PRE.'comments'.' AS co
 		LEFT OUTER JOIN '._PRE.'articles'.' AS a
-			ON articleid = a.id
+			ON co.articleid = a.id
 		LEFT OUTER JOIN '._PRE.'categories'.' AS c
-			ON category = c.id AND c.published =\'YES\'
+			ON a.category = c.id AND c.published =\'YES\'
 		LEFT OUTER JOIN '._PRE.'categories'.' AS x
 			ON c.subcat = x.id AND x.published =\'YES\'
 		WHERE a.published = 1 AND (a.commentable = \'YES\' || a.commentable = \'FREEZ\' )
-			AND approved = \'True\'
+			AND co.approved = \'True\'
 		ORDER BY co.id DESC LIMIT '.$number;
 	if ($result = db() -> query($query)) {
 	 	$comlim = s('comment_limit');
@@ -1597,8 +1604,9 @@ function new_comments($number = 5, $stringlen = 30) {
 			$ncom.= strlen($name) < $stringlen ? ')' : '';
 			$ncom = str_replace(' ...', '...', $ncom);
 			$paging = $page > 1 ? '/'.l('comment_pages').$page : '';
-			if (isset($r['xsef'])) { $link = $r['xsef'].'/'; }
-			if (isset($r['csef'])) { $link = !empty($link) ? $r['csef'].'/' : ''; }
+			$link = '';
+			if (isset($r['xsef'])) { $link .= $r['xsef'].'/'; }
+			if (isset($r['csef'])) { $link .= !empty($r['csef']) ? $r['csef'].'/' : ''; }
 			$link .= $r['asef'];
 			echo '<li><a href="'._SITE.$link.$paging.'/#'.l('comment').$ordinal.'"
 					title="'.l('comment_info').' '.$r['title'].'">'.$ncom.'</a>
@@ -1769,58 +1777,31 @@ function verify_login() {
 // LOGIN
 function login() {
 	if (!_ADMIN) {
-		echo '<div class="adminpanel">
-		<h2>'.l('login').'</h2>';
-		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', _SITE.'verify/', '');
-		echo '<p>'.l('login_limit').'</p>';
-		echo html_input('text', 'uname', 'uname', '', l('username'), 'text', '', '', '', '', '', '', '', '', '');
-		echo html_input('password', 'pass', 'pass', '', l('password'), 'text', '', '', '', '', '', '', '', '', '');
-		echo mathCaptcha();
-		echo '<p>';
 		$sid = substr(session_id(), 2, 7);
 		$key = md5(ini_value('SECURITY', 'string_hash'));
-		echo html_input('hidden', 'sid', 'sid', crypt($sid, '$6$'.$key), '', '', '', '', '', '', '', '', '', '', '');
-		echo html_input('hidden', 'Loginform', 'Loginform', 'True', '', '', '', '', '', '', '', '', '', '', '');
-		echo html_input('submit', 'submit', 'submit', l('login'), '', 'button', '', '', '', '', '', '', '', '', '');
-		echo '</p></form></div>';
+		$encryped = crypt($sid, '$6$'.$key);
+		echo '
+		<div class="adminpanel">
+			<h2>'.l('login').'</h2>
+			<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
+				<p>'.l('login_limit').'</p>
+				<p><label for="uname">* ',l('username'),'</label>:<br />
+				<input type="text" name="uname" id="uname" maxlength="40" class="text" value="" /></p>
+				<p><label for="pass">* ',l('username'),'</label>:<br />
+				<input type="password" name="pass" id="pass" maxlength="40" class="text" value="" /></p>
+				',mathCaptcha(),'
+				<p>
+					<input type="hidden" name="sid" id="sid" value="',$encryped,'" />
+					<input type="hidden" name="Loginform" id="Loginform" value="True" />
+					<input type="submit" name="submit" id="submit" class="button" value="',l('login'),'" />
+				</p>
+			</form>
+		</div>';
 	}
 	else {
 		echo '<h2>'.l('logged_in').'</h2>
 			<p><a href="'._SITE.'logout/" title="'.l('logout').'">'.l('logout').'</a></p>';
 	}
-}
-
-// FORM GENERATOR
-function html_input($type, $name, $id, $value, $label, $css, $script1, $script2, $script3, $checked, $rows, $cols, $method, $action, $legend) {
-	$lbl = !empty($label) ? '<label for="'.$id.'">'.$label.'</label>' : '';
-	$ID = !empty($id) ? ' id="'.$id.'"' : '';
-	$style = !empty($css) ? ' class="'.$css.'"' : '';
-	$js1 = !empty($script1) ? ' '.$script1 : '';
-	$js2 = !empty($script2) ? ' '.$script2 : '';
-	$js3 = !empty($script3) ? ' '.$script3 : '';
-	$attribs = $ID.$style.$js1.$js2.$js3;
-	$val = ' value="'.$value.'"';
-	$input = '<input type="'.$type.'" name="'.$name.'"'.$attribs;
-	switch ($type) {
-		case 'form': $output = (!empty($method) && $method != 'end') ?
-			'<form method="'.$method.'" action="'.$action.'"'.$attribs.' accept-charset="'.s('charset').'">' : '</form>'; break;
-		case 'fieldset': $output = (!empty($legend) && $legend != 'end') ?
-			'<fieldset><legend'.$attribs.'>'.$legend.'</legend>' : '</fieldset>'; break;
-		case 'text':
-		case 'password': $output = '<p>'.$lbl.':<br />'.$input.$val.' /></p>'; break;
-		case 'checkbox':
-		case 'radio': $check = $checked == 'ok' ? ' checked="checked"' : ''; $output = '<p>'.$input.$check.' /> '.$lbl.'</p>'; break;
-		case 'hidden':
-		case 'submit':
-		case 'reset':
-		case 'button': $output = $input.$val.' />'; break;
-		case 'textarea':
-			$output = '<p>'.$lbl.':<br />
-			<textarea name="'.$name.'" rows="'.$rows.'" cols="'.$cols.'"'.$attribs.'>'.$value.
-			'</textarea></p>'; 
-			break;
-	}
-	return $output;
 }
 
 // LISTS CATEGORIES
@@ -1837,7 +1818,8 @@ function category_list($id) {
 			$child = retrieve('subcat', 'categories', 'id', $var);
 			if ($r['id'] == $child) {
 				echo '<option value="'.$r['id'].'"'.$selected.'>'.$r['name'].'</option>';
-			} elseif ($id!=$r['id']){
+			} else
+			if ($id != $r['id']){
 				echo '<option value="'.$r['id'].'">'.$r['name'].'</option>';
 			}
 		}
