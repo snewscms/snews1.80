@@ -1671,6 +1671,7 @@ function search($limit = 20) {
 		}
 		$query = $query.' ORDER BY a.id DESC LIMIT '.$limit;
 		if ($result = db() -> query($query)) {
+			$numrows = $result->rowCount();
 			echo '<p><strong>'.$numrows.'</strong> '.l('resultsfound').' <strong>'.stripslashes($search_query).'</strong>.</p>';
 			while ($r = dbfetch($result)) {$Or_id[] = 'a.id ='.$r['id'];}
 			$Or_id = implode(' OR ',$Or_id);
