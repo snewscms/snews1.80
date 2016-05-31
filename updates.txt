@@ -25,3 +25,9 @@ Thanks to skiane - issue/commits/pull requests
 - [search] - Skiane report "fixed number of search result (uninitialized var)"
 - With this Pull I found an issue for non existing query 
 - Repport and issue fixed - Now is working for mysql and sqlite
+- [login] - modify to html code
+- [comment] - form modification for html code
+- [html_input] - moved to admin.php
+- [new_comments] - have a link issue
+- delete comments when user delete a article
+- css add ".contactbox" in same style (commentsbox)
