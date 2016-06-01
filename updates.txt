@@ -1,4 +1,4 @@
-sNews 1.80 Reborn
+sNews 1.80 Reborn - Test drive
 
 Updates - for final version
 -------------------------
@@ -31,3 +31,8 @@ Thanks to skiane - issue/commits/pull requests
 - [new_comments] - have a link issue
 - delete comments when user delete a article
 - css add ".contactbox" in same style (commentsbox)
+
+*** 01 June ***
+- [update_articles] modify db()->fetch() to db()->exec(...)
+- [checkUserPass] some change
+- empty limitation with php by skiane

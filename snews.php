@@ -2,8 +2,8 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		May 30, 2016 - 20:00 GMT+0
-  Developpers: 		Rui Mendes, Nukpana, Skiane
+  Last Update		June 01, 2016 - 11:20 GMT+0
+  Developpers: 		Rui Mendes, Skiane, Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -93,13 +93,17 @@ function retrieve($column, $table, $field, $value) {
 	$list = explode(',', $column);
 	if ($table == 'categories') {
 		if ($column == 'name') {return populate_retr_cache('seftitle', $value);}
-		else if ($column == 'seftitle') {return populate_retr_cache('id', $value);}
+		else if ($column == 'seftitle') {
+			return populate_retr_cache('id', $value);
+		}
 	}
 	$retrieve = null;
 	$query = "SELECT $column FROM "._PRE."$table WHERE $field = '$value'";
 	if ($result = db() -> query($query)) {
 		$rows = $result->fetchAll(PDO::FETCH_ASSOC);
-		if (isset($rows[0])) {$retrieve = count($list)> 1 ? $rows[0] : $rows[0][$column];}
+		if (isset($rows[0])) {
+			$retrieve = count($list)> 1 ? $rows[0] : $rows[0][$column];
+		}
 	}
 	return $retrieve;
 }
@@ -189,10 +193,9 @@ function mathCaptcha() {
 function checkUserPass($input) {
 	$output = clean(cleanXSS($input));
 	$output = strip_tags($output);
-	if (ctype_alnum($output) === true && strlen($output) > 3 && strlen($output) < 14) {
-		return $output;
-	}
-	else {return null;}
+	$result = ctype_alnum($output) === true && 
+		strlen($output) > 3 && strlen($output) < 14 ? $output : null;
+	return $result;
 }
 
 // INCLUDE ADDONS
@@ -259,45 +262,38 @@ function update_articles() {
 	$updatetime = !empty($last_date) ? strtotime($last_date) : time();
 	$dif_time = time() - $updatetime;
 	if ($dif_time > 1200 || empty($last_date)) {
-		$now = defined('DBTYPE') && DBTYPE == 'sqlite' ? 
-			'datetime('.strtotime("now").')' : 'NOW()';
-		$sql1 = "UPDATE "._PRE."articles 
-			SET published = 1 
-			WHERE published = 2 AND date <= ".$now;
-		if ($q1 = db() -> query($sql1)) {
-			$q1->fetch();
-		}
 		$date = date('Y-m-d H:i:s');
-		$sql2 = "UPDATE "._PRE."settings
-			SET value = '$date'
-			WHERE name = 'last_date' AND value = '$last_date'";
-		if ($q2 = db() -> query($sql2)) {
-			$q2->fetch();
-		}
+		$now = defined('DBTYPE') && DBTYPE == 'sqlite' ? 'datetime('.strtotime("now").')' : 'NOW()';
+		db()->exec("UPDATE "._PRE."articles SET published = 1 WHERE published = 2 AND date <= $now");
+		db()->exec("UPDATE "._PRE."settings	SET value = '$date'	WHERE name = 'last_date' AND value = '$last_date'");
 	}
 }
 
 // CATEGORY CHECK
 function check_category($category) {
 	$main_menu = explode(',', l('cat_listSEF'));
-	if (in_array($category, $main_menu)) {return true;}
-	else {return false;}
+	return in_array($category, $main_menu) ? true : false;
 }
 
 // GET PARENT/CHILD FROM AN id
 function cat_rel($var, $column) {
-	$categoryid = $var;	$parent = '';
+	$parent = '';
+	$categoryid = $var;
 	$join = "SELECT parent.$column 
 		FROM "._PRE.'categories'." as child
 		INNER JOIN "._PRE.'categories'." as parent
 			ON parent.id = child.subcat
 		WHERE child.id = $categoryid";
 	if ($result = db() -> query($join)) {
-		while ($r = dbfetch($result)) {$parent = $r[$column].'/';}
+		while ($r = dbfetch($result)) {
+			$parent = $r[$column].'/';
+		}
 	}
 	$sub = "SELECT $column FROM "._PRE.'categories'." WHERE id = $categoryid";
 	if ($res = db() -> query($sub)) {
-		while ($c = dbfetch($res)) {$child = $c[$column];}
+		while ($c = dbfetch($res)) {
+			$child = $c[$column];
+		}
 	}
 	return $parent.$child;
 }
@@ -306,10 +302,12 @@ function cat_rel($var, $column) {
 function stats($table, $position, $other = '', $count = true) {
 	$field = $count != false ? 'count(DISTINCT id)' : 'MAX(catorder)';
 	$pos = !empty($position) ? " WHERE position = $position" : "";
-	$alternative = empty($position) && !empty($other)? " WHERE ".$other : "";
+	$alternative = empty($position) && !empty($other) ? " WHERE ".$other : "";
 	$query = 'SELECT '.$field.' as num FROM '._PRE.$table.$pos.$alternative;
 	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {$numrows = $r['num'];}
+		while ($r = dbfetch($result)) {
+			$numrows = $r['num'];
+		}
 	}
 	else {$numrows = 0;}
 	return $numrows;
@@ -464,8 +462,11 @@ if ($_GET) {
 }
 // HOME
 else {
-	if (s('display_page') !== 0) {$_ID = s('display_page'); $_TYPE = 7;}
-	else {$_TYPE = 8;}
+	if (s('display_page') !== 0) {
+		$_ID = s('display_page'); $_TYPE = 7;
+	} else {
+		$_TYPE = 8;
+	}
 }
 unset($Try_Article, $MainQuery, $result, $pub_a, $pub_b, $pub_c, $pub_x);
 
@@ -484,7 +485,10 @@ if (isset($R)) {
 }
 
 // SET COMMENTS PAGE FOR -> /CATEGORY/ARTICLE/
-if (isset($url[3]) && !$_XNAME) {$commentsPage = $url[2]; $_TYPE = 9;}
+if (isset($url[3]) && !$_XNAME) {
+	$commentsPage = $url[2];
+	$_TYPE = 9;
+}
 
 // TITLE
 function title() {
@@ -1336,12 +1340,18 @@ function comment($freeze_status) {
 					<h2>'.l('addcomment').'</h2>
 					<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
 						<p>'.l('required').'</p>
-						<p><label for="name">* ',l('name'),'</label>:<br />
-						<input type="text" name="name" id="name" maxlength="50" class="text" value="'.$name.'" /></p>
-						<p><label for="url">* ',l('url'),'</label>:<br />
-						<input type="text" name="url" id="url" maxlength="100" class="text" value="'.$url.'" /></p>
-						<p><label for="url">* ',l('comment'),'</label>:<br />
-						<textarea name="text" id="text" rows="5" cols="5">'.$comment.'</textarea></p>
+						<p>
+							<label for="name">* ',l('name'),'</label>:<br />
+							<input type="text" name="name" id="name" maxlength="50" class="text" value="'.$name.'" />
+						</p>
+						<p>
+							<label for="url">* ',l('url'),'</label>:<br />
+							<input type="text" name="url" id="url" maxlength="100" class="text" value="'.$url.'" />
+						</p>
+						<p>
+							<label for="url">* ',l('comment'),'</label>:<br />
+							<textarea name="text" id="text" rows="5" cols="5">'.$comment.'</textarea>
+						</p>
 						',mathCaptcha(),'
 						<p>
 							<input type="hidden" name="category" id="category" value="',$categorySEF,'" />
@@ -1506,18 +1516,28 @@ function contact() {
 				<h2>'.l('contact').'</h2>
 				<p>'.l('required').'</p>
 				<form method="post" action="'._SITE.'" id="post" accept-charset="UTF-8">
-					<p><label for="name">* ',l('name'),'</label>:<br />
-					<input type="text" name="name" id="name" maxlength="100" class="text" value="" /></p>
-					<p><label for="email">* ',l('email'),'</label>:<br />
-					<input type="text" name="email" id="email" maxlength="320" class="text" value="" /></p>
-					<p><label for="weblink">',l('url'),'</label>:<br />
-					<input type="text" name="weblink" id="weblink"  maxlength="160" class="text" value="" /></p>
-					<p><label for="message">* ',l('message'),'</label>:<br />
-					<textarea name="message" rows="5" cols="5" id="message"></textarea></p>
+					<p>
+						<label for="name">* ',l('name'),'</label>:<br />
+						<input type="text" name="name" id="name" maxlength="100" class="text" value="" />
+					</p>
+					<p>
+						<label for="email">* ',l('email'),'</label>:<br />
+						<input type="text" name="email" id="email" maxlength="320" class="text" value="" />
+					</p>
+					<p>
+						<label for="weblink">',l('url'),'</label>:<br />
+						<input type="text" name="weblink" id="weblink"  maxlength="160" class="text" value="" />
+					</p>
+					<p>
+						<label for="message">* ',l('message'),'</label>:<br />
+						<textarea name="message" rows="5" cols="5" id="message"></textarea>
+					</p>
 					',mathCaptcha(),'
-					<p><input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
-					<input type="hidden" name="time" id="time" value="',time(),'" />
-					<input type="submit" name="contactform" id="contactform" class="button" value="',l('submit'),'" /></p>
+					<p>
+						<input type="hidden" name="ip" id="ip" value="',$_SERVER['REMOTE_ADDR'],'" />
+						<input type="hidden" name="time" id="time" value="',time(),'" />
+						<input type="submit" name="contactform" id="contactform" class="button" value="',l('submit'),'" />
+					</p>
 				</form>
 			</div>';
 	}
@@ -1619,9 +1639,13 @@ function new_comments($number = 5, $stringlen = 30) {
 // SEARCH FORM
 function searchform() { ?>
 	<form id="search_engine" method="post" action="<?php echo _SITE; ?>" accept-charset="<?php echo s('charset');?>">
-		<p><input class="searchfield" name="search_query" type="text" id="keywords" value="<?php echo l('search_keywords');
-?>" onfocus="document.forms['search_engine'].keywords.value='';" onblur="if (document.forms['search_engine'].keywords.value == '') document.forms['search_engine'].keywords.value='<?php echo l('search_keywords'); ?>';" />
-		<input class="searchbutton" name="submit" type="submit" value="<?php echo l('search_button')?>" /></p>
+		<p>
+			<input class="searchfield" name="search_query" type="text" id="keywords" value="<?php echo l('search_keywords');?>" 
+				onfocus="document.forms['search_engine'].keywords.value='';" 
+				onblur="if (document.forms['search_engine'].keywords.value == '') 
+					document.forms['search_engine'].keywords.value='<?php echo l('search_keywords'); ?>';" />
+			<input class="searchbutton" name="submit" type="submit" value="<?php echo l('search_button')?>" />
+		</p>
 	</form>
 <?php }
 
@@ -1937,7 +1961,7 @@ function file_include($text, $shorten) {
 			}
 			else {
 				if (preg_match('/^[a-z0-9_\-.\/]+$/i', $text[$i])) {
-					$filename=$text[$i];
+					$filename = $text[$i];
 					file_exists($filename) ? include($filename) : print l('error_file_exists');
 				}
 				else {

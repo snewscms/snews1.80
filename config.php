@@ -3,16 +3,16 @@
 
 [DATABASE]
 ; database engine (mysql,sqlite)
-engine = "sqlite"
+engine = "mysql"
 
-; database.dsn	= "mysql:host=localhost;dbname=snews17"
-dsn = "sqlite:snews.db3"
+; database.dsn	= "sqlite:snews.db3"
+dsn = "mysql:host=localhost;dbname=snews18"
 
 ; Database User
 user = "root"
 
 ; Database Password
-pass = "password"
+pass = ""
 
 ; Database Options
 options[PDO::ATTR_AUTOCOMMIT] = "false"
