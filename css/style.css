@@ -241,6 +241,13 @@ margin:0 0 10px;
 padding:10px;
 }
 
+.comment_limit {
+white-space: pre-line;
+width: 490px;
+overflow: hidden;
+text-overflow: visible;
+}
+
 .date {
 border-top:1px solid #eee;
 margin:0 0 20px;

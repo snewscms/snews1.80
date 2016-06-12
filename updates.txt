@@ -36,3 +36,17 @@ Thanks to skiane - issue/commits/pull requests
 - [update_articles] modify db()->fetch() to db()->exec(...)
 - [checkUserPass] some change
 - empty limitation with php by skiane
+
+*** 12 June ***
+- [cleanXSS] - function modified
+- [transformTags] - New function - to transform tags
+- [clean_link] - New function - to convert link to BBCode Link
+- [restore_link] - New function - convert BBCode link back to html
+- [cleanComment] - New function for comments (convert malicious code to text)
+- [search] - now accept multi-queries like "snews, color" generates multi-results. 
+It is different if you search for "snews color", in this case both words must match for search
+- [logout] - destroy session,create new and generate new session_id
+- [new_comments] - modify query for better
+- [filterTags] removed
+- [XSS_cache] removed
+- filter_var and filter_input will be WIP (work in progress)

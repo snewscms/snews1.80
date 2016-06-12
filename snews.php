@@ -2,8 +2,8 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		June 01, 2016 - 11:20 GMT+0
-  Developpers: 		Rui Mendes, Skiane, Nukpana
+  Last Update		June 12, 2016 - 14:00 GMT+0
+  Developpers: 		Rui Mendes, Stéphane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -160,15 +160,18 @@ function s($var) {
 function clean($text) {
 	if (get_magic_quotes_gpc()) {$text = stripslashes($text);}
 	$text = strip_tags(htmlspecialchars($text));
+	if (function_exists('filter_var')) {
+		$text = filter_var($text, FILTER_SANITIZE_STRING);
+	}
 	return $text;
 }
 
 // CHECK MATH CAPTCHA RESULT
 function checkMathCaptcha() {
 	$result = false;
-	$testNumber = isset($_SESSION[_SITE.'mathCaptcha-digit']) ? $_SESSION[_SITE.'mathCaptcha-digit'] : 'none';
+	$testNumber = isset($_SESSION[_SITE.'mathCaptcha-digit']) ? intval($_SESSION[_SITE.'mathCaptcha-digit']) : 'none';
 	unset($_SESSION[_SITE.'mathCaptcha-digit']);
-	if (is_numeric($testNumber) && is_numeric($_POST['calc']) && ($testNumber == $_POST['calc'])) {
+	if (is_numeric($testNumber) && is_numeric($_POST['calc']) && ($testNumber == intval($_POST['calc']))) {
 		$result = true;
 	}
 	return $result;
@@ -191,7 +194,7 @@ function mathCaptcha() {
 
 // USER/PASS CHECK
 function checkUserPass($input) {
-	$output = clean(cleanXSS($input));
+	$output = cleanXSS($input);
 	$output = strip_tags($output);
 	$result = ctype_alnum($output) === true && 
 		strlen($output) > 3 && strlen($output) < 14 ? $output : null;
@@ -342,7 +345,8 @@ function notification($error = 0, $note = '', $link = '') {
 // CHECK URL - NOT HOME
 if ($_GET) {
 	if (isset($_GET['category']) && !empty($_GET['category'])) {
-		$url = explode('/', clean($_GET['category']));
+		$url = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING);
+		$url = explode('/', clean($url)); //$url = explode('/', clean($_GET['category']));
 		# CATEGORY
 		$categorySEF = $url[0];
 		if (check_category($categorySEF)) {$_catID = 0;}
@@ -440,8 +444,12 @@ if ($_GET) {
 		}
 		// MAIN QUERY
 		if (!empty($MainQuery)) {
-			if ($main = db() -> query($MainQuery)) {$R = dbfetch($main);}
-			else if (!in_array($_GET['action'], explode(',', l('cat_listSEF')))) {
+			$action = isset($_GET['action']) ? clean($_GET['action']) : '';
+			if ($main = db() -> query($MainQuery)) {
+				$R = dbfetch($main);
+			} else
+			if (!in_array($action, explode(',', l('cat_listSEF')))) {
+			//else if (!in_array($_GET['action'], explode(',', l('cat_listSEF')))) {
 				if (function_exists('public_'.$categorySEF)) {$TYPE = 10;}
 				else {
 					$categorySEF = '404';
@@ -797,7 +805,10 @@ function set_error() {
 
 // LOGOUT
 function logout() {
+	$_SESSION = array();
 	session_destroy();
+	session_start();
+	session_regenerate_id();
 	echo '<meta http-equiv="refresh" content="2; url='._SITE.'">';
 	echo '<h2>'.l('log_out').'</h2>';
 }
@@ -1031,148 +1042,126 @@ function cleanWords($text) {
 	return $text;
 }
 
-// XSS CLEAN
-function xss_clean() {
-	static $BlackList;
-	if (!$BlackList) {
-		$ra1 = array('applet', 'body', 'bgsound', 'base', 'basefont', 'embed', 'frame', 'frameset', 'head', 'html',
-			'id', 'iframe', 'ilayer', 'layer', 'link', 'meta', 'name', 'object', 'script', 'style', 'title', 'xml');
-		$ra2 = array('javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'style', 'script',
-			'embed', 'object', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base',
-			'onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy',
-			'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint',
-			'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick',
-			'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged',
-			'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave',
-			'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus',
-			'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload',
-			'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover',
-			'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange',
-			'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit',
-			'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart',
-			'onstop', 'onsubmit', 'onunload');
-		$BlackList = array_merge($ra1, $ra2);
-	}
-	return $BlackList;
-}
-$XSS_cache = array();
-
-
-//FILTER TAGS
-function filterTags($source) {
-	$tagBlacklist = xss_clean();
-	$preTag = NULL;
-	$postTag = $source;
-	$tagOpen_start = strpos($source, '<');
-	while ($tagOpen_start !== FALSE) {
-		$preTag .= substr($postTag, 0, $tagOpen_start);
-		$postTag = substr($postTag, $tagOpen_start);
-		$fromTagOpen = substr($postTag, 1);
-		$tagOpen_end = strpos($fromTagOpen, '>');
-		if ($tagOpen_end === false) {break;}
-		$tagOpen_nested = strpos($fromTagOpen, '<');
-		if (($tagOpen_nested !== false) && ($tagOpen_nested < $tagOpen_end)) {
-			$preTag .= substr($postTag, 0, ($tagOpen_nested+1));
-			$postTag = substr($postTag, ($tagOpen_nested+1));
-			$tagOpen_start = strpos($postTag, '<');
-			continue;
-		}
-		$tagOpen_nested = (strpos($fromTagOpen, '<') + $tagOpen_start + 1);
-		$currentTag = substr($fromTagOpen, 0, $tagOpen_end);
-		$tagLength = strlen($currentTag);
-		if (!$tagOpen_end) {
-			$preTag .= $postTag;
-			$tagOpen_start = strpos($postTag, '<');
-		}
-		$tagLeft = $currentTag;
-		$attrSet = array();
-		$currentSpace = strpos($tagLeft, ' ');
-		if (substr($currentTag, 0, 1) == '/') {
-			$isCloseTag = TRUE;
-			list($tagName) = explode(' ', $currentTag);
-			$tagName = substr($tagName, 1);
-		}
-		else {
-			$isCloseTag = FALSE;
-			list($tagName) = explode(' ', $currentTag);
-		}
-		if ((!preg_match('/^[a-z][a-z0-9]*$/i',$tagName)) || (!$tagName) || ((in_array(strtolower($tagName), $tagBlacklist)))) {
-			$postTag = substr($postTag, ($tagLength + 2));
-			$tagOpen_start = strpos($postTag, '<');
-			continue;
-		}
-		while ($currentSpace !== FALSE) {
-			$fromSpace = substr($tagLeft, ($currentSpace+1));
-			$nextSpace = strpos($fromSpace, ' ');
-			$openQuotes = strpos($fromSpace, '"');
-			$closeQuotes = strpos(substr($fromSpace, ($openQuotes+1)), '"') + $openQuotes + 1;
-			if (strpos($fromSpace, '=') !== FALSE) {
-				if (($openQuotes !== FALSE) && (strpos(substr($fromSpace, ($openQuotes+1)), '"') !== FALSE))
-					$attr = substr($fromSpace, 0, ($closeQuotes+1));
-					else $attr = substr($fromSpace, 0, $nextSpace);
-			}
-			else {$attr = substr($fromSpace, 0, $nextSpace);}
-			if (!$attr) $attr = $fromSpace;
-				$attrSet[] = $attr;
-				$tagLeft = substr($fromSpace, strlen($attr));
-				$currentSpace = strpos($tagLeft, ' ');
-		}
-		$postTag = substr($postTag, ($tagLength + 2));
-		$tagOpen_start = strpos($postTag, '<');
-	}
-	$preTag .= $postTag;
-	return $preTag;
+// CLEAN_XSS
+function cleanXSS($val, $all = false) {
+	if (empty($val)) {return $val;}
+	$source = htmlentities($val, ENT_COMPAT, s('charset'), true);
+	$source = !empty($test) ? $test : $val;
+	$source = preg_replace('/&([a-z])(acute|uml|circ|grave|ring|cedil|slash|tilde|caron|lig|quot|rsquo);/i', '\\1', $source );
+	$source = html_entity_decode($source, ENT_QUOTES, s('charset'));
+	$source = function_exists('filter_var') ? filter_var($source, FILTER_SANITIZE_STRING) : $source;
+	$source = preg_replace('/&#38;#(\d+);/mi','chr(\\1)', $source);
+	$source = preg_replace('/&#38;#x([a-f0-9]+);/mi','chr(0x\\1)', $source);
+	$source = preg_replace('/&(amp;)?#?[a-z0-9]+;/i', '-', $source);
+	$source = preg_replace("/(<|&#x3c;)([a-zA-Z])(>)([^<].+?)(<\/\\2>)/mi", '$4', $source);
+	$source = preg_replace("/(<|&#x3c;)(.+?)(>)/mi", '', $source);
+	$badtag = 'javascript|vbscript|body|html|refresh|document.location|document.cookie|\+|alert|feed:|data:|expression|\/etc\/passwd';
+	$badtag.= '|\/etc\/httpd\/conf\/httpd.conf|cgi-bin|autofocus|blink|codebase';
+	$source = preg_replace("/(".$badtag.")/mi", '', $source);
+	$source = $all ? preg_replace("/[^a-zA-Z0-9\s_-]/mi", '', $source) : nl2br($source);
+	return $source;
 }
 
-// CLEANXSS
-function cleanXSS($val) {
+// SOME TAGS ARE NOT ALLOWED 
+function transformTags($source) {
+	$ignore = array('<', '>', '&nvgt;', '"', '\\\'', '"');
+	$replace= array('&lt;', '&gt;', '&amp;nvgt;','&quot;', '&#39;', '&#34;');
+	for ($i = 1; $i < count($source); $i++) {
+		$source[$i] = str_replace($ignore, $replace, $source[$i]);
+	}
+	unset($source[0]);
+	return implode($source);
+}
+
+// CLEAN URL TO BBCODE
+function clean_link($url) {
+	if (isset($url[1]) && preg_match('/((http)+(s)?:(\/\/)|(www\.))([a-z0-9_\-]+)/', $url[1])) {
+		$link = $url[1];
+		$name = isset($url[2]) && !empty($url[2]) ? $url[2] : 'link';
+		return '[a='.$link.']'.$name.'[/a]';
+	}
+	return '&lt;a href="'.(isset($url[1]) ? $url[1] : '').'"&gt;'.(isset($url[2]) ? $url[2] : '').'&lt;/a&gt;';
+}
+
+// RESTORE TO HTML CODE
+function restore_link($url) {
+	$link = isset($url[1]) && preg_match('/((http)+(s)?:(\/\/)|(www\.))([a-z0-9_\-]+)/', $url[1]) ? $url[1] : '#';
+	$name = isset($url[2]) && !empty($url[2]) ? $url[2] : 'link';
+	return '<a href="'.$link.'">'.$name.'</a>';
+}
+
+// CLEAN COMMENTS
+function cleanComment($val) {
 	if ($val != "") {
-		global $XSS_cache;
-		if (!empty($XSS_cache) && array_key_exists($val, $XSS_cache))  {
-			return $XSS_cache[$val];
-		}
-		$source = html_entity_decode($val, ENT_QUOTES, 'ISO-8859-1');
+		# MODIFY SOME CHARS
+		$val = str_replace(array('[lt]', '[gt]', ':[:', ':]:'), array('', '', '', ''), $val);
+		$val = str_replace(array('&lt;', '&gt;'), array('[lt]', '[gt]'), $val);
+		$source = html_entity_decode($val, ENT_QUOTES, s('charset'));
 		$source = preg_replace('/&#38;#(\d+);/mi','chr(\\1)', $source);
 		$source = preg_replace('/&#38;#x([a-f0-9]+);/mi','chr(0x\\1)', $source);
-		while ($source != filterTags($source)) {
-			$source = filterTags($source);
-		}
+		$find_it = array("&", "'", '<!--', '-->', '<![>', '<![CDATA[>', '<?', '?>', '<! ');
+		$replace = array('&amp;', '&#39;', '&lt;!--', '--&gt;', '&lt;![&gt;', '&lt;![CDATA[&gt;', '&lt;?', '?&gt;', '&lt;! ');
+		$source = str_replace($find_it, $replace, $source);
+		# LINK
+		$source = preg_replace_callback("#<a\shref=\"([^\"].+?)\">([\w+].+){1}</a>#mi", 'clean_link', $source);
+		# ON-ATTRIBUTE NOT ALLOWED
+		$source = preg_replace_callback("/(<)([a-zA-z].+?)([^>].+?)(on[a-zA-Z]?)([^>].+?>)/mi", 'transformTags', $source);
+		# SPECIAL ATTRIBUTES
+		$attributes = 'javascript|expression|vbscript|code|codebase|blink|autofocus|poster|refresh';
+		$source = preg_replace_callback("#(<)(\w+\s)([^>].+?){0,1}(".$attributes.")([^>].+?){0,1}(>)#mi", 'transformTags', $source);
+		# TAGS ONLY ALLOWED IS BASIC <tag>...</tag>
+		$allowed = 'b|blockquote|cite|code|dd|del|del|dt|em|i|s|span|p|pre|sup|strong';
+		$source = preg_replace('/<('.$allowed.')>(.+)<\/\\1>/mi', ':[:$1:]:$2:[:/$1:]:', $source);
+		# MAYBE MALICIOUS CODE
+		$bad = 'script|body|html|head|header|xss|form|button|applet|object|xml|meta|style|title|embed|gsound|base|link|basefont|ul|li|ol|eval';
+		$bad.= '|frameset|iframe|frame|ilayer|layer|bgsound|input|math|maction|picture|svg|id|name|video|sound|source|div|table|x|img|param';
+		$source = preg_replace_callback("#(<[^<])(".$bad.")(>)(.+?)(</\\2>)#mi", 'transformTags', $source);
+		$source = preg_replace_callback("#(<)(".$bad.")(.+?){0,1}(>)#mi", 'transformTags', $source);
+		$source = preg_replace_callback("#(</)(".$bad.")(.+?){0,1}(>)#mi", 'transformTags', $source);
+		# BAD LINKS/TAGS
+		$source = preg_replace_callback("#<a\s(.+?){0,1}>(.+)</a>#mi", 'transformTags', $source);
+		$source = preg_replace("#(</)(a|".$allowed.")(>)#mi", "&lt;/$2&gt;", $source);
+		$source = preg_replace("#(<)(".$allowed.")(\s)#mi", "&lt;$2$3", $source);
+		$source = preg_replace("#(</\s)([^>].+?)(>)#mi", "&lt;/$2&gt;", $source);
+		$source = preg_replace("#(<!)([^>].+?)(>)#mi", "&lt;!$2&gt;", $source);
+		$source = preg_replace("#(</)(".$bad.")([^>].+?){0,1}(>)#mi", "&lt;$2$3&gt;", $source);
+		$source = preg_replace("#(<)([^>].+?){1}(>){0}#mi", "&lt;$2$3", $source);
+		$source = preg_replace("#(</)(".$bad."|".$allowed.")([^>].+?){0,1}(>){0}#mi", "&lt;!$2$3", $source);
+		# SPACES
 		$source = nl2br($source);
-		$XSS_cache[$val] = $source;
+		# RESTORE SOME TAGS
+		$source = preg_replace_callback("#\[a=(.+?)\](.+)\[/a\]#mi", 'restore_link', $source);
+		$source = preg_replace('/:\[:('.$allowed.'):\]:(.+):\[:\/\\1:\]:/mi', '<$1>$2</$1>:', $source);
+		$source = str_replace(array('[lt]', '[gt]'), array('&amp;lt;', '&amp;gt;'), $source);
 		return $source;
 	}
-	return $val;
+	return clean($val);
 }
 
 // COMMENTS
 function comment($freeze_status) {
  	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $commentsPage;
- 	if (isset($commentsPage)) {
- 		$commentsPage = str_replace(l('comment_pages'),'',$commentsPage);
- 	}
- 	if (strpos($articleSEF, l('paginator')) === 0) {
- 		$articleSEF = str_replace(l('paginator'), '', $articleSEF);
- 	}
- 	if (!isset($commentsPage) || !is_numeric($commentsPage) || $commentsPage < 1) {
- 		$commentsPage = 1;
- 	}
+ 	$commentsPage = isset($commentsPage) ? str_replace(l('comment_pages'), '', $commentsPage) : 1;
+ 	$commentsPage = !is_numeric($commentsPage) || $commentsPage < 1 ? 1 : $commentsPage;
+ 	$articleSEF = strpos($articleSEF, l('paginator')) === 0 ? str_replace(l('paginator'), '', $articleSEF) : $articleSEF;
  	echo '<h3>'.l('comments').'</h3>';
  	$comments_order = s('comments_order');
  	if (isset($_POST['comment'])) {
 		$comment = cleanWords(trim($_POST['text']));
-		$comment = strlen($comment) > 4 ? clean(cleanXSS($comment)) : null;
-		$name = trim($_POST['name']);
-		$name = preg_replace('/[^a-zA-Z0-9_\s-]/', '', $name);
-		if (empty($name)) {$name = 'Anonymous';}
-		$name = strlen($name) > 1 ? clean(cleanXSS($name)) : null;
+		$comment = strlen($comment) > 4 ? cleanComment($comment) : null;
+		$name = cleanXSS($_POST['name']);
+		if (empty($name)) {$name = l('anonymous');}
+		$name = strlen($name) > 1 ? $name : null;
 		$url = trim($_POST['url']);
 		$url = preg_replace('/[^a-zA-Z0-9_:\/\.-]/', '', $url);
-		$url = (strlen($url) > 8 && strpos($url, '?') === false) ? clean(cleanXSS($url)) : null;
-		$post_article_id = (is_numeric($_POST['id']) && $_POST['id'] > 0) ? $_POST['id'] : null;
-		$ip = (strlen($_POST['ip']) < 16) ? clean(cleanXSS($_POST['ip'])) : null;
+		$url = function_exists('filter_var') ? filter_var($url, FILTER_VALIDATE_URL) : $url;
+		$url = (strlen($url) > 8 && strpos($url, '?') === false) ? cleanXSS($url) : null;
+		$post_article_id = (is_numeric($_POST['id']) && $_POST['id'] > 0) ? intval($_POST['id']) : null;
+		$ip = (strlen($_POST['ip']) < 16) ? cleanXSS($_POST['ip']) : null;
+		$ip = function_exists('filter_var') ? filter_var($ip, FILTER_VALIDATE_IP) : $ip;
 		if (_ADMIN) {
 			$doublecheck = 1;
-			$ident=1;
+			$ident = 1;
 		}
 		else {
 			$contentCheck = retrieve('id', 'comments', 'comment', $comment);
@@ -1239,12 +1228,13 @@ function comment($freeze_status) {
 			$_SESSION[_SITE.'comment']['comment'] = br2nl($comment);
 			$_SESSION[_SITE.'comment']['url'] = $url;
 			$_SESSION[_SITE.'comment']['fail'] = $fail;
+			unset($_SESSION[_SITE.'mathCaptcha-digit']);
 		}
 		echo '<h2>'.$commentStatus.'</h2>';
 		if (!empty($commentReason)) {
 			echo '<p>'.$commentReason.'</p>';
 		}
-		$postArt = clean(cleanXSS($_POST['article']));
+		$postArt = cleanXSS($_POST['article']);
 		$postArtID = retrieve('category', 'articles', 'id', $post_article_id);
 		if ($postArtID == 0) {
 			$postCat = '' ;
@@ -1280,6 +1270,7 @@ function comment($freeze_status) {
 				$ordinal = 1;
 				$date_format = s('date_format');
 				$edit_link = ' <a href="'._SITE.'?action=';
+				echo '<div class="comment_limit">';
 				while ($r = dbfetch($result)) {
 					$date = date($date_format, strtotime($r['time']));
 					$commentNum = $offset + $ordinal;
@@ -1313,6 +1304,7 @@ function comment($freeze_status) {
 						}
 					$ordinal++;
 				}
+				echo '</div>';
 			}
 			$maxPage = ceil($numrows / $comment_limit);
 			$back_to_page = ceil(($numrows + 1) / $comment_limit);
@@ -1324,9 +1316,9 @@ function comment($freeze_status) {
 			if ($numrows == 0) {echo '<p>'.l('no_comment').'</p>';}
 			// recall and set vars for reuse when botched post
 			if (isset($_SESSION[_SITE.'comment']['fail']) && $_SESSION[_SITE.'comment']['fail'] == true) {
-				$name = $_SESSION[_SITE.'comment']['name'];
-				$comment = $_SESSION[_SITE.'comment']['comment'];
-				$url = $_SESSION[_SITE.'comment']['url'];
+				$name = cleanXSS($_SESSION[_SITE.'comment']['name']);
+				$comment = cleanComment($_SESSION[_SITE.'comment']['comment']);
+				$url = cleanXSS($_SESSION[_SITE.'comment']['url']);
 				unset($_SESSION[_SITE.'comment']);
 			}
 			else {
@@ -1345,7 +1337,7 @@ function comment($freeze_status) {
 							<input type="text" name="name" id="name" maxlength="50" class="text" value="'.$name.'" />
 						</p>
 						<p>
-							<label for="url">* ',l('url'),'</label>:<br />
+							<label for="url"> ',l('url'),'</label>:<br />
 							<input type="text" name="url" id="url" maxlength="100" class="text" value="'.$url.'" />
 						</p>
 						<p>
@@ -1510,7 +1502,7 @@ function sitemap() {
 // CONTACT FORM
 function contact() {
 	if (!isset($_POST['contactform'])) {
-		$_SESSION[_SITE.'time'] = $time = time();
+		$_SESSION[_SITE.'time'] = time();
 		echo '
 			<div class="contactbox">
 				<h2>'.l('contact').'</h2>
@@ -1544,7 +1536,7 @@ function contact() {
 	else if (isset($_SESSION[_SITE.'time'])) {
 		$count = $magic = 0;
 		if (get_magic_quotes_gpc()) {$magic = 1;}
-		foreach ($_POST as $k => $v){
+		foreach ($_POST as $k => $v) {
 			if ($count === 8 ) {die;}
 			if ($magic) {$k = stripslashes($v);}
 			else {$$k = $v;}
@@ -1559,19 +1551,19 @@ function contact() {
 		$url = (isset($weblink[4]) && ! isset($weblink[160]) ) ? trim($weblink) : null;
 		$url = ( strpos($url, '?') === false && ! preg_match('/[\\n\\r]/', $url)) ? $url : null;
 		$message = (isset($message[10]) && ! isset($message[6000]) ) ? strip_tags($message) : null;
-		$time = ( isset($_SESSION[_SITE.'time']) && $_SESSION[_SITE.'time'] === (int)$time && (time() - $time) > 10) ? $time : null;
+		$time = (isset($_SESSION[_SITE.'time']) && $_SESSION[_SITE.'time'] === (int)$time && (time() - $time) > 10) ? $time : null;
 		if ( isset($ip) && $ip === $_SERVER['REMOTE_ADDR'] && $time
 			&& $name && $mail && $message && checkMathCaptcha()) 
 		{
 			unset($_SESSION[_SITE.'time']);
 			$send_array = array(
-				'to'=>$to,
-				'name'=>$name,
-				'email'=>$mail,
-				'message'=>$message,
-				'ip'=>$ip,
-				'url'=>$url,
-				'subject'=>$subject);
+				'to' => $to,
+				'name' => $name,
+				'email' => $mail,
+				'message' => $message,
+				'ip' => $ip,
+				'url' => $url,
+				'subject' => $subject);
 			send_email($send_array);
 		}
 		else {
@@ -1589,13 +1581,12 @@ function new_comments($number = 5, $stringlen = 30) {
 			x.name,x.seftitle AS xsef
 		FROM '._PRE.'comments'.' AS co
 		LEFT OUTER JOIN '._PRE.'articles'.' AS a
-			ON co.articleid = a.id
+			ON co.articleid = a.id AND a.published = 1 AND (a.commentable = \'YES\' OR a.commentable = \'FREEZ\')
 		LEFT OUTER JOIN '._PRE.'categories'.' AS c
 			ON a.category = c.id AND c.published =\'YES\'
 		LEFT OUTER JOIN '._PRE.'categories'.' AS x
 			ON c.subcat = x.id AND x.published =\'YES\'
-		WHERE a.published = 1 AND (a.commentable = \'YES\' || a.commentable = \'FREEZ\' )
-			AND co.approved = \'True\'
+		WHERE co.approved = \'True\'
 		ORDER BY co.id DESC LIMIT '.$number;
 	if ($result = db() -> query($query)) {
 	 	$comlim = s('comment_limit');
@@ -1664,7 +1655,7 @@ function searchform2() {
 
 // SEARCH ENGINE
 function search($limit = 20) {
-	$search_query = clean(cleanXSS($_POST['search_query']));
+	$search_query = cleanXSS($_POST['search_query']);
 	if (isset($_POST['search2']) && $_POST['search2'] == substr(session_id(), 2, 7)) {searchform2();}
 	echo '<h2>'.l(search_results).'</h2>';
 	if (strlen($search_query) < 4 || $search_query == l('search_keywords')) {
@@ -1673,28 +1664,40 @@ function search($limit = 20) {
 	else {
 		$keywords = explode(' ', $search_query);
 		$keyCount = count($keywords);
+		$mkeywords = explode(',', $search_query);
+		$mkeyCount = count($mkeywords);
 		$query = 'SELECT a.id
 			FROM '._PRE.'articles'.' AS a
 			LEFT OUTER JOIN '._PRE.'categories'.' as c
 				ON a.category = c.id AND c.published =\'YES\'
 			LEFT OUTER JOIN '._PRE.'categories'.' as x
 				ON c.subcat =  x.id AND x.published =\'YES\'
-			WHERE a.position != 2
+			WHERE a.position <> 2
 				AND a.published = 1
 				AND';
 		if (!_ADMIN){
 			$query = $query.' a.visible = \'YES\' AND ';
 		}
-		if ($keyCount > 1) {
+		if ($keyCount > 1 && $mkeyCount == 1) {
 			for ($i = 0; $i < $keyCount - 1; $i++) {
 				$query = $query.' (a.title LIKE "%'.$keywords[$i].'%" OR
 					a.text LIKE "%'.$keywords[$i].'%" OR
-					a.keywords_meta LIKE "%'.$keywords[$i].'%") &&';
+					a.keywords_meta LIKE "%'.$keywords[$i].'%") AND';
 			}
 			$j = $keyCount - 1;
 			$query = $query.'(a.title LIKE "%'.$keywords[$j].'%" OR
 				a.text LIKE "%'.$keywords[$j].'%" OR
 				a.keywords_meta LIKE "%'.$keywords[$j].'%")';
+		}
+		else if ($mkeyCount > 1) {
+			$query .= '(';
+			for ($i = 0; $i < $mkeyCount; $i++) {
+				$query .= $i<>0 ? ' OR ' : '';
+				$query .= ' a.title LIKE "%'.trim($mkeywords[$i]).'%" OR
+					a.text LIKE "%'.trim($mkeywords[$i]).'%" OR
+					a.keywords_meta LIKE "%'.trim($mkeywords[$i]).'%"';
+			}
+			$query .= ')';
 		}
 		else {
 			$query = $query.'(a.title LIKE "%'.$keywords[0].'%" OR
@@ -1917,7 +1920,7 @@ function entity($item) {
 	return $item;
 }
 
-//FILE INCLUSION
+// FILE INCLUSION
 function file_include($text, $shorten) {
 	$fulltext = substr($text, 0, $shorten);
 	if (substr_count ($fulltext, '&')>0){$fulltext = str_replace('&', '&amp;', str_replace('&amp;', '&', $fulltext));}
@@ -2075,7 +2078,7 @@ function center() {
 			default :
 				if (_ADMIN) {
 					include('admin.php');
-					$action = isset($_GET['action']) ? clean(cleanXSS($_GET['action'])) : $action;
+					$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
 					switch ($action) {
 						case 'administration'	:	administration(); break;
 						case 'snews_settings'	:	settings(); break;

@@ -80,7 +80,8 @@ function administration() {
 		echo '</p>';
 		# ADDONS
 		echo '<p>'.l('admin_addons').': ';
-		if (empty(readAddons())) {echo l('none');}
+		$addons = readAddons();
+		if (empty($addons)) {echo l('none');}
 		else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
 		echo '</p>';
 		echo '</div>';
@@ -272,7 +273,7 @@ function admin_categories() {
 // CATEGORIES FORM
 function form_categories($subcat = 'cat') {
 	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-		$categoryid = $_GET['id'];
+		$categoryid = intval($_GET['id']);
 		$query = 'SELECT id,name,seftitle,published,description,subcat,catorder FROM '._PRE.'categories'.' WHERE id='.$categoryid;
 		if ($result = db() -> query($query)) {$r = dbfetch($result);}
 		$qwr = "select name from "._PRE."categories	where id = ".$r['subcat'];
@@ -291,7 +292,7 @@ function form_categories($subcat = 'cat') {
 		$frm_submit = l('edit_button');
 	}
 	else {
-		$sub_cat = isset($_GET['sub_id']) ? $_GET['sub_id'] : '0';
+		$sub_cat = isset($_GET['sub_id']) ? intval($_GET['sub_id']) : '0';
 		if ($sub_cat !=' cat') {
 			$query = 'SELECT name FROM '._PRE.'categories'.' WHERE id = '.$sub_cat;
 			if ($result = db() -> query($query)) {
@@ -378,7 +379,7 @@ function delete_item($table, $field, $id) {
 function form_groupings() {
  	if (s('enable_extras') == 'YES') {
 		if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-			$extraid = $_GET['id'];
+			$extraid = intval($_GET['id']);
 			$query = 'SELECT id,name,seftitle,description FROM '._PRE.'extras'.' WHERE id='.$extraid;
 			if ($result = db() -> query($query)) {$r = dbfetch($result);}
 			$frm_action = _SITE.'?action=process&amp;task=admin_groupings&amp;id='.$extraid;
@@ -479,7 +480,7 @@ function buttons(){
 // ARTICLES FORM
 function form_articles($contents) {
  	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-		$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
+		$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
 		$frm_position1 = '';
 		$frm_position2 = '';
 		$frm_position3 = '';
@@ -1092,14 +1093,16 @@ function admin_articles($contents) {
 
 // COMMENTS - EDIT
 function edit_comment() {
-	$commentid = $_GET['commentid'];
+	$commentid = intval($_GET['commentid']);
 	$query = 'SELECT id,articleid,name,url,comment,approved FROM '._PRE.'comments'.' WHERE id='.$commentid;
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
 	$articleTITLE = retrieve('title', 'articles', 'id', $r['articleid']);
+	$comment = stripslashes($r['comment']);
+	$comment = str_replace('<br />', '', $comment);
 	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', '?action=process&amp;task=editcomment&amp;id='.$commentid, '');
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.l('edit_comment').' (<strong> '.$articleTITLE.'</strong> )</p>';
-	echo html_input('textarea', 'editedcomment', 'ec', stripslashes($r['comment']), l('comment'), '', '', '', '', '', '2', '100', '', '', '');
+	echo html_input('textarea', 'editedcomment', 'ec', $comment, l('comment'), '', '', '', '', '', '2', '100', '', '', '');
 	echo html_input('text', 'name', 'n', $r['name'], l('name'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('text', 'url', 'url', $r['url'], l('url'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('checkbox', 'approved', 'a', '', l('approved'), '', '', '', '', $r['approved'] == 'True' ? 'ok' : '', '', '', '', '', '');
@@ -1269,8 +1272,8 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 
 // HIDE/SHOW
 function visibility($mode) {
-	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
-	$item = clean(cleanXSS($_GET['item']));
+	$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
+	$item = cleanXSS($_GET['item']);
 	$back = isset($_GET['back']) ? $_GET['back'] : '';
 	$no_yes = $mode == 'hide' ? 'NO' : 'YES';
 	switch ($item) {
@@ -1306,20 +1309,20 @@ function processing() {
 		return;
 	}
 	else {
-		$action = clean(cleanXSS($_GET['action']));
-		$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
-		$commentid = isset($_POST['commentid']) ? intval(clean(cleanXSS($_POST['commentid']))) : 0;
+		$action = cleanXSS($_GET['action']);
+		$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'], true)) : 0;
+		$commentid = isset($_POST['commentid']) ? intval(cleanXSS($_POST['commentid'], true)) : 0;
 		$approved = isset($_POST['approved']) && $_POST['approved'] == 'on' ? 'True' : '';
 		$name = isset($_POST['name']) ? clean(entity($_POST['name'])) : '';
-		$category = !empty($_POST['define_category']) ? intval(clean(cleanXSS($_POST['define_category']))) : 0;
-		$subcat = isset($_POST['subcat']) ? intval(clean(cleanXSS($_POST['subcat']))) : 0;
+		$category = !empty($_POST['define_category']) ? intval(cleanXSS($_POST['define_category'], true)) : 0;
+		$subcat = isset($_POST['subcat']) ? intval(cleanXSS($_POST['subcat'], true)) : 0;
 		$page = isset($_POST['define_page']) ? $_POST['define_page'] : '';
 		$def_extra = isset($_POST['define_extra']) ? $_POST['define_extra'] : '';
 		$description = isset($_POST['description']) ? clean(entity($_POST['description'])) : '';
 		$title = isset($_POST['title']) ? clean(entity($_POST['title'])) : '';
 		$seftitle = isset($_POST['seftitle']) ? clean($_POST['seftitle']) : '';
 		$url = isset($_POST['url']) ? cleanXSS($_POST['url']) : '';
-		$comment = isset($_POST['editedcomment']) ? $_POST['editedcomment'] : '';
+		$comment = isset($_POST['editedcomment']) ? cleanComment($_POST['editedcomment']) : '';
 		$text = isset($_POST['text']) ? clean_mysql($_POST['text']) : '';
 		$date = date('Y-m-d H:i:s');
 		$description_meta = isset($_POST['description_meta']) ? entity($_POST['description_meta']) : '';
@@ -1340,9 +1343,11 @@ function processing() {
 		if ($fpost_enabled) {
 			$date = $_POST['fposting_year'].'-'.$_POST['fposting_month'].'-'.$_POST['fposting_day'].' '.
 				$_POST['fposting_hour'].':'.$_POST['fposting_minute'].':00';
-			if (date('Y-m-d H:i:s') < $date) $publish_article = 2;
+			if (date('Y-m-d H:i:s') < $date) {
+				$publish_article = 2;
+			}
 		}
-		$task = isset($_POST['task']) ? clean(cleanXSS($_POST['task'])) : '';
+		$task = isset($_POST['task']) ? cleanXSS($_POST['task']) : '';
 		if ($_POST) {
 			switch ($task) {
 				case 'save_settings':
@@ -1351,7 +1356,7 @@ function processing() {
 						$home_sef = $_POST['home_sef'];
 						$website_description = $_POST['website_description'];
 						$website_keywords = $_POST['website_keywords'];
-						$website_email = $_POST['website_email'];
+						$website_email = function_exists('filter_var') ? filter_var($_POST['website_email'], FILTER_VALIDATE_EMAIL) : $_POST['website_email'];
 						$contact_subject = $_POST['contact_subject'];
 						$language = $_POST['language'];
 						$charset = $_POST['charset'];
@@ -1640,7 +1645,7 @@ function processing() {
 						}
 						foreach ($_POST as $key => $value){
 							$type_id = str_replace($remove,'',$key);
-							$key = clean(cleanXSS(trim($value)));
+							$key = cleanXSS(trim($value));
 							if ($key != 'reorder' && $key != 'order' && $key != $table && $key != l('order_content') && $key != $_POST['order']) {
 								$query = "UPDATE "._PRE.$table." SET $order_type = :type WHERE id = :id";
 								if ($result = db() -> prepare($query)) {
@@ -1860,11 +1865,11 @@ function processing() {
 			}
 		}
 		else if ($_GET && $action == 'process') {
-			$task = clean(cleanXSS($_GET['task']));
+			$task = cleanXSS($_GET['task']);
 			switch ($task) {
 				# DELETE CATEGORY AND ALL ARTICLES
 				case 'delete_category_all':
-					$id = isset($_GET['id']) ? intval(clean(cleanXSS($_GET['id']))) : 0;
+					$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
 					if ($id == 0) {return;}
 					$query = "SELECT c.id AS subcat, a.id 
 						FROM "._PRE."categories AS c
@@ -1885,8 +1890,8 @@ function processing() {
 					break;
 				# DELETE COMMENT
 				case 'deletecomment':
-					$commentid = intval(clean(cleanXSS($_GET['commentid'])));
-					$commentid = isset($_GET['commentid']) ? intval(clean(cleanXSS($_GET['commentid']))) : 0;
+					$commentid = intval(cleanXSS($_GET['commentid']));
+					$commentid = isset($_GET['commentid']) ? intval(cleanXSS($_GET['commentid'])) : 0;
 					if ($commentid == 0) {return;}
 					$articleid = retrieve('articleid', 'comments', 'id', $commentid);
 					$articleSEF = retrieve('seftitle', 'articles', 'id', $articleid);

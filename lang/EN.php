@@ -381,6 +381,7 @@ function load_lang() {
   	$l['admin_addons'] = 'Admin Addons';
   	$l['verify'] = 'Loging In';
   	$l['login_success'] = 'Logging successfully!';
+  	$l['anonymous'] = 'Anonymous';
 
 // Editing may end here
 
