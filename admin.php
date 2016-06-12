@@ -80,7 +80,8 @@ function administration() {
 		echo '</p>';
 		# ADDONS
 		echo '<p>'.l('admin_addons').': ';
-		if (empty(readAddons())) {echo l('none');}
+		$addons = readAddons();
+		if (empty($addons)) {echo l('none');}
 		else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
 		echo '</p>';
 		echo '</div>';

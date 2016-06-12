@@ -1345,7 +1345,7 @@ function comment($freeze_status) {
 							<input type="text" name="name" id="name" maxlength="50" class="text" value="'.$name.'" />
 						</p>
 						<p>
-							<label for="url">* ',l('url'),'</label>:<br />
+							<label for="url">',l('url'),'</label>:<br />
 							<input type="text" name="url" id="url" maxlength="100" class="text" value="'.$url.'" />
 						</p>
 						<p>
