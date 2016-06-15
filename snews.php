@@ -221,7 +221,7 @@ function readAddons() {
 		closedir($fd);
 		return;
 	}
-	else {return implode('', $admin_mods);}
+	else {return implode(',', $admin_mods);}
 }
 readAddons();
 
