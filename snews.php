@@ -115,7 +115,8 @@ function site() {
 	$directory = dirname($_SERVER['SCRIPT_NAME']);
 	$website = $directory == '/' ? $host.'/' : $host.$directory.'/';
 	return $website;
-} $_TYPE = 0;
+}
+$_TYPE = 0;
 
 // INFO LINE TAGS
 function tags($tag) {
@@ -204,7 +205,6 @@ function checkUserPass($input) {
 // INCLUDE ADDONS
 function readAddons() {
 	static $admin_mods;
-	global $l;
 	if (!$admin_mods) {
 		$fd = opendir('addons/');
 		while (($file = @readdir($fd)) == true) {
@@ -221,7 +221,7 @@ function readAddons() {
 		closedir($fd);
 		return;
 	}
-	else {return implode('', $admin_mods);}
+	else {return implode(',', $admin_mods);}
 }
 readAddons();
 
@@ -450,7 +450,7 @@ if ($_GET) {
 			} else
 			if (!in_array($action, explode(',', l('cat_listSEF')))) {
 			//else if (!in_array($_GET['action'], explode(',', l('cat_listSEF')))) {
-				if (function_exists('public_'.$categorySEF)) {$TYPE = 10;}
+				if (function_exists('public_'.$categorySEF)) {$_TYPE = 10;}
 				else {
 					$categorySEF = '404';
 					header('HTTP/1.1 404 Not Found');
@@ -879,8 +879,7 @@ function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 
 // ARTICLES
 function articles() {
-	global $categorySEF, $subcatSEF, $_NAME, $articleSEF, $_ID, $_POS, $_catID, $_XNAME, $_TYPE;
-	$frontpage = s('display_page');
+	global $categorySEF, $subcatSEF, $_NAME, $articleSEF, $_ID, $_catID, $_TYPE;
 	$num = 0;
 	$display = intval(s('display_page'));
 	$admin = '<a href="'._SITE.'administration/" title="'.l('administration').'">'.l('administration').'</a>';
@@ -2036,7 +2035,7 @@ function cleancheckSEF($string) {
 
 // CENTER
 function center() {
-	global $_catID, $categorySEF, $subcatSEF, $articleSEF, $_TYPE;
+	global $_catID, $categorySEF, $articleSEF;
 	# FATAL SESSION
 	if (isset($_SESSION[_SITE.'fatal'])) {unset($_SESSION[_SITE.'fatal']); return;}
 	# BAD ADMIN REQUEST OR NOT LOGGED
