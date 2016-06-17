@@ -50,3 +50,7 @@ It is different if you search for "snews color", in this case both words must ma
 - [filterTags] removed
 - [XSS_cache] removed
 - filter_var and filter_input will be WIP (work in progress)
+
+*** 17 June *** by skiane
+- Fixed a bug in Addons list that caused a bug when more than 1 addon is loaded
+- removed (some) unused variables

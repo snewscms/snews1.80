@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		June 12, 2016 - 14:00 GMT+0
+  Last Update		June 17, 2016 - 11:45 GMT+0
   Developpers: 		Rui Mendes, Stéphane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
@@ -345,8 +345,10 @@ function notification($error = 0, $note = '', $link = '') {
 // CHECK URL - NOT HOME
 if ($_GET) {
 	if (isset($_GET['category']) && !empty($_GET['category'])) {
-		$url = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING);
-		$url = explode('/', clean($url)); //$url = explode('/', clean($_GET['category']));
+		$url = function_exists('filter_input') ? 
+			filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING) : 
+			$_GET['category'];
+		$url = explode('/', clean($url));
 		# CATEGORY
 		$categorySEF = $url[0];
 		if (check_category($categorySEF)) {$_catID = 0;}
@@ -425,13 +427,18 @@ if ($_GET) {
 		}
 		else {
 			# [TYPE = 4] - PAGINATOR
-			if (substr($categorySEF, 0, 2) == l('paginator')) {$MainQuery = ''; $_TYPE = 4;}
-			else {
+			if (substr($categorySEF, 0, 2) == l('paginator')) {
+				$MainQuery = '';
+				$_TYPE = 4;
+			} else {
 				# [TYPE = 5] : QUERY  FOR -> ARTICLE/
 				$Try_Page = 'SELECT id, title, category, description_meta, keywords_meta, position
 					FROM '._PRE.'articles'.' AS a
 					WHERE seftitle = "'.$categorySEF.'" '.$pub_a.' AND position = 3';
-				if ($result = db() -> query($Try_Page)) {$R = dbfetch($result); $_TYPE = 5;}
+				if ($result = db() -> query($Try_Page)) {
+					$R = dbfetch($result);
+					$_TYPE = 5;
+				}
 				# [TYPE = 6] : QUERY  FOR -> CATEGORY/
 				if (!$R) {
 					$MainQuery ='SELECT id AS catID, name, description
@@ -449,7 +456,6 @@ if ($_GET) {
 				$R = dbfetch($main);
 			} else
 			if (!in_array($action, explode(',', l('cat_listSEF')))) {
-			//else if (!in_array($_GET['action'], explode(',', l('cat_listSEF')))) {
 				if (function_exists('public_'.$categorySEF)) {$_TYPE = 10;}
 				else {
 					$categorySEF = '404';
@@ -471,7 +477,8 @@ if ($_GET) {
 // HOME
 else {
 	if (s('display_page') !== 0) {
-		$_ID = s('display_page'); $_TYPE = 7;
+		$_ID = s('display_page');
+		$_TYPE = 7;
 	} else {
 		$_TYPE = 8;
 	}
@@ -833,7 +840,8 @@ function clean_mysql($text) {
 		/*$find = array('<', '>');
 		$replace = array('&lt;', '&gt;');
 		$text = str_replace($find, $replace, $text);*/
-	} return $text;
+	}
+	return $text;
 }
 
 // MENU ARTICLES
@@ -887,7 +895,10 @@ function articles() {
 	$title_not_found .= _ADMIN ? '<p>'.l('create_new').' '.$admin.'</p>' : '';
 	$visible = _ADMIN ? '' : ' AND a.visible=\'YES\' ';
 	$on = s('display_pagination') == 'on' ? true : false;
-	if ($_catID == 0 && $_TYPE != 4 && $_TYPE != 5 && $_TYPE != 7) {set_error(); return;}
+	if ($_catID == 0 && $_TYPE != 4 && $_TYPE != 5 && $_TYPE != 7) {
+		set_error();
+		return;
+	}
 	if ($_TYPE >= 1 && $_TYPE < 10) {
 		if ($_TYPE == 1 || $_TYPE == 2 || $_TYPE == 9) {$num = stats('articles', '', 'id='.$_ID);} else
 		if (($_TYPE == 3 || $_TYPE == 6) && $_catID != 0) {$num = stats('articles', '', 'category='.$_catID.' AND position = 1');} else
@@ -1336,11 +1347,7 @@ function comment($freeze_status) {
 							<input type="text" name="name" id="name" maxlength="50" class="text" value="'.$name.'" />
 						</p>
 						<p>
-<<<<<<< HEAD
-							<label for="url"> ',l('url'),'</label>:<br />
-=======
 							<label for="url">',l('url'),'</label>:<br />
->>>>>>> d20d8ce3bc05429a77ec0a973997a81d4b6c2e5c
 							<input type="text" name="url" id="url" maxlength="100" class="text" value="'.$url.'" />
 						</p>
 						<p>
@@ -1798,8 +1805,10 @@ function verify_login() {
 				$_SESSION[_SITE.'Logged_In'] = token();
 				echo '<h3>'.l('login_success').'</h3>';
 				echo '<meta http-equiv="refresh" content="2; url='._SITE.'administration/">';
+			} else {
+				echo notification(1, l('err_Login'), 'login');
+				return;
 			}
-			else {echo notification(1, l('err_Login'), 'login'); return;}
 	}
 	else {set_error();}
 }
@@ -1853,7 +1862,8 @@ function category_list($id) {
 				echo '<option value="'.$r['id'].'">'.$r['name'].'</option>';
 			}
 		}
-	} echo '</select>';
+	}
+	secho '</select>';
 }
 
 // ARTICLES - POSTING TIME
@@ -2006,7 +2016,10 @@ function send_email($send_array) {
 		$body .= isset($url) && $url!='' ? l('url').': '.$url."\n\n" : '';
 		$body .= $text."\n";
 		$status = mail($to, $subject, $body, $header);
-		if ($status != false) {echo notification(0, l('contact_sent'), 'home'); return true;}
+		if ($status != false) {
+			echo notification(0, l('contact_sent'), 'home');
+			return true;
+		}
 		echo notification(1, l('contact_not_sent'), 'home');
 	}
 	else {
@@ -2053,7 +2066,7 @@ function center() {
 				if (_ADMIN && $_POST['action'] == 'process') {
 					processing();
 				}
-				else {set_error();} 
+				else {set_error();}
 				return;
 				break;
 			default :
