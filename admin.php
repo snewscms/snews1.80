@@ -40,7 +40,7 @@ function html_input($type, $name, $id, $value, $label, $css, $script1, $script2,
 			$output = '<p>'.$lbl.':<br />
 			<textarea name="'.$name.'" rows="'.$rows.'" cols="'.$cols.'"'.$attribs.'>'.$value.
 			'</textarea></p>';
-			break;
+		break;
 	}
 	return $output;
 }
@@ -81,8 +81,11 @@ function administration() {
 		# ADDONS
 		echo '<p>'.l('admin_addons').': ';
 		$addons = readAddons();
-		if (empty($addons)) {echo l('none');}
-		else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
+		if (empty($addons)) {
+			echo l('none');
+		} else {
+			echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';
+		}
 		echo '</p>';
 		echo '</div>';
 		$query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';

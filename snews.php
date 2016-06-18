@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		June 17, 2016 - 11:45 GMT+0
+  Last Update		June 18, 2016 - 11:45 GMT+0
   Developpers: 		Rui Mendes, Stéphane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
@@ -140,7 +140,7 @@ function tags($tag) {
 	# Prefix
 	define('_PRE', ini_value('DATABASE', 'prefix'));
 	# Set login constant
-	define('_ADMIN',(isset($_SESSION[_SITE.'Logged_In']) && $_SESSION[_SITE.'Logged_In'] == token() ? true : false));
+	define('_ADMIN', (isset($_SESSION[_SITE.'Logged_In']) && $_SESSION[_SITE.'Logged_In'] == token() ? true : false));
 
 // SITE SETTINGS - grab site settings from database
 function s($var) {
@@ -221,7 +221,9 @@ function readAddons() {
 		closedir($fd);
 		return;
 	}
-	else {return implode(',', $admin_mods);}
+	else {
+		return implode(',', $admin_mods);
+	}
 }
 readAddons();
 
@@ -254,7 +256,9 @@ function l($var) {
 		# list of files & folders ignored by upload/file list routine
 		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,config.php';
 		$lang['ignored_items'].= ','.s('language').'.php';
-		while (list($key, $value) = each($l)) {$lang[$key] = $value;}
+		while (list($key, $value) = each($l)) {
+			$lang[$key] = $value;
+		}
 	}
 	return $lang[$var];
 }
@@ -311,8 +315,9 @@ function stats($table, $position, $other = '', $count = true) {
 		while ($r = dbfetch($result)) {
 			$numrows = $r['num'];
 		}
+	} else {
+		$numrows = 0;
 	}
-	else {$numrows = 0;}
 	return $numrows;
 }
 
@@ -361,8 +366,11 @@ if ($_GET) {
 		# SUB-CATEGORY
 		$subcatSEF = isset($url[1]) ? $url[1] : '';
 		# COMMENT PAGE
-		if (isset($url[1]) && substr($url[1], 0, 1) == l('comment_pages') && is_numeric(substr($url[1], 1, 1))) {$commentsPage = $url[1];}
-		else {$commentsPage = isset($url[3]) ? $url[3] : '';}
+		if (isset($url[1]) && substr($url[1], 0, 1) == l('comment_pages') && is_numeric(substr($url[1], 1, 1))) {
+			$commentsPage = $url[1];
+		} else {
+			$commentsPage = isset($url[3]) ? $url[3] : '';
+		}
 		# ARTICLE
 		$articleSEF = isset($url[2]) ? $url[2] : '';
 		// ADMIN CONTENT CAN SEE EVERYTHING
@@ -407,7 +415,9 @@ if ($_GET) {
 					AND subcat = 0';
 			$num = stats('articles', '', 'seftitle ="'.$subcatSEF.'"');
 			if ($num != 0) {
-				if ($result = db() -> query($Try_Article)) {$R = dbfetch($result);}
+				if ($result = db() -> query($Try_Article)) {
+					$R = dbfetch($result);
+				}
 				$_TYPE = 2;
 			}
 			else {
@@ -881,8 +891,9 @@ function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 			$n++;
 		}
 		if ($n == 0) {echo $no_articles;}
+	} else {
+		echo $no_articles;
 	}
-	else {echo $no_articles;}
 }
 
 // ARTICLES
@@ -945,15 +956,19 @@ function articles() {
 							$short_display = strpos($text, '.', 255) + 1;
 							$shorten = $short_display > 255 ? $short_display : $shorten;
 						}
+					} else {
+						$shorten = 9999000;
 					}
-					else {$shorten = 9999000;}
 					$comments_num = stats('comments', '', 'articleid = '.$r['aid'].' AND approved = \'True\'');
 					$a_date_format = date(s('date_format'), strtotime($r['date']));
 					$uri = $r['category'] != 0 ? cat_rel($r['category'], 'seftitle') : '';
 					$title = $r['title'];
 					if ($r['displaytitle'] == 'YES') {
-						if (!$_ID) {echo '<h2 class="big">'.$link.$uri.'/'.$r['asef'].'/">'.$title.'</a></h2>';}
-						else {echo '<h2>'.$title.'</h2>';}
+						if (!$_ID) {
+							echo '<h2 class="big">'.$link.$uri.'/'.$r['asef'].'/">'.$title.'</a></h2>';
+						} else {
+							echo '<h2>'.$title.'</h2>';
+						}
 					}
 					file_include(str_replace('[break]', '',$text), $shorten);
 					$commentable = $r['commentable'];
@@ -976,8 +991,8 @@ function articles() {
 										echo $link.$uri.'/'.$r['asef'].'/">'.l('read_more').'</a> ';
 										break;
 									case ($tag == 'comments' && ($commentable == 'YES' || $commentable == 'FREEZ')):
-										echo $link.$uri.'/'.$r['asef'].'/#'.l('comment').'1">
-										'.l('comments').' ('.$comments_num.')</a> ';
+										echo $link.$uri.'/'.$r['asef'].'/#'.l('comment').'1">';
+										echo l('comments').' ('.$comments_num.')</a> ';
 										break;
 									case ($tag == 'edit' && _ADMIN):
 										echo ' '.$edit_link;
@@ -1505,8 +1520,9 @@ function sitemap() {
 			echo '</li>';
 		}
 		echo '</ul>';
+	} else {
+		echo '<li>'.l('no_articles').'</li></ul>';
 	}
-	else {echo '<li>'.l('no_articles').'</li></ul>';}
 }
 
 // CONTACT FORM
@@ -1542,8 +1558,8 @@ function contact() {
 					</p>
 				</form>
 			</div>';
-	}
-	else if (isset($_SESSION[_SITE.'time'])) {
+	} else
+	if (isset($_SESSION[_SITE.'time'])) {
 		$count = $magic = 0;
 		if (get_magic_quotes_gpc()) {$magic = 1;}
 		foreach ($_POST as $k => $v) {
@@ -1633,8 +1649,9 @@ function new_comments($number = 5, $stringlen = 30) {
 					title="'.l('comment_info').' '.$r['title'].'">'.$ncom.'</a>
 				</li>';
 		}
+	} else {
+		echo '<li>'.l('no_comments').'</li>';
 	}
-	else {echo '<li>'.l('no_comments').'</li>';}
 }
 
 // SEARCH FORM
@@ -1863,7 +1880,7 @@ function category_list($id) {
 			}
 		}
 	}
-	secho '</select>';
+	echo '</select>';
 }
 
 // ARTICLES - POSTING TIME
@@ -2082,7 +2099,8 @@ function center() {
 		}
 	}
 	# CHECK GET NOW
-	else if ($_GET) {
+	else 
+	if ($_GET) {
 		$action = !empty($categorySEF) ? $categorySEF : '404';
 		switch ($action) {
 			case 'archive'	: archive(); break;
@@ -2136,12 +2154,14 @@ function center() {
 					if (function_exists('public_'.$categorySEF)) {
 						$func = 'public_'.$categorySEF;
 						$func();
+					} else {
+						articles();
 					}
-					else {articles();}
 				}
 		}
+	} else {
+		articles();
 	}
-	else {articles();}
 }
 
 ?>
