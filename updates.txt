@@ -54,3 +54,7 @@ It is different if you search for "snews color", in this case both words must ma
 *** 17 June *** by skiane
 - Fixed a bug in Addons list that caused a bug when more than 1 addon is loaded
 - removed (some) unused variables
+
+*** 23 June *** by skiane
+[printArticleDetails] New function
+- Factorize code-> [admin_articles]
