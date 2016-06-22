@@ -767,6 +767,32 @@ function form_articles($contents) {
 	}
 }
 
+function printArticleDetails($articleData, $articleClass, $order) {
+	if ($order !== null)
+		$order_input = '<input type="text" name="page_'.$articleData['id'].'" value="'.$articleData['artorder'].'" size="1" tabindex="'.$order.'" /> &nbsp;';
+	else
+		$order_input = '';
+	echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($articleData['date'])).'">	'.$articleData['title'].'</strong> ';
+	$url = isset($articleData['catSEF']) ? $articleData['catSEF'].'/'.$articleData['seftitle'] : $articleData['seftitle'];
+	if ($articleClass != 'extra_contents') {
+		echo l('divider').' <a href="'._SITE.$url.'/">'.l('view').'</a> ';
+	}
+	if (isset($articleData['default_page']) && $articleData['default_page'] != 'YES') {
+		echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$articleData['id'].'">'.l('edit').'</a> ';
+	}
+	$visiblity = $articleData['visible'] == 'YES' ?
+	'<a href="'._SITE.'?action=hide&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('hide').'</a>' :
+		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('show').'</a> )';
+	echo ' '.l('divider').' '.$visiblity;
+	if ($articleData['published'] == 2) {
+		echo  l('divider').' ['.l('status').' '.l('future_posting').']';
+	}
+	if ($articleData['published'] == 0) {
+		echo  l('divider').' ['.l('status').' '.l('unpublished').']';
+	}
+	echo '</p>';
+}
+//
 // ARTICLES
 function admin_articles($contents) {
 	global $categorySEF, $subcatSEF;
@@ -802,7 +828,7 @@ function admin_articles($contents) {
 	if (!empty($subcatSEF) && $subcatSEF != 'extras') {
 		$array = explode(';', $subcatSEF);
 		foreach ($array as &$key) {
-			$val = split('=', $key);
+			$val = explode('=', $key);
 			if (!isset($val[1])) {$option['option'] = $val[0];}
 			else {$option[$val[0]] = $val[1];}
 		}
@@ -909,24 +935,9 @@ function admin_articles($contents) {
 							    echo !$assigned_page ? l('all_pages') : $assigned_page;
 							}
 					    }
-					    $order_input = '<input type="text" name="page_'.$r['id'].'" value="'.$r['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-					    echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($r['date'])).'">	'.$r['title'].'</strong> ';
-					    if ($r['default_page'] != 'YES') {
-							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
-					    }
-					    $visiblity = $r['visible'] == 'YES' ?
-					    	'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
-						echo ' '.l('divider').' '.$visiblity;
-						if ($r['published'] == 2) {
-							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-						}
-						if ($r['published'] == 0) {
-							echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-						}
-						echo '</p>';
-						$tab++;
-						$lbl_filter = $r['page_extra'];
+					    printArticleDetails($r,$item,$tab);
+					    $tab++;
+					    $lbl_filter = $r['page_extra'];
 					}
 				}
 			}
@@ -951,22 +962,7 @@ function admin_articles($contents) {
 				echo '<p class="admintitle">'.l('no_category_set').'</p>';
 				if ($res = db() -> query($sql)) {
 					while ($O = dbfetch($res)) {
-						$order_input = '<input type="text" name="page_'.$O['id'].'" value="'.$O['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-						echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($O['date'])).'">'.$O['title'].'</strong> ';
-						if ($O['default_page'] != 'YES'){
-							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$O['id'].'">'.l('edit').'</a> ';
-						}
-						$visiblity = $O['visible'] == 'YES' ?
-							'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
-							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
-							echo ' '.l('divider').' '.$visiblity;
-						if ($O['published'] == 2) {
-							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-						}
-						if ($O['published'] == 0) {
-							echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-						}
-						echo '</p>';
+						printArticleDetails($O,$item,$tab);
 						$tab++;
 					}
 				}
@@ -988,24 +984,8 @@ function admin_articles($contents) {
 					} else
 					if ($res1 = db() -> query($sql1)) {
 						while ($r = dbfetch($res1)) {
-							$order_input = '<input type="text" name="page_'.$r['id'].'" value="'.$r['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-							echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($r['date'])).'">
-								'.$r['title'].'</strong> '.l('divider').'
-								<a href="'._SITE.$row['seftitle'].'/'.$r['seftitle'].'/">'.l('view').'</a> ';
-							if ($r['default_page'] != 'YES'){
-								echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
-							}
-							$visiblity = $r['visible'] == 'YES' ?
-								'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-								l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-							echo ' '.l('divider').' '.$visiblity;
-							if ($r['published'] == 2) {
-								echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-							}
-							if ($r['published'] == 0) {
-								echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-							}
-							echo '</p>';
+							$r['catSEF'] = $row['seftitle'];
+							printArticleDetails($r,$item,$tab);
 							$tab++;
 						}
 					}
@@ -1025,25 +1005,8 @@ function admin_articles($contents) {
 							}
 							if ($res3 = db() -> query($catart_sql2)) {
 								while ($ca_r2 = dbfetch($res3)) {
-									$order_input2 = '<input type="text" name="page_'.$ca_r2['id'].'" value="'.$ca_r2['artorder'].'" 
-										size="1" tabindex="'.$tab2.'" /> &nbsp;';
-									$catSEF = cat_rel($row2['id'],'seftitle');
-									echo '<p>'.$order_input2.'<strong title="'.date(s('date_format'), strtotime($ca_r2['date'])).'">
-										'.$ca_r2['title'].'</strong> '.l('divider').'
-										<a href="'._SITE.$catSEF.'/'.$ca_r2['seftitle'].'/">'.l('view').'</a> ';
-									echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$ca_r2['id'].'">'.l('edit').'</a> ';
-									$visiblity2 = $ca_r2['visible'] == 'YES' ?
-										'<a href="'._SITE.'?action=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
-									l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
-										'.l('show').'</a> )';
-									echo ' '.l('divider').' '.$visiblity2;
-									if ($ca_r2['published'] == 2) {
-										echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-									}
-									if ($ca_r2['published'] == 0) {
-										echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-									}
-									echo '</p>';
+									$ca_r2['catSEF'] = cat_rel($row2['id'],'seftitle');
+									printArticleDetails($ca_r2,'snews_articles',$tab2);
 								}
 							}
 							echo '</div>';
@@ -1066,24 +1029,7 @@ function admin_articles($contents) {
 		}
 		if ($result = db() -> query($sql)) {
 			while ($r = dbfetch($result)) {
-				$order_input = '<input type="text" name="page_'.$r['id'].'" value="'.$r['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-				echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($r['date'])).'">
-					'.$r['title'].'</strong> '.l('divider').'
-					<a href="'._SITE.$r['seftitle'].'/">'.l('view').'</a> ';
-				if ($r['default_page'] != 'YES') {
-					echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
-				}
-				$visiblity = $r['visible'] == 'YES' ?
-					'<a href="'._SITE.'?action=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-					l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-				echo ' '.l('divider').' '.$visiblity;
-				if ($r['published'] == 2) {
-					echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-				}
-				if ($r['published'] == 0) {
-					echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-				}
-				echo '</p>';
+				printArticleDetails($r,'snews_pages',$tab);
 				$tab++;
 			}
 		}
