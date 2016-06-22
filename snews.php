@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		June 23, 2016 - 02:45 GMT+0
+  Last Update		June 23, 2016 - 11:45 GMT+0
   Developpers: 		Rui Mendes, Stéphane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
