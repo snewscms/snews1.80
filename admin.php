@@ -130,6 +130,23 @@ function showAdmAddons() {
 	echo '</div>';
 }
 
+// MAKE A CLEAN SEF URL
+function cleanSEF($string) {
+	$string = str_replace(' ', '-', $string);
+	$string = preg_replace('/[^0-9a-zA-Z-_]/', '', $string);
+	$string = str_replace('-', ' ', $string);
+	$string = preg_replace('/^\s+|\s+$/', '', $string);
+	$string = preg_replace('/\s+/', ' ', $string);
+	$string = str_replace(' ', '-', $string);
+	return strtolower($string);
+}
+
+// CLEAN CHECK SEF
+function cleancheckSEF($string) {
+	$ret = !preg_match('/^[a-z0-9-_]+$/i', $string) ? 'notok' : 'ok';
+	return $ret;
+}
+
 // SETTINGS FORM
 function settings() {
 	echo '<div class="adminpanel"><p class="admintitle">'.l('settings_title').'</p>';
