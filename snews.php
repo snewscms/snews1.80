@@ -12,7 +12,7 @@
 // Start sNews session
 session_start();
 
-// error_reporting(E_ALL ^ E_NOTICE)
+// error_reporting(E_ALL ^ E_NOTICE);
 error_reporting(0);
 
 // RETURN INI FILE
@@ -585,7 +585,7 @@ function categories() {
 			$category_title = $r['seftitle'];
 			$r['name'] = (s('language')!='EN' && $r['name'] == 'Uncategorized' && $r['parent']==1) ? l('uncategorised') : $r['name'];
 			$class = $category_title == $categorySEF ? ' class="current"' : '';
-			if (isset($r['total'])) {$num=' ('.$r['total'].')';}
+			$num = isset($r['total']) ? ' ('.$r['total'].')': '';
 			if (!in_array($category_title, $ignore)) {
 				echo '<li><a'.$class.' href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
 				$parent = $r['parent'];
