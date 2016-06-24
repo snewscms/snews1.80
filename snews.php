@@ -206,6 +206,7 @@ function checkUserPass($input) {
 function readAddons() {
 	static $admin_mods;
 	if (!$admin_mods) {
+		$admin_mods = Array();
 		$fd = opendir('addons/');
 		while (($file = @readdir($fd)) == true) {
 			clearstatcache();
@@ -219,11 +220,8 @@ function readAddons() {
 			}
 		}
 		closedir($fd);
-		return;
 	}
-	else {
-		return implode(',', $admin_mods);
-	}
+	return implode(',', $admin_mods);
 }
 readAddons();
 
