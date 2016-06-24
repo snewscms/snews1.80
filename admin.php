@@ -1212,12 +1212,12 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 			break;
 	}
 	$query = 'SELECT count(DISTINCT id) as total FROM '.$sql;
+	$rows = 0;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$rows = $r['total'];
 		}
 	}
-	else {$rows = 0;}
 	return ($rows > 0);
 }
 
