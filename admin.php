@@ -40,7 +40,7 @@ function html_input($type, $name, $id, $value, $label, $css, $script1, $script2,
 			$output = '<p>'.$lbl.':<br />
 			<textarea name="'.$name.'" rows="'.$rows.'" cols="'.$cols.'"'.$attribs.'>'.$value.
 			'</textarea></p>';
-			break;
+		break;
 	}
 	return $output;
 }
@@ -81,8 +81,11 @@ function administration() {
 		# ADDONS
 		echo '<p>'.l('admin_addons').': ';
 		$addons = readAddons();
-		if (empty($addons)) {echo l('none');}
-		else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
+		if (empty($addons)) {
+			echo l('none');
+		} else {
+			echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';
+		}
 		echo '</p>';
 		echo '</div>';
 		$query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';
@@ -764,11 +767,13 @@ function form_articles($contents) {
 	}
 }
 
+// PRINT ARTICLE DETAILS
 function printArticleDetails($articleData, $articleClass, $order) {
-	if ($order !== null)
+	if ($order !== null) {
 		$order_input = '<input type="text" name="page_'.$articleData['id'].'" value="'.$articleData['artorder'].'" size="1" tabindex="'.$order.'" /> &nbsp;';
-	else
+	} else {
 		$order_input = '';
+	}
 	echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($articleData['date'])).'">	'.$articleData['title'].'</strong> ';
 	$url = isset($articleData['catSEF']) ? $articleData['catSEF'].'/'.$articleData['seftitle'] : $articleData['seftitle'];
 	if ($articleClass != 'extra_contents') {
@@ -778,7 +783,7 @@ function printArticleDetails($articleData, $articleClass, $order) {
 		echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$articleData['id'].'">'.l('edit').'</a> ';
 	}
 	$visiblity = $articleData['visible'] == 'YES' ?
-	'<a href="'._SITE.'?action=hide&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('hide').'</a>' :
+		'<a href="'._SITE.'?action=hide&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('hide').'</a>' :
 		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('show').'</a> )';
 	echo ' '.l('divider').' '.$visiblity;
 	if ($articleData['published'] == 2) {
@@ -789,7 +794,7 @@ function printArticleDetails($articleData, $articleClass, $order) {
 	}
 	echo '</p>';
 }
-//
+
 // ARTICLES
 function admin_articles($contents) {
 	global $categorySEF, $subcatSEF;
