@@ -135,7 +135,7 @@ function settings() {
 		echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
 		echo '<div id="sub1" style="display: none;">';
 		echo html_input('text', 'website_title', 'webtitle', s('website_title'), l('a_website_title'),'','','','','','','','','','');
-		echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '', 
+		echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '',
 			'onkeypress="return SEFrestrict(event);"','','','','','','','','');
 		echo html_input('text', 'website_description', 'wdesc', s('website_description'), l('a_description'),'','','','','','','','','','');
 		echo html_input('text', 'website_keywords', 'wkey', s('website_keywords'), l('a_keywords'),'','','','','','','','','','');
@@ -313,7 +313,7 @@ function form_categories($subcat = 'cat') {
 	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', $frm_action, '');
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.$frm_add_edit.'</p>';
-	echo html_input('text', 'name', 't', $frm_name, l('name'), '', 
+	echo html_input('text', 'name', 't', $frm_name, l('name'), '',
 		'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 	echo html_input('text', 'seftitle', 's', $frm_sef_title, l('sef_title_cat'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('text', 'description', 'desc', $frm_description, l('description'), '', '', '', '', '', '', '', '', '', '');
@@ -335,7 +335,7 @@ function form_categories($subcat = 'cat') {
 	if (!empty($categoryid)) {
 		echo '&nbsp;&nbsp;';
 		echo html_input('hidden', 'id', 'id', $categoryid, '', '', '', '', '', '', '', '', '', '', '');
-		echo html_input('submit', 'delete_category', 'delete_category', l('delete'), '', 'button', 
+		echo html_input('submit', 'delete_category', 'delete_category', l('delete'), '', 'button',
 			'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
 	}
 	echo '</p></form>';
@@ -598,7 +598,7 @@ function form_articles($contents) {
 		else {
 			echo '<p class="admintitle">'.$frm_fieldset.'</p>';
 		}
-		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 
+		echo html_input('text', 'title', 'at', $frm_title, l('title'), '',
 			'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 		if ($contents == 'extra_new' || $edit_option == 2) {
 			echo '<div style="display: none;">';
@@ -757,7 +757,7 @@ function form_articles($contents) {
 			echo html_input('hidden', 'artorder', 'artorder', $artorder, '', '', '', '', '', '', '', '', '', '', '');
 			echo html_input('hidden', 'article_category', 'article_category', $article_category, '', '', '', '', '', '', '', '', '', '', '');
 			echo html_input('hidden', 'id', 'id', $id, '', '', '', '', '', '', '', '', '', '', '').' ';
-			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '', 'button', 
+			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '', 'button',
 				'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
 		}
 		echo '</p></form>';
@@ -853,7 +853,7 @@ function admin_articles($contents) {
 			while ($rpx = dbfetch($xres)) {
 				echo '<p>'.$link.'extraid='.$rpx['id'].'">'.$rpx['name'].'</a></p>';
 			}
-		} 
+		}
 		echo '</div>';
 		return;
 	}
@@ -867,30 +867,30 @@ function admin_articles($contents) {
 		echo $link.'month'.$filter_extra.'">'.l('month').'</a> '.$mextra.')';
 		echo '</p></legend><br /><p>';
 		$month_names = explode(', ', l('month_names'));
-		$query = 'SELECT DISTINCT('.$filter_year.') AS dyear 
-			FROM '._PRE.'articles'.' 
+		$query = 'SELECT DISTINCT('.$filter_year.') AS dyear
+			FROM '._PRE.'articles'.'
 			WHERE '.$qw.' ORDER BY date DESC';
 		if ($sqr = db() -> query($query)) {
 			while ($r = dbfetch($sqr)) {
 			 	$ryear = $r['dyear'];
-				echo ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month') ? 
+				echo ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month') ?
 					'<span style="color: #0000FF">'.$r['dyear'].'</span>' :
 					$link.'year='.$r['dyear'].$filter_extra.'">'.$r['dyear'].'</a> ');
 				if ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month')) {
-				    $qx = "SELECT DISTINCT(".$filter_month.") AS dmonth 
-						FROM "._PRE.'articles'." 
+				    $qx = "SELECT DISTINCT(".$filter_month.") AS dmonth
+						FROM "._PRE.'articles'."
 						WHERE $qw AND ".$filter_year."='$ryear' ORDER BY date ASC";
 					if ($rqx = db() -> query($qx)) {
 						while ($rx = dbfetch($rqx)) {
 							$m = $rx['dmonth'] - 1;
 							echo ' '.l('divider').' '.$link.'year='.$r['dyear'].';'.'month='.$rx['dmonth'].$filter_extra.'">'.$month_names[$m].'</a> ';
-						}	
+						}
 					}
-				
+
 				}
 				echo '<br />';
 			}
-		} 
+		}
 		echo '</p></div>';
 		return;
 	}
@@ -1018,7 +1018,7 @@ function admin_articles($contents) {
 	} elseif ($contents == 'page_view') {
 		$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
 			FROM "._PRE.'articles'."
-			WHERE position = 3 $subquery
+			WHERE position = 3 $subquery $filterquery
 			ORDER BY artorder ASC, date DESC ";
 		$num_rows = stats('articles', '', 'position = 3 '.$subquery);
 		if ($num_rows == 0) {
@@ -1517,7 +1517,7 @@ function processing() {
 						default:
 							switch(true) {
 								case(isset($_POST['add_category'])):
-									$catorder = stats('categories', '', 'subcat = '.$subcat, false);	
+									$catorder = stats('categories', '', 'subcat = '.$subcat, false);
 									$catorder = $catorder + 1;
 									$query = "INSERT INTO "._PRE.'categories'."
 										(name, seftitle, description, published, catorder, subcat) VALUES
@@ -1526,7 +1526,7 @@ function processing() {
 										$r = dbfetch($sql, true, [
 											':name' => $name,
 											':sef'	=> $seftitle,
-											':desc' => $description, 
+											':desc' => $description,
 											':published' => $publish_category,
 											':catorder'  => $catorder,
 											':subcat'	 => $subcat
@@ -1538,8 +1538,8 @@ function processing() {
 								case(isset($_POST['edit_category'])):
 									$catorder = stats('categories', '', 'subcat = '.$subcat, false);
 									$catorder = isset($_POST['catorder']) ? $_POST['catorder'] : $catorder + 1;
-									$query = "UPDATE "._PRE.'categories'." 
-										SET	name = :name, seftitle = :sef, description = :desc, published = :pub, subcat = :subcat, catorder = :cat_order 
+									$query = "UPDATE "._PRE.'categories'."
+										SET	name = :name, seftitle = :sef, description = :desc, published = :pub, subcat = :subcat, catorder = :cat_order
 										WHERE id = :id";
 									if ($res = db() -> prepare($query)) {
 										$data = dbfetch($res, true, [
@@ -1666,13 +1666,13 @@ function processing() {
 										position, extraid, page_extra, displaytitle,
 										displayinfo, commentable, published, description_meta,
 										keywords_meta, show_on_home, show_in_subcats, artorder)
-									VALUES (:title, :sef, :text, :date, :cat, 
-										:pos, :extraid, :page_extra, :disp_title, 
-										:disp_info, :comment, :pub, :dmeta, 
+									VALUES (:title, :sef, :text, :date, :cat,
+										:pos, :extraid, :page_extra, :disp_title,
+										:disp_info, :comment, :pub, :dmeta,
 										:keywords, :shome, :ssub, :order)";
 									if ($result = db() -> prepare($query)) {
 										$data = dbfetch($result, true, [
-											':title' 	=> $title, 
+											':title' 	=> $title,
 											':sef'		=> $seftitle,
 											':text'		=> $text,
 											':date'		=> $date,
@@ -1690,7 +1690,7 @@ function processing() {
 											':ssub'		=> $show_in_subcats,
 											':order'	=> $artorder
 										]);
-									}	
+									}
 									break;
 								case (isset($_POST['edit_article'])):
 									$category = $position == 3 ? 0 : $category;
@@ -1721,8 +1721,8 @@ function processing() {
 									}
 									else {$future = '';}
 									$art_qwr = "UPDATE "._PRE.'articles'." SET
-										title = :title, seftitle = :sef, text = :text, ".$future." category = :cat, position = :pos, 
-										extraid = :extraid, page_extra = :page_extra, displaytitle = :disp_title, displayinfo = :disp_info, 
+										title = :title, seftitle = :sef, text = :text, ".$future." category = :cat, position = :pos,
+										extraid = :extraid, page_extra = :page_extra, displaytitle = :disp_title, displayinfo = :disp_info,
 										commentable = :comment, published = :pub, description_meta = :dmeta, keywords_meta = :keyw, show_on_home = :shome,
 										show_in_subcats = :ssubcat, artorder = :order
 										WHERE id = :id";
@@ -1755,7 +1755,7 @@ function processing() {
 										if ($res1 = db() -> query($chk_extra_query)) {
 											while ($xtra = dbfetch($res1)) {
 												$xtra_id = $xtra['id'];
-												$extra2 = "UPDATE "._PRE.'articles'." 
+												$extra2 = "UPDATE "._PRE.'articles'."
 													SET category = :cat, page_extra = :extra_id WHERE id = :id";
 												if ($res_xtra = db() -> prepare($extra2)) {
 													dbfetch($res_art, true, [
@@ -1791,13 +1791,13 @@ function processing() {
 					$postCat = cat_rel($articleCAT, 'seftitle');
 					$link = $postCat.'/'.$articleSEF;
 					if (isset($_POST['submit_text'])) {
-						$q2 = "UPDATE "._PRE.'comments'." 
+						$q2 = "UPDATE "._PRE.'comments'."
 							SET name = :name, url = :url, comment = :comment, approved = :approved WHERE id = :id";
 						if ($r2 = db() -> prepare($q2)) {
 							$d2 = dbfetch($r2, true,[
 								':name'		=>	$name,
 								':url'		=>	$url,
-								':comment'	=>	$comment, 
+								':comment'	=>	$comment,
 								':approved' =>	$approved,
 								':id'		=>	$commentid
 							]);
@@ -1817,7 +1817,7 @@ function processing() {
 				case 'delete_category_all':
 					$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
 					if ($id == 0) {return;}
-					$query = "SELECT c.id AS subcat, a.id 
+					$query = "SELECT c.id AS subcat, a.id
 						FROM "._PRE."categories AS c
 						LEFT JOIN "._PRE."articles AS a
 						    on ( a.category = c.id OR a.category = $id ) AND a.position = 1
