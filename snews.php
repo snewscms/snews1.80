@@ -1682,7 +1682,7 @@ function searchform2() {
 function search($limit = 20) {
 	$search_query = cleanXSS($_POST['search_query']);
 	if (isset($_POST['search2']) && $_POST['search2'] == substr(session_id(), 2, 7)) {searchform2();}
-	echo '<h2>'.l(search_results).'</h2>';
+	echo '<h2>'.l('search_results').'</h2>';
 	if (strlen($search_query) < 4 || $search_query == l('search_keywords')) {
 		echo '<p>'.l('charerror').'</p>';
 	}
