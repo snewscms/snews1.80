@@ -945,7 +945,7 @@ function articles() {
 			if ($result = db() -> query($query_articles)) {
 				$link = '<a href="'._SITE;
 				while ($r = dbfetch($result)) {
-					$infoline = $r['displayinfo'] == 'YES' ? true : false;
+					$infoline = $r['displayinfo'] == 'YES';
 					$text = stripslashes($r['text']);
 					if (!empty($currentPage) && $_ID == 0 && !empty($text)) {
 						$short_display = strpos($text, '[break]');
@@ -978,7 +978,7 @@ function articles() {
 					$edit_link = $link.'?action=admin_article&amp;id='.$r['aid'].'" title="'.$title.'">'.l('edit').'</a> ';
 					$edit_link.= ' '.l('divider').' '.$visiblity;
 					if (!empty($currentPage)) {
-						if ($infoline == true) {
+						if ($infoline) {
 							$tag = explode(',', tags('infoline'));
 							foreach ($tag as $tag) {
 								switch (true) {
@@ -1006,7 +1006,7 @@ function articles() {
 						}
 					} else
 					if (empty($currentPage) || $_TYPE == 2) {
-						if ($infoline == true) {
+						if ($infoline) {
 							$tag = explode(',', tags('infoline'));
 							foreach ($tag as $tag ) {
 								switch ($tag) {
@@ -1035,7 +1035,7 @@ function articles() {
 				paginator( $currentPage, $totalPages, l('paginator'));
 			}
 			// COMMENTS
-			if ($_ID > 0 && $infoline == true) {
+			if ($_ID > 0 && $infoline) {
 				if ($commentable == 'YES') {
 					comment('unfreezed');
 				} else
