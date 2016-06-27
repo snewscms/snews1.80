@@ -226,7 +226,7 @@ function readAddons() {
 readAddons();
 
 // LANGUAGE VARIABLES
-@include('lang/'.s('language');
+@include('lang/'.s('language').'.php');
 
 // LANGUAGE
 function l($var) {
