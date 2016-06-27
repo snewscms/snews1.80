@@ -226,7 +226,7 @@ function readAddons() {
 readAddons();
 
 // LANGUAGE VARIABLES
-	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
+@include('lang/'.s('language');
 
 // LANGUAGE
 function l($var) {
