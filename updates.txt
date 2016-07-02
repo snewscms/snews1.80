@@ -58,3 +58,15 @@ It is different if you search for "snews color", in this case both words must ma
 *** 23 June *** by skiane
 [printArticleDetails] New function
 - Factorize code-> [admin_articles]
+
+*** 02 July *** by skiane & Rui
+- Javascript add more dependancy for def_subcat - Extra now show "Show in Subcategories" only Categorie for all or for one category
+- All queries review
+- [buttons] - img,link,include,func fixed remove text from javascript side and put in admin.php
+- [extra] Not working correctly - fixed
+- Add global $_subID to get category from sub-cats
+- remove white spaces, cosmetic
+- [readAddons] simplified & fixed (missing global $l to show Text from addons)
+- [search] - fixed missing quotes
+- [articles] - Better syntax with bool expression
+- simplified language file loading code - change include langfile to require.

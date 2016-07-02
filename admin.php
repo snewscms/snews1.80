@@ -88,7 +88,8 @@ function administration() {
 		}
 		echo '</p>';
 		echo '</div>';
-		$query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';
+		# COMMENTS
+		$query = "SELECT id, articleid, name FROM "._PRE."comments WHERE approved != 'True'";
 		$unapproved = stats('comments', '', 'approved != \'True\'');
 		if ($unapproved > 0) {
 			echo '<div class="adminpanel"><p class="admintitle">'.l('comments').'</p>';
@@ -104,6 +105,7 @@ function administration() {
 			}
 			echo '</div></div>';
 		}
+		# SITE PANEL
 		echo '<div class="message"><p class="admintitle">'.l('site_settings').'</p>';
 		echo '<p><a href="'._SITE.'snews_settings/">'.l('settings').'</a>&nbsp;|&nbsp;
 			<a href="'._SITE.'snews_files/">'.l('files').'</a></p></div>';
@@ -180,7 +182,7 @@ function settings() {
 		echo html_input('text', 'rss_limit', 'rssl', s('rss_limit'), l('a_rss_limit'),'','','','','','','','','','');
 		echo '<p><label for="dp">'.l('a_display_page').':</label><br /> <select name="display_page" id="dp">';
 		echo '<option value="0"'.(s('display_page') == 0 ? ' selected="selected"' : '').'>'.l('none').'</option>';
-		$query = 'SELECT id,title FROM '._PRE.'articles'.' WHERE position = 3 ORDER BY id ASC';
+		$query = "SELECT id,title FROM "._PRE."articles WHERE position = 3 ORDER BY id ASC";
 		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				echo '<option value="'.$r['id'].'"';
@@ -260,7 +262,7 @@ function admin_categories() {
 		echo '<p>'.l('category_not_exist').'</p>';
 	}
 	else {
-		$query = 'SELECT id, name, description, published, catorder FROM '._PRE.'categories'.' WHERE subcat = 0 ORDER BY catorder,id ASC';
+		$query = "SELECT id, name, description, published, catorder FROM "._PRE."categories WHERE subcat = 0 ORDER BY catorder,id ASC";
 		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				$cat_input = '<input type="text" name="cat_'.$r['id'].'" value="'.$r['catorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
@@ -268,8 +270,9 @@ function admin_categories() {
 					'.l('divider').' <a href="'._SITE.$link.'&amp;id='.$r['id'].'" title="'.$r['description'].'">'.l('edit').'</a> ';
 				echo $r['published'] != 'YES' ? ' '.l('divider').' ['.l('status').' '.l('unpublished').']' : '';
 				echo ' '.l('divider').' <a href="'._SITE.$link.'&amp;sub_id='.$r['id'].'" title="'.$r['description'].'">'.l('add_subcategory').'</a></p>';
-				$subquery = 'SELECT id,name,description,published,catorder FROM '._PRE.'categories'.' WHERE subcat = '.$r['id'].' ORDER BY catorder,id ASC';
-				if ($res = db() -> query($subquery)) { $tab2 = 1;
+				$subquery = "SELECT id,name,description,published,catorder FROM "._PRE."categories WHERE subcat = $r[id] ORDER BY catorder,id ASC";
+				if ($res = db() -> query($subquery)) {
+					$tab2 = 1;
 					while ($sub = dbfetch($res)) {
 					    $subcat_input = '<input type="text" name="cat_'.$sub['id'].'" value="'.$sub['catorder'].'" size="1" tabindex="'.$tab2.'" /> &nbsp;';
 					    echo '<p class="subcat">'.$subcat_input.'<strong>'.$sub['name'].'</strong>'.l('divider').' ';
@@ -294,9 +297,9 @@ function admin_categories() {
 function form_categories($subcat = 'cat') {
 	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
 		$categoryid = intval($_GET['id']);
-		$query = 'SELECT id,name,seftitle,published,description,subcat,catorder FROM '._PRE.'categories'.' WHERE id='.$categoryid;
+		$query = "SELECT id,name,seftitle,published,description,subcat,catorder FROM "._PRE."categories WHERE id = $categoryid";
 		if ($result = db() -> query($query)) {$r = dbfetch($result);}
-		$qwr = "select name from "._PRE."categories	where id = ".$r['subcat'];
+		$qwr = "SELECT name FROM "._PRE."categories	WHERE id = ".$r['subcat'];
 		if ($jresult = db() -> query($qwr)) {
 			while ($rr = dbfetch($jresult)) {$name = $rr['name'];}
 		}
@@ -314,7 +317,7 @@ function form_categories($subcat = 'cat') {
 	else {
 		$sub_cat = isset($_GET['sub_id']) ? intval($_GET['sub_id']) : '0';
 		if ($sub_cat !=' cat') {
-			$query = 'SELECT name FROM '._PRE.'categories'.' WHERE id = '.$sub_cat;
+			$query = "SELECT name FROM "._PRE."categories WHERE id = ".$sub_cat;
 			if ($result = db() -> query($query)) {
 				while ($r = dbfetch($result)) {$name = $r['name'];}
 			}
@@ -367,14 +370,14 @@ function delete_cat($id) {
 	$cat_order = $catdata['catorder'];
 	$cat_subcat = $catdata['subcat'];
 	# DELETE CATEGORY
-	$query = "DELETE FROM "._PRE.'categories'." WHERE id = $id";
+	$query = "DELETE FROM "._PRE."categories WHERE id = $id";
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
 	# RE-ORDER
-	$sql = "SELECT id, catorder FROM "._PRE.'categories'." WHERE catorder > $cat_order AND subcat = $cat_subcat";
+	$sql = "SELECT id, catorder FROM "._PRE."categories WHERE catorder > $cat_order AND subcat = $cat_subcat";
 	if ($res = db() -> query($sql)) {
 		while ($rr = dbfetch($res)) {
 			$order = $rr['catorder'] -1;
-			$sq = "UPDATE "._PRE.'categories'." SET catorder = :order WHERE id = :id";
+			$sq = "UPDATE "._PRE."categories SET catorder = :order WHERE id = :id";
 			if ($ru = db() -> prepare($sq)) {
 				$ru = dbfetch($ru, true, [
 					':order' => $order,
@@ -400,7 +403,7 @@ function form_groupings() {
  	if (s('enable_extras') == 'YES') {
 		if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
 			$extraid = intval($_GET['id']);
-			$query = 'SELECT id,name,seftitle,description FROM '._PRE.'extras'.' WHERE id='.$extraid;
+			$query = "SELECT id, name, seftitle, description FROM "._PRE."extras WHERE id = ".$extraid;
 			if ($result = db() -> query($query)) {$r = dbfetch($result);}
 			$frm_action = _SITE.'?action=process&amp;task=admin_groupings&amp;id='.$extraid;
 			$frm_add_edit = l('edit');
@@ -455,7 +458,7 @@ function admin_groupings() {
 		$num = stats('extras', '');
 		if ($num == 0) {echo '<p>'.l('group_not_exist').'</p>';}
 		else {
-			$query = 'SELECT id,name,description FROM '._PRE.'extras'.' ORDER BY id ASC';
+			$query = "SELECT id,name,description FROM "._PRE."extras ORDER BY id ASC";
 			if ($result = db() -> query($query)) {
 				while ($r = dbfetch($result)) {
 					echo '<p>';
@@ -484,15 +487,22 @@ function buttons(){
 		'br' => ''
 	);
 	foreach ($formatting as $key => $var) {
-		$css = $var == 'key' ? $key :'buttons';
-		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\')" value="'.
+		$css = $var == 'key' ? $key : 'buttons';
+		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\',\'\',\'\')" value="'.
 		l($key.'_value').'" />';
 	}
 	echo '</p><br class="clearer" /><p>'.l('insert').': <br class="clearer" />';
-	$insert = array('img', 'link', 'include', 'func','intro');
-	foreach ($insert as $key) {
+	$insert = [
+		'img' => 'js_image1,js_image2',
+		'link' => 'js_link1,js_link2',
+		'include' => 'js_file,on', 
+		'func' => 'js_func1,js_func2',
+		'intro' => 'on,on'
+	];
+	foreach ($insert as $key => $val) {
+		$lng = explode(',', $val);
 		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="buttons" onclick="tag(\''.
-		$key.'\')" value="'.l($key.'_value').'" />';
+		$key.'\',\''.l($lng[0]).'\',\''.l($lng[1]).'\')" value="'.l($key.'_value').'" />';
 	}
 	echo '<br class="clearer" /></p>';
 }
@@ -504,7 +514,7 @@ function form_articles($contents) {
 		$frm_position1 = '';
 		$frm_position2 = '';
 		$frm_position3 = '';
- 		$query = 'SELECT * FROM '._PRE.'articles'.' WHERE id = '.$id;
+ 		$query = "SELECT * FROM "._PRE."articles WHERE id = $id";
  		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				$article_category = $r['category'];
@@ -634,15 +644,22 @@ function form_articles($contents) {
 		if ($contents != 'page_new' && $edit_option != 3) {
 			echo '<p><label for="cat">';
 			$article_category = isset($article_category) ? $article_category : -1;
+			# NEW EXTRA
 			echo ($contents == 'extra_new' || $edit_option == 2) ?  l('appear_category') : l('category');
 			if ($contents == 'extra_new' || $edit_option == 2) {
 				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'extra\');">';
 				echo '<option value="-1"'.($article_category == -1 ? ' selected="selected"' : '').'>'.l('all').'</option>';
 				echo '<option value="-3"'.($article_category == -3 ? ' selected="selected"' : '').'>'.l('page_only').'</option>';
 			}
-			else {echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'snews_articles\');">';}
-			$category_query = 'SELECT id,name,subcat FROM '._PRE.'categories'.'
-				WHERE published = \'YES\' AND subcat = 0 ORDER BY catorder,id ASC';
+			# NEW ARTICLE
+			else {
+				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'snews_articles\');">';
+			}
+			# CATEGORIES AND SUB-CATEGORIES
+			$category_query = "SELECT id, name, subcat
+				FROM "._PRE."categories
+				WHERE published = 'YES' AND subcat = 0
+				ORDER BY catorder, id ASC";
 			if ($cat_result = db() -> query($category_query)) {
 				while ($cat = dbfetch($cat_result)) {
 					echo '<option value="'.$cat['id'].'"';
@@ -650,8 +667,10 @@ function form_articles($contents) {
 						echo ' selected="selected"';
 					}
 					echo '>'.$cat['name'].'</option>';
-					$subquery = 'SELECT id,name,subcat FROM '._PRE.'categories'.'
-						WHERE subcat = '.$cat['id'].' ORDER BY catorder,id ASC';
+					$subquery = "SELECT id, name, subcat
+						FROM "._PRE."categories
+						WHERE subcat = $cat[id]
+						ORDER BY catorder, id ASC";
 					if ($subresult = db() -> query($subquery)) {
 						while ($s = dbfetch($subresult)) {
 							echo '<option value="'.$s['id'].'"';
@@ -666,22 +685,27 @@ function form_articles($contents) {
 			echo '</select></p>';
 			# EXTRA
 			if ($contents == 'extra_new' || $edit_option == 2) {
+				$sub_display = $article_category == -1 ? 'inline' : 'none';
+				echo '<div id="def_subcat" style="display:'.$sub_display.';"><p>';
+				echo html_input('checkbox', 'show_in_subcats', 'asc', 'YES', l('show_in_subcats'), '', '', '', '', $show_in_subcats, '', '', '', '', '');
+				echo '</p></div>';
 				$none_display = $article_category == -1 ? 'none' : 'inline';
-				echo '<div id="def_page" style="display:'.$none_display.';"><p><label for="dp">'.l('appear_page').':</label>
-					<br /><select name="define_page" id="dp">';
+				echo '<div id="def_page" style="display:'.$none_display.';"><p>';
+				echo '<label for="dp">'.l('appear_page').':</label><br />
+					<select name="define_page" id="dp">';
 				echo '<option value="0"'.($edit_option != '2' ? ' selected="selected"' : '').'>'.l('all').'</option>';
-				$query = 'SELECT id,title FROM '._PRE.'articles'.' WHERE position = 3 ORDER BY id ASC';
+				$query = "SELECT id, title FROM "._PRE."articles WHERE position = 3 ORDER BY id ASC";
 				if ($result = db() -> query($query)) {
 					while ($r = dbfetch($result)) {
 						echo '<option value="'.$r['id'].'"';
 						if ($edit_page == $r['id']) {
-							echo ' selected="selected"';
+							echo ' selected = "selected"';
 						}
 						echo '>'.$r['title'].'</option>';
 					}
 				}
-				echo '</select><br />'.
-				html_input('checkbox', 'show_in_subcats', 'asc', 'YES', l('show_in_subcats'), '', '', '', '', $show_in_subcats, '', '', '', '', '').'</p></div>';
+				echo '</select><br />';
+				echo '</p></div>';
 			}
 		}
 		if ($contents == 'article_new' || $edit_option == 1) {
@@ -692,24 +716,26 @@ function form_articles($contents) {
 			echo '</div>';
 		}
 		echo '</div>';
+		# PREVIEW PANEL
 		echo '<div class="adminpanel">';
 			echo '<p class="admintitle"><a onclick="toggle(\'preview\')" style="cursor: pointer;" title="'.l('preview').'">'.l('preview').'</a></p>';
 			echo '<div id="preview" style="display: none;"></div>';
 		echo '</div>';
+		# CUSTOMIZE PANEL
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle"><a onclick="toggle(\'customize\')" style="cursor: pointer;" title="'.l('customize').'">'.l('customize').'</a></p>';
 		echo '<div id="customize" style="display: none;">';
 		# EXTRA
 		if ($contents == 'extra_new' || $edit_option == 2) {
 			if (s('enable_extras') == 'YES') {
-				echo '<p><label for="ext">'.l('define_extra').'</label><br />';
-				echo '<select name="define_extra" id="ext">';
-				$extra_query = 'SELECT id,name FROM '._PRE.'extras'.' ORDER BY id ASC';
+				echo '<p><label for = "ext">'.l('define_extra').'</label><br />';
+				echo '<select name = "define_extra" id = "ext">';
+				$extra_query = "SELECT id, name FROM "._PRE."extras ORDER BY id ASC";
 				if ($extra_result = db() -> query($extra_query)) {
 					while ($ex = dbfetch($extra_result)) {
-						echo '<option value="'.$ex['id'].'"';
+						echo '<option value = "'.$ex['id'].'"';
 						if ($contents != 'extra_new' && $extraid == $ex['id']) {
-							echo ' selected="selected"';
+							echo ' selected = "selected"';
 						}
 						echo '>'.$ex['name'].'</option>';
 					}
@@ -816,7 +842,7 @@ function printArticleDetails($articleData, $articleClass, $order) {
 function admin_articles($contents) {
 	global $categorySEF, $subcatSEF;
 	$link = '<a href="'._SITE.$categorySEF.'/';
-	$item = $contents == 'extra_view' ? 'extra_contents': 'snews_articles';
+	$item = $contents == 'extra_view' ? 'extra_contents' : 'snews_articles';
 	$filter_year = defined('DBTYPE') && DBTYPE == 'sqlite' ? 'strftime(\'%Y\', date)' : 'YEAR(date)';
 	$filter_month = defined('DBTYPE') && DBTYPE == 'sqlite' ? 'strftime(\'%m\', date)' : 'MONTH(date)';
 	switch ($contents) {
@@ -852,7 +878,7 @@ function admin_articles($contents) {
 			else {$option[$val[0]] = $val[1];}
 		}
 	}
-	$mextra = s('enable_extras') == 'YES' && $p == 2 && !isset($option['extraid'])? ' / '.$link.'extras">'.l('extra').'</a>' : '';
+	$mextra = s('enable_extras') == 'YES' && $p == 2 && !isset($option['extraid'])? ' / '.$link.'extras/">'.l('extra').'</a>' : '';
 	$filter_extra = isset($option['extraid']) ? ';extraid='.$option['extraid'] : '';
 	if (stats('articles', $p) > 0) {
 		$add = ' - <a href="'.$sef.'/" title="'.l('add_new').'">
@@ -889,9 +915,7 @@ function admin_articles($contents) {
 		echo $link.'month'.$filter_extra.'">'.l('month').'</a> '.$mextra.')';
 		echo '</p></legend><br /><p>';
 		$month_names = explode(', ', l('month_names'));
-		$query = 'SELECT DISTINCT('.$filter_year.') AS dyear
-			FROM '._PRE.'articles'.'
-			WHERE '.$qw.' ORDER BY date DESC';
+		$query = "SELECT DISTINCT($filter_year) AS dyear FROM "._PRE."articles WHERE $qw ORDER BY date DESC";
 		if ($sqr = db() -> query($query)) {
 			while ($r = dbfetch($sqr)) {
 			 	$ryear = $r['dyear'];
@@ -901,7 +925,7 @@ function admin_articles($contents) {
 				if ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month')) {
 				    $qx = "SELECT DISTINCT(".$filter_month.") AS dmonth
 						FROM "._PRE.'articles'."
-						WHERE $qw AND ".$filter_year."='$ryear' ORDER BY date ASC";
+						WHERE $qw AND $filter_year = '$ryear' ORDER BY date ASC";
 					if ($rqx = db() -> query($qx)) {
 						while ($rx = dbfetch($rqx)) {
 							$m = $rx['dmonth'] - 1;
@@ -933,10 +957,10 @@ function admin_articles($contents) {
 			$legend_label = $cat_value == -3 ? l('pages') : l('all');
 			$page_only_xsql = $cat_value == -3 ? 'page_extra ASC,' : '';
 			$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page, page_extra
-	 			FROM "._PRE.'articles'."
+	 			FROM "._PRE."articles
 	 			WHERE category = $cat_value
 	 				AND position = $p $filterquery $sqx
-	 			ORDER BY $page_only_xsql artorder ASC, date DESC ";
+	 			ORDER BY $page_only_xsql artorder ASC, date DESC";
 			$num_rows = stats('articles', '', 'category = '.$cat_value.' AND position = '.$p.' '.$filterquery);
 			$tab = 1;
 			echo '<div class="innerpanel">';
@@ -954,7 +978,7 @@ function admin_articles($contents) {
 							    echo !$assigned_page ? l('all_pages') : $assigned_page;
 							}
 					    }
-					    printArticleDetails($r,$item,$tab);
+					    printArticleDetails($r, $item, $tab);
 					    $tab++;
 					    $lbl_filter = $r['page_extra'];
 					}
@@ -970,33 +994,33 @@ function admin_articles($contents) {
 			echo '<p>'.l('no_categories').'</p>';
 		}
 		else {
-			$num_rows = stats('articles', '', 'category = 0 AND position = '.$p.' '.$subquery);
+			$nsql = ($p == 1 ? "category < 1" : "").($p == 2 ? "category = 0" : "");
+			$num_rows = stats('articles', '', $nsql.' AND position = '.$p.' '.$subquery);
 			$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
-				FROM "._PRE.'articles'."
-				WHERE (category = '0' OR category = '-1' OR category = -3)
-					AND position = $p $subquery
-					ORDER BY artorder ASC, date DESC ";
+				FROM "._PRE."articles
+				WHERE ".$nsql." AND position = $p
+				ORDER BY artorder ASC, date DESC";
 			if ($num_rows > 0) {
 				echo '<div class="innerpanel">';
 				echo '<p class="admintitle">'.l('no_category_set').'</p>';
 				if ($res = db() -> query($sql)) {
 					while ($O = dbfetch($res)) {
-						printArticleDetails($O,$item,$tab);
+						printArticleDetails($O, $item, $tab);
 						$tab++;
 					}
 				}
 				echo '</div>';
 			}
-			$cat_query = "SELECT id, name, seftitle FROM "._PRE.'categories'." WHERE subcat = 0";
+			$cat_query = "SELECT id, name, seftitle FROM "._PRE."categories WHERE subcat = 0";
 			if ($cat_res = db() -> query($cat_query)) {
 				while ($row = dbfetch($cat_res)) {
 					echo '<div class="adminpanel">';
 					echo '<p class="admintitle">'.$row['name'].'</p>';
 					$sql1 = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
-						FROM "._PRE.'articles'."
-						WHERE category = '".$row['id']."'
-							AND position = $p $subquery $filterquery
-						ORDER BY artorder ASC, date DESC ";
+						FROM "._PRE."articles
+						WHERE category = $row[id]
+							AND position = $p $filterquery
+						ORDER BY artorder ASC, date DESC";
 					$num_rows = stats('articles', '', 'category = '.$row['id'].' AND position = '.$p.' '.$subquery.' '.$filterquery);
 					if ($num_rows == 0) {
 						echo $no_content;
@@ -1004,28 +1028,28 @@ function admin_articles($contents) {
 					if ($res1 = db() -> query($sql1)) {
 						while ($r = dbfetch($res1)) {
 							$r['catSEF'] = $row['seftitle'];
-							printArticleDetails($r,$item,$tab);
+							printArticleDetails($r, $item, $tab);
 							$tab++;
 						}
 					}
-					$query2 = "SELECT id, name, seftitle FROM "._PRE.'categories'." WHERE subcat = '$row[id]' ORDER BY catorder ASC";
+					$query2 = "SELECT id, name, seftitle FROM "._PRE."categories WHERE subcat = $row[id] ORDER BY catorder ASC";
 					$tab2 = 1;
 					if ($res2 = db() -> query($query2)) {
 						while ($row2 = dbfetch($res2)) {
 							echo '<a class="subcat" onclick="toggle(\'subcat'.$row2['id'].'\')" style="cursor: pointer;">'.$row2['name'].'</a><br />';
 							echo '<div id="subcat'.$row2['id'].'" style="display: none;" class="subcat">';
-							$catart_sql2 = "SELECT id, title, seftitle, date, published, artorder, visible
-								FROM "._PRE.'articles'."
-								WHERE category = '$row2[id]' $subquery $filterquery
-								ORDER BY category ASC, artorder ASC, date DESC ";
+							$catart_sql2 = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
+								FROM "._PRE."articles
+								WHERE category = $row2[id] $subquery $filterquery
+								ORDER BY category ASC, artorder ASC, date DESC";
 							$num_rows2 = stats('articles', '', 'category = '.$row2['id'].' '.$subquery.' '.$filterquery);
 							if ($num_rows2 == 0) {
 								echo $no_content;
 							}
 							if ($res3 = db() -> query($catart_sql2)) {
 								while ($ca_r2 = dbfetch($res3)) {
-									$ca_r2['catSEF'] = cat_rel($row2['id'],'seftitle');
-									printArticleDetails($ca_r2,'snews_articles',$tab2);
+									$ca_r2['catSEF'] = cat_rel($row2['id'], 'seftitle');
+									printArticleDetails($ca_r2, 'snews_articles', $tab2);
 								}
 							}
 							echo '</div>';
@@ -1039,9 +1063,9 @@ function admin_articles($contents) {
 	# PAGE
 	} elseif ($contents == 'page_view') {
 		$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
-			FROM "._PRE.'articles'."
+			FROM "._PRE."articles
 			WHERE position = 3 $subquery $filterquery
-			ORDER BY artorder ASC, date DESC ";
+			ORDER BY artorder ASC, date DESC";
 		$num_rows = stats('articles', '', 'position = 3 '.$subquery);
 		if ($num_rows == 0) {
 			echo '<p>'.l('article_not_exist').'</p>';
@@ -1062,7 +1086,7 @@ function admin_articles($contents) {
 // COMMENTS - EDIT
 function edit_comment() {
 	$commentid = intval($_GET['commentid']);
-	$query = 'SELECT id,articleid,name,url,comment,approved FROM '._PRE.'comments'.' WHERE id='.$commentid;
+	$query = "SELECT id, articleid, name, url, comment, approved FROM "._PRE."comments WHERE id = $commentid";
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
 	$articleTITLE = retrieve('title', 'articles', 'id', $r['articleid']);
 	$comment = stripslashes($r['comment']);
@@ -1228,7 +1252,7 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 				AND id != '.$not_id : '"');
 			break;
 	}
-	$query = 'SELECT count(DISTINCT id) as total FROM '.$sql;
+	$query = "SELECT count(DISTINCT id) as total FROM ".$sql;
 	$rows = 0;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
@@ -1560,7 +1584,7 @@ function processing() {
 								case(isset($_POST['edit_category'])):
 									$catorder = stats('categories', '', 'subcat = '.$subcat, false);
 									$catorder = isset($_POST['catorder']) ? $_POST['catorder'] : $catorder + 1;
-									$query = "UPDATE "._PRE.'categories'."
+									$query = "UPDATE "._PRE."categories
 										SET	name = :name, seftitle = :sef, description = :desc, published = :pub, subcat = :subcat, catorder = :cat_order
 										WHERE id = :id";
 									if ($res = db() -> prepare($query)) {
@@ -1683,7 +1707,7 @@ function processing() {
 								stats('articles', '', ' category = '.$category.' AND position = '.$position)+1;
 							switch (true) {
 								case (isset($_POST['add_article'])):
-									$query = "INSERT INTO "._PRE.'articles '."(
+									$query = "INSERT INTO "._PRE."articles (
 										title, seftitle, text, date, category,
 										position, extraid, page_extra, displaytitle,
 										displayinfo, commentable, published, description_meta,
@@ -1719,16 +1743,16 @@ function processing() {
 									$old_pos = retrieve('position', 'articles', 'id', $id);
 									// Only do this if page is changed to art/extra
 									if ($position != $old_pos && $old_pos == 3) {
-										$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
-											WHERE position = 2 AND category = -3 AND page_extra = :id";
-										if ($rextra = db() -> prepare($chk_extra_query)) {
-											while ($xtra = dbfetch($rextra, true, [':id'=> $id])) {
+										$chk_extra_query = "SELECT id FROM "._PRE."articles
+											WHERE position = 2 AND category = -3 AND page_extra = $id";
+										if ($rextra = db() -> query($chk_extra_query)) {
+											while ($xtra = dbfetch($rextra)) {
 												$xtra_id = $xtra['id'];
-												$sql = "UPDATE "._PRE.'articles'." SET category = :cat, page_extra = :pg_extra
+												$sql = "UPDATE "._PRE."articles SET category = :cat, page_extra = :pg_extra
 													WHERE id = :id";
 												if ($rextra = db() -> prepare($chk_extra_query)) {
 													$ok = dbfetch($rextra, true, [
-														':cat'	=>	'0',
+														':cat'	=>	'-1',
 														':pg_extra'	=> '',
 														':id'	=> $xtra_id
 													]);
@@ -1736,13 +1760,23 @@ function processing() {
 											}
 										}
 									}
+									# CHANGE TO -> ARTICLE / PAGE
+									if ($position == 1 || $position == 3) {
+										$def_extra = '';
+										$page = '';
+									}
+									# CHANGE TO -> EXTRA
+									if ($position == 2) {
+										$def_extra = empty($def_extra) ? 1 : $def_extra;
+										$page = empty($page) ? 0 : $page;
+									}
 									if ($fpost_enabled) {
 										$future = "date = '$date',";
-										//allows backdating of article
 										$publish_article = strtotime($date) < time() ? 1 : $publish_article;
+									} else {
+										$future = '';
 									}
-									else {$future = '';}
-									$art_qwr = "UPDATE "._PRE.'articles'." SET
+									$art_qwr = "UPDATE "._PRE."articles SET
 										title = :title, seftitle = :sef, text = :text, ".$future." category = :cat, position = :pos,
 										extraid = :extraid, page_extra = :page_extra, displaytitle = :disp_title, displayinfo = :disp_info,
 										commentable = :comment, published = :pub, description_meta = :dmeta, keywords_meta = :keyw, show_on_home = :shome,
@@ -1772,12 +1806,12 @@ function processing() {
 									break;
 								case(isset($_POST['delete_article'])):
 									if ($position == 3) {
-										$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
+										$chk_extra_query = "SELECT id FROM "._PRE."articles
 											WHERE position = 2 AND category = -3 AND  page_extra = $id";
 										if ($res1 = db() -> query($chk_extra_query)) {
 											while ($xtra = dbfetch($res1)) {
 												$xtra_id = $xtra['id'];
-												$extra2 = "UPDATE "._PRE.'articles'."
+												$extra2 = "UPDATE "._PRE."articles
 													SET category = :cat, page_extra = :extra_id WHERE id = :id";
 												if ($res_xtra = db() -> prepare($extra2)) {
 													dbfetch($res_art, true, [

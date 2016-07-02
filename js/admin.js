@@ -22,13 +22,29 @@ if (document.addEventListener) {
 } else if (window.attachEvent) {
 	window.onload = function (evt) {head_onload(evt);};
 }
-
-
-
+// *************************************************************************************
+// DEPENDACY ONLOAD
+// *************************************************************************************
+function onload_dependacy() {
+	var category = document.forms.post && document.forms.post.define_category ? document.forms.post.define_category : false;
+	if (category) {
+		var page = document.getElementById('def_page');
+		var pextra = document.getElementById('def_subcat');
+		if (page == null || pextra == null) {return;}
+		page.style.display = category.options[category.selectedIndex].value == '-3' ? 'inline' : 'none';
+		pextra.style.display = category.options[category.selectedIndex].value == '-1'  ||
+			parseInt(category.options[category.selectedIndex].value) >= 1	? 'inline' : 'none';
+	}
+}
+if (document.addEventListener) {
+	document.addEventListener( "DOMContentLoaded", onload_dependacy, false );
+} else if (window.attachEvent) {
+	window.onload = function (evt) {onload_dependacy(evt);};
+}
 
 
 // *************************************************************************************
-// OLD JAVASCRIPT snews 1.71 fixeed and verified by lint
+// OLD JAVASCRIPT snews 1.71 fixed and verified by lint
 // *************************************************************************************
 	var allowsef = /new|add|_ar|_ca/.test("new");
 	var allowpreview = /new|_add|_ar|/.test("");
@@ -39,10 +55,6 @@ if (document.addEventListener) {
 	var version = parseFloat(get_info);
 
 	if (allowpreview === true && browser != "Microsoft Internet Explorer" && browser!="Netscape" && version>=4) {
-		/*window.onload = startPreview();
-		function startPreview() { 
-			window.self.setInterval("updatePreview()", 1500);
-		}*/
 		window.onload = function() { 
 			window.self.setInterval("updatePreview()", 1500);
 		};
@@ -54,7 +66,7 @@ if (document.addEventListener) {
 	}
 
 	// generate SEF url
-   	function genSEF(from,to) {
+   	function genSEF(from, to) {
     	if (allowsef === true) {
          	var str = from.value.toLowerCase();
          	str = str.replace(/[\xc0-\xc5\xe0-\xe5\u0100-\u0105\u0386\u0391\u03ac\u03b1\u0410\u0430\u05d0]/g,'a');
@@ -127,7 +139,7 @@ if (document.addEventListener) {
 	}
 
 	// basic html textarea editor
-	function tag(tag) {
+	function tag(tag, txt1, txt2) {
 		var src = document.getElementById('txt');
 		var start, end, url, alt, title='';
 		switch(tag) {
@@ -142,9 +154,9 @@ if (document.addEventListener) {
 			// function use
 			case 'func':// adding function insertion
 				// function name no brackets
-				url = prompt("<?php echo l('js_func1'); ?>", '');
+				url = prompt(txt1, '');
 				//params, seperated by comma.
-				title = prompt("<?php echo l('js_func2'); ?>", "");
+				title = prompt(txt2, "");
 				if (url !== null) {
 					start = '[func]'+url+':|:'; 
 					end = '[\/func]';
@@ -156,7 +168,7 @@ if (document.addEventListener) {
 				break;
 			// function use end
 			case 'include':
-				url = prompt("<?php echo l('js_file'); ?>", '');
+				url = prompt(txt1, '');
 				start = url !== null ? '[include]'+url+'[\/include]' : '';
 				end = '';
 				break;
@@ -165,14 +177,14 @@ if (document.addEventListener) {
 				end = '<br \/>\n'; 
 				break;
 			case 'img':
-				url = prompt("<?php echo l('js_image1'); ?>", '');
-				alt = prompt("<?php echo l('js_image2'); ?>", '');
+				url = prompt(txt1, '');
+				alt = prompt(txt2, '');
 				start = url !== null ? '<img src="'+url+'" alt="'+alt+'" \/>' : '';
 				end = '';
 				break;
 			case 'link':
-				url = prompt("<?php echo l('js_link1'); ?>", '');
-				title = prompt("<?php echo l('js_link2'); ?>", '');
+				url = prompt(txt1, '');
+				title = prompt(txt2, '');
 				if (url !== null) {
 					start = '<a href="'+url+'" title="'+title+'">'; 
 					end = '<\/a>';
@@ -222,10 +234,13 @@ if (document.addEventListener) {
 	}
 	// dependancy limiter
 	function dependancy(extra) {
-		var category = document.forms.post.define_category;//document.forms['post']['define_category'];
+		var category = document.forms.post.define_category;
 		var page = document.getElementById('def_page');
+		var pextra = document.getElementById('def_subcat');
 		// extra edit
 		if (extra == 'extra') {
 			page.style.display = category.options[category.selectedIndex].value == '-3' ? 'inline' : 'none';
+			pextra.style.display = category.options[category.selectedIndex].value == '-1'  ||
+				parseInt(category.options[category.selectedIndex].value) >= 1	? 'inline' : 'none';
 		}
 	}

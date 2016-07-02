@@ -2,8 +2,8 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		June 23, 2016 - 11:45 GMT+0
-  Developpers: 		Rui Mendes, St�phane Fritsch(Skiane), Nukpana
+  Last Update		July 02, 2016 - 15:00 GMT+0
+  Developpers: 		Rui Mendes, Stephane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -76,7 +76,7 @@ function token() {
 function populate_retr_cache($selector, $value) {
 	static $retr_cache_cat_id, $retr_cache_cat_sef;
 	if (!$retr_cache_cat_id && !$retr_cache_cat_sef) {
-		$query = 'SELECT id, seftitle, name FROM '._PRE.'categories';
+		$query = "SELECT id, seftitle, name FROM "._PRE."categories";
 		if ($result = db() -> query($query)) {
 			foreach ($result as $r ) {
 				$retr_cache_cat['id'][$r['id']] = $r['seftitle'];
@@ -146,7 +146,7 @@ function tags($tag) {
 function s($var) {
 	static $site_settings;
 	if (!$site_settings) {
-		$query = 'SELECT name,value FROM '._PRE.'settings';
+		$query = "SELECT name, value FROM "._PRE."settings";
 		if ($result = db()->query($query)) {
 			foreach ($result as $r ) {
 				$site_settings[$r['name']] = $r['value'];
@@ -206,7 +206,8 @@ function checkUserPass($input) {
 function readAddons() {
 	static $admin_mods;
 	if (!$admin_mods) {
-		$admin_mods = Array();
+		global $l;
+		$admin_mods = [];
 		$fd = opendir('addons/');
 		while (($file = @readdir($fd)) == true) {
 			clearstatcache();
@@ -226,13 +227,17 @@ function readAddons() {
 readAddons();
 
 // LANGUAGE VARIABLES
-@include('lang/'.s('language').'.php');
+if (file_exists('lang/'.s('language').'.php')) {
+	require('lang/'.s('language').'.php');
+} else {
+	die('Missing: lang/'.s('language').'.php');
+}
 
 // LANGUAGE
 function l($var) {
 	static $lang;
-	global $l;
 	if (!$lang) {
+		global $l;
 		$lang = load_lang();
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
 		$lang['cat_listSEF'] = 'archive,contact,sitemap,login,searching,verify';
@@ -285,8 +290,8 @@ function cat_rel($var, $column) {
 	$parent = '';
 	$categoryid = $var;
 	$join = "SELECT parent.$column
-		FROM "._PRE.'categories'." as child
-		INNER JOIN "._PRE.'categories'." as parent
+		FROM "._PRE."categories as child
+		INNER JOIN "._PRE."categories as parent
 			ON parent.id = child.subcat
 		WHERE child.id = $categoryid";
 	if ($result = db() -> query($join)) {
@@ -294,7 +299,7 @@ function cat_rel($var, $column) {
 			$parent = $r[$column].'/';
 		}
 	}
-	$sub = "SELECT $column FROM "._PRE.'categories'." WHERE id = $categoryid";
+	$sub = "SELECT $column FROM "._PRE."categories WHERE id = $categoryid";
 	if ($res = db() -> query($sub)) {
 		while ($c = dbfetch($res)) {
 			$child = $c[$column];
@@ -305,10 +310,10 @@ function cat_rel($var, $column) {
 
 // CONTENTS COUNTER OR MAX
 function stats($table, $position, $other = '', $count = true) {
-	$field = $count != false ? 'count(DISTINCT id)' : 'MAX(catorder)';
+	$field = $count != false ? "count(DISTINCT id)" : "MAX(catorder)";
 	$pos = !empty($position) ? " WHERE position = $position" : "";
 	$alternative = empty($position) && !empty($other) ? " WHERE ".$other : "";
-	$query = 'SELECT '.$field.' as num FROM '._PRE.$table.$pos.$alternative;
+	$query = "SELECT ".$field." as num FROM "._PRE.$table.$pos.$alternative;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$numrows = $r['num'];
@@ -373,44 +378,44 @@ if ($_GET) {
 		$articleSEF = isset($url[2]) ? $url[2] : '';
 		// ADMIN CONTENT CAN SEE EVERYTHING
 		if (_ADMIN) {
-			$pub_a = '';
-			$pub_c = '';
-			$pub_x = '';
+			$pub_a = "";
+			$pub_c = "";
+			$pub_x = "";
 		}
 		else {
-			$pub_a = ' AND a.published = 1';
-			$pub_c = ' AND c.published =\'YES\'';
-			$pub_x = ' AND x.published =\'YES\'';
+			$pub_a = " AND a.published = 1";
+			$pub_c = " AND c.published = 'YES'";
+			$pub_x = " AND x.published = 'YES'";
 		}
 		// [TYPE = 1] : QUERY FOR ->  CATEGORY/SUBCATEGORY/ARTICLE/
 		if ($articleSEF && substr( $articleSEF, 0, 2) != l('paginator') && substr( $articleSEF, 0, 2) != l('comment_pages')) {
-			$MainQuery = 'SELECT
+			$MainQuery = "SELECT
 				a.id AS id, title, position, description_meta, keywords_meta,
-				c.id AS catID, c.name AS name, c.description, x.name AS xname
-				FROM '._PRE.'articles'.' AS a,
-					'._PRE.'categories'.' AS c
-				LEFT JOIN '._PRE.'categories'.' AS x
-					ON c.subcat=x.id
-				WHERE a.category=c.id
-					'.$pub_a.$pub_c.$pub_x.'
-					AND x.seftitle="'.$categorySEF.'"
-					AND c.seftitle="'.$subcatSEF.'"
-					AND a.seftitle="'.$articleSEF.'"';
+				c.id AS catID, c.name AS name, c.description, x.name AS xname, x.id AS subID
+				FROM "._PRE."articles AS a,
+					"._PRE."categories AS c
+				LEFT JOIN "._PRE."categories AS x
+					ON c.subcat = x.id
+				WHERE a.category = c.id
+					$pub_a$pub_c $pub_x
+					AND x.seftitle='$categorySEF'
+					AND c.seftitle='$subcatSEF'
+					AND a.seftitle='$articleSEF'";
 				$_TYPE = 1;
 		}
 	 	// TWO QUERIES FOR ->  CATEGORY / SUBCATEGORY  /  | OR |  / CATEGORY / ARTICLE /
 		else if ($subcatSEF  && substr( $subcatSEF, 0, 2) != l('paginator') && substr( $subcatSEF, 0, 2) != l('comment_pages')) {
 			# [TYPE = 2] : TRY ARTICLE - QUERY  FOR -> CATEGORY/ARTICLE/
-			$Try_Article = 'SELECT
+			$Try_Article = "SELECT
 					a.id AS id, title, position, description_meta, keywords_meta,
 					c.id as catID, name, description, subcat
-				FROM '._PRE.'articles'.' AS a
-				LEFT JOIN '._PRE.'categories'.' AS c
+				FROM "._PRE."articles AS a
+				LEFT JOIN "._PRE."categories AS c
 					ON category =  c.id
-				WHERE c.seftitle = "'.$categorySEF.'"
-					AND a.seftitle ="'.$subcatSEF.'"
-					'.$pub_a.$pub_c.'
-					AND subcat = 0';
+				WHERE c.seftitle = '$categorySEF'
+					AND a.seftitle = '$subcatSEF'
+					$pub_a $pub_c
+					AND subcat = 0";
 			$num = stats('articles', '', 'seftitle ="'.$subcatSEF.'"');
 			if ($num != 0) {
 				if ($result = db() -> query($Try_Article)) {
@@ -420,15 +425,15 @@ if ($_GET) {
 			}
 			else {
 	 		# [TYPE = 3] : QUERY  FOR -> CATEGORY/SUBCATEGORY/
-				$MainQuery = 'SELECT
+				$MainQuery = "SELECT
 					c.id AS catID, c.name AS name, c.description, c.subcat,
-					x.name AS xname
-				FROM '._PRE.'categories'.' AS x
-				LEFT JOIN '._PRE.'categories'.' AS c
+					x.name AS xname, x.id AS subID
+				FROM "._PRE."categories AS x
+				LEFT JOIN "._PRE."categories AS c
 					ON  c.subcat = x.id
-				WHERE x.seftitle = "'.$categorySEF.'"
-					AND c.seftitle = "'.$subcatSEF.'"
-					'.$pub_c.$pub_x ;
+				WHERE x.seftitle = '$categorySEF'
+					AND c.seftitle = '$subcatSEF'
+					$pub_c $pub_x";
 				$_TYPE = 3;
 			}
 			unset($num);
@@ -440,18 +445,18 @@ if ($_GET) {
 				$_TYPE = 4;
 			} else {
 				# [TYPE = 5] : QUERY  FOR -> ARTICLE/
-				$Try_Page = 'SELECT id, title, category, description_meta, keywords_meta, position
-					FROM '._PRE.'articles'.' AS a
-					WHERE seftitle = "'.$categorySEF.'" '.$pub_a.' AND position = 3';
+				$Try_Page = "SELECT id, title, category, description_meta, keywords_meta, position
+					FROM "._PRE."articles AS a
+					WHERE seftitle = '$categorySEF' $pub_a AND position = 3";
 				if ($result = db() -> query($Try_Page)) {
 					$R = dbfetch($result);
 					$_TYPE = 5;
 				}
 				# [TYPE = 6] : QUERY  FOR -> CATEGORY/
 				if (!$R) {
-					$MainQuery ='SELECT id AS catID, name, description
-						FROM '._PRE.'categories'.' AS c
-						WHERE seftitle = "'.$categorySEF.'" AND subcat = 0 '.$pub_c;
+					$MainQuery = "SELECT id AS catID, name, description
+						FROM "._PRE."categories AS c
+						WHERE seftitle = '$categorySEF' AND subcat = 0 ".$pub_c;
 					$_TYPE = 6;
 					unset($Try_Page);
 				}
@@ -499,6 +504,7 @@ if (isset($R)) {
 	$CAT = !empty($R['category']) ?	$R['category'] : 0;
 	$_POS = !empty($R['position']) ? $R['position']: 0;
 	$_catID = !empty($R['catID']) ? $R['catID']	: 0;
+	$_subID = !empty($R['subID']) ? $R['subID']	: 0;
 	$_TITLE = !empty($R['title']) ? $R['title'] : '';
 	$_NAME =  !empty($R['name'])  ? $R['name']  : '';
 	$_XNAME = !empty($R['xname']) ?	$R['xname'] : '';
@@ -575,11 +581,11 @@ function categories() {
 		$join = '';
 	}
 	$ignore = explode(',', l('ignore_cats'));
-	$query = 'SELECT c.seftitle, c.name, description, c.id AS parent'.$count.'
-		FROM '._PRE.'categories'.' AS c '.$join.'
-		WHERE c.subcat = 0 AND c.published = \'YES\'
+	$query = "SELECT c.seftitle, c.name, description, c.id AS parent".$count."
+		FROM "._PRE."categories AS c ".$join."
+		WHERE c.subcat = 0 AND c.published = 'YES'
 		GROUP BY c.id
-		ORDER BY c.catorder, c.id';
+		ORDER BY c.catorder, c.id";
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$category_title = $r['seftitle'];
@@ -613,11 +619,11 @@ function subcategories($parent) {
 		$join = '';
 	}
 	$ignore = explode(',', l('ignore_cats'));
-	$query = 'SELECT c.seftitle AS subsef, description, name'.$count.'
-		FROM '._PRE.'categories'.' AS c '.$join.'
-		WHERE c.subcat = '.$parent.' AND c.published = \'YES\'
+	$query = "SELECT c.seftitle AS subsef, description, name".$count."
+		FROM "._PRE."categories AS c ".$join."
+		WHERE c.subcat = '$parent' AND c.published = 'YES'
 		GROUP BY c.id
-		ORDER BY c.catorder,c.id';
+		ORDER BY c.catorder,c.id";
 	if ($result = db() -> query($query)) {
 		echo '<ul>';
 			while ($s = dbfetch($result)) {
@@ -650,7 +656,7 @@ function pages() {
 		echo '<li><a'.$class.' href="'._SITE.'archive/">'.l('archive').'</a></li>';
 	}
 	# PAGES YOU CREATED
-	$query = "SELECT id, seftitle, title FROM "._PRE.'articles'." WHERE position = 3 $qwr ORDER BY artorder ASC, id";
+	$query = "SELECT id, seftitle, title FROM "._PRE."articles WHERE position = 3 $qwr ORDER BY artorder ASC, id";
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$title = $r['title'];
@@ -674,7 +680,7 @@ function pages() {
 
 // EXTRA CONTENT
 function extra($mode = '', $styleit = 0, $classname = '', $idname = '') {
-	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $_catID;
+	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $_catID, $_subID;
 	if (empty($mode)) {
 		$mode = retrieve('seftitle', 'extras', 'id' , '1');
 		$mode = isset($mode['sefitle']) ? $mode['seftitle'] : '';
@@ -682,18 +688,23 @@ function extra($mode = '', $styleit = 0, $classname = '', $idname = '') {
 	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
 	$mode = strtolower($mode);
 	$getExtra = retrieve('id', 'extras', 'seftitle', $mode);
-	$subCat = retrieve('subcat', 'categories', 'id', $_catID);
 	$getArt = !empty($_ID) ? $_ID : 0;
-	if (!empty($subcatSEF)) {$catSEF = $subcatSEF;}
-	$url = $categorySEF.(!empty($subcatSEF)? '/'.$subcatSEF:'').(!empty($articleSEF)?'/'.$articleSEF :'');
+	$url = $categorySEF.(!empty($subcatSEF) ? '/'.$subcatSEF : '').(!empty($articleSEF) ? '/'.$articleSEF : '');
 	$url = !empty($url) ? $url : 'home';
-	$sql = 'SELECT
+	$sql_cat = 'AND (
+		(category = -1'.($_subID != 0 ? ' AND show_in_subcats = \'YES\'' : '').') 
+		'.($_ID != 0 && $_catID == 0  ? ' OR (category = -3 AND (page_extra = 0 OR page_extra = '.$_ID.'))' : '').'
+		'.($_catID != 0 && $_subID == 0 ? ' OR (category = '.$_catID.')' : '').'
+		'.($_subID != 0 && empty($subcatSEF)? ' OR (category = '.$_catID.')' : '').'
+		'.($_subID != 0 && !empty($subcatSEF)? ' OR (category = '.$_catID.' OR (category = '.$_subID.' AND show_in_subcats = \'YES\'))' : '').'
+	)';
+	$sql = "SELECT
 			id, title, seftitle, text, category, extraid, page_extra,
 			position, displaytitle, show_in_subcats, visible
-		FROM '._PRE.'articles'.'
-		WHERE published = 1 AND position = 2 ';
+		FROM "._PRE."articles
+		WHERE published = 1 AND position = 2 ".$sql_cat;
 	$query = $sql.(!empty($getExtra) ? ' AND extraid = '.$getExtra : ' AND extraid = 1');
-	$query = $query.$qwr.' ORDER BY artorder ASC,id ASC';
+	$query = $query.$qwr.' ORDER BY artorder ASC, id ASC';
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$category = $r['category'];
@@ -703,9 +714,9 @@ function extra($mode = '', $styleit = 0, $classname = '', $idname = '') {
 					$print = false;
 					break;
 				case ($category == 0 && empty($_catID) && $page != '') :
-					$print = check_category($catSEF) != true ? true : false;
+					$print = check_category($subcatSEF) != true ? true : false;
 					break;
-				case ($category == $_catID || ($category == $subCat && $r['show_in_subcats'] == 'YES')) :
+				case ($category == $_catID || ($category == $_subID && $r['show_in_subcats'] == 'YES')) :
 					$print = true;
 					break;
 				case ($category == -3 && $getArt == $page) :
@@ -861,22 +872,22 @@ function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
 		case 2 : $subcat = !empty($_catID) ? 'AND c.subcat = '.$_catID : ''; break;
 		default: $subcat = '';
 	}
-	$query = 'SELECT
+	$query = "SELECT
 			title,a.seftitle AS asef,date,
 			c.name AS name,c.seftitle AS csef,
 			x.name AS xname,x.seftitle AS xsef
-		FROM '._PRE.'articles'.' AS a
-		LEFT OUTER JOIN '._PRE.'categories'.' as c
+		FROM "._PRE."articles AS a
+		LEFT OUTER JOIN "._PRE."categories as c
 			ON category = c.id
-		LEFT OUTER JOIN '._PRE.'categories'.' as x
-			ON c.subcat =  x.id AND x.published =\'YES\'
+		LEFT OUTER JOIN "._PRE."categories as x
+			ON c.subcat =  x.id AND x.published = 'YES'
 		WHERE position = 1
 			AND a.published = 1
-			AND c.published =\'YES\'
-			AND a.visible = \'YES\'
-			'.$subcat.'
+			AND c.published = 'YES'
+			AND a.visible = 'YES'
+			".$subcat."
 		ORDER BY date DESC
-			LIMIT '."$start, $size";
+			LIMIT $start, $size";
 	if ($result = db() -> query($query)) {
 		$n = 0;
 		while ($r = dbfetch($result)) {
@@ -934,18 +945,18 @@ function articles() {
 			}
 			if (!isset($currentPage) || !is_numeric($currentPage) || $currentPage < 1) {$currentPage = 1;}
 			# QUERY
-			$query_articles = 'SELECT
+			$query_articles = "SELECT
 					a.id AS aid,title,a.seftitle AS asef,text,a.date, a.category,
 					a.displaytitle,a.displayinfo,a.commentable,a.visible
-				FROM '._PRE.'articles'.' AS a
-				WHERE a.position = '.$position.'
-					AND a.published = 1 '.$with_category.$articleID.$visible.'
+				FROM "._PRE."articles AS a
+				WHERE a.position = '$position'
+					AND a.published = 1 ".$with_category.$articleID.$visible."
 				ORDER BY a.artorder ASC, a.date DESC
-				LIMIT '.($currentPage - 1) * $article_limit.','.$article_limit;
+				LIMIT ".($currentPage - 1) * $article_limit.",".$article_limit;
 			if ($result = db() -> query($query_articles)) {
 				$link = '<a href="'._SITE;
 				while ($r = dbfetch($result)) {
-					$infoline = $r['displayinfo'] == 'YES';
+					$infoline = $r['displayinfo'] == 'YES' ? true : false;
 					$text = stripslashes($r['text']);
 					if (!empty($currentPage) && $_ID == 0 && !empty($text)) {
 						$short_display = strpos($text, '[break]');
@@ -1282,13 +1293,13 @@ function comment($freeze_status) {
 		$offset = ($pageNum - 1) * $comment_limit;
 		$numrows = stats('comments', '', 'articleid = '.$_ID.' AND approved = \'True\'');
 		if ($numrows > 0) {
-			$query = 'SELECT
+			$query = "SELECT
 					id,articleid,name,url,comment,time,approved
-				FROM '._PRE.'comments'.'
-				WHERE articleid = '.$_ID.'
-					AND approved = \'True\'
-				ORDER BY id '.$comments_order.'
-				LIMIT '."$offset, $comment_limit";
+				FROM "._PRE."comments
+				WHERE articleid = '$_ID'
+					AND approved = 'True'
+				ORDER BY id $comments_order
+				LIMIT $offset, $comment_limit";
 			if ($result = db() -> query($query)) {
 				$ordinal = 1;
 				$date_format = s('date_format');
@@ -1389,33 +1400,33 @@ function comment($freeze_status) {
 // ARCHIVE
 function archive($start = 0, $size = 200) {
 	echo '<h2>'.l('archive').'</h2>';
-	$query = 'SELECT id FROM '._PRE.'articles'.'
+	$query = "SELECT id FROM "._PRE."articles
 		WHERE position = 1
 			AND published = 1
-			AND visible = \'YES\'
+			AND visible = 'YES'
 		ORDER BY date DESC
-		LIMIT '."$start, $size";
+		LIMIT $start, $size";
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$Or_id[] = 'a.id ='.$r['id'];
 		}
 		$last = '';
 		$Or_id = implode(' OR ', $Or_id);
-		$qwr = 'SELECT
+		$qwr = "SELECT
 				title,a.seftitle AS asef,a.date AS date,
 				c.name AS name,c.seftitle AS csef,
 				x.name AS xname,x.seftitle AS xsef
-			FROM '._PRE.'articles'.' AS a
-			LEFT OUTER JOIN '._PRE.'categories'.' as c
+			FROM "._PRE."articles AS a
+			LEFT OUTER JOIN "._PRE."categories as c
 				ON category = c.id
-			LEFT OUTER JOIN '._PRE.'categories'.' as x
+			LEFT OUTER JOIN "._PRE."categories as x
 				ON c.subcat =  x.id
-			WHERE ('.$Or_id.')
+			WHERE ($Or_id)
 				AND a.published = 1
-				AND c.published =\'YES\'
-				AND (x.published =\'YES\' || x.published IS NULL)
+				AND c.published = 'YES'
+				AND (x.published ='YES' || x.published IS NULL)
 			ORDER BY date DESC
-				LIMIT '."$start, $size";
+				LIMIT $start, $size";
 		$month_names = explode(', ', l('month_names'));
 		$dot = l('divider');
 		echo '<p>';
@@ -1447,11 +1458,11 @@ function sitemap() {
 	echo $link.'">'.l('home').'</a></li>';
 	echo $link.'archive/">'.l('archive').'</a></li>';
 	$query = "SELECT id,title,seftitle
-		FROM "._PRE.'articles'."
+		FROM "._PRE."articles
 		WHERE position = 3
 			AND published = 1
 			AND visible = 'YES'
-			AND id <> '".s('display_page')."'
+			AND id <> ".s('display_page')."
 		ORDER BY artorder ASC, date, id";
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
@@ -1463,16 +1474,16 @@ function sitemap() {
 	echo '</ul>
 		<h3><strong>'.l('articles').'</strong></h3>
 		<ul>';
-	$art_query = 'SELECT title, seftitle, date
-		FROM '._PRE.'articles'.'
+	$art_query = "SELECT title, seftitle, date
+		FROM "._PRE."articles
 		WHERE position = 1
 			AND published = 1
-			AND visible = \'YES\'';
-	$cat_query = 'SELECT id, name, seftitle, description, subcat
-		FROM '._PRE.'categories'.'
-		WHERE published = \'YES\'
+			AND visible = 'YES'";
+	$cat_query = "SELECT id, name, seftitle, description, subcat
+		FROM "._PRE."categories
+		WHERE published = 'YES'
 			AND subcat = 0
-			ORDER BY catorder,id';
+			ORDER BY catorder, id";
 	if ($result = db() -> query($cat_query)) {
 		while ($c = dbfetch($result)) {
 			$category_title = $c['seftitle'];
@@ -1488,11 +1499,11 @@ function sitemap() {
 				}
 				echo '</ul>';
 			}
-			$subcat = 'SELECT id, name, seftitle, description, subcat
-				FROM '._PRE.'categories'.'
-				WHERE published = \'YES\'
-					AND subcat = '.$c['id'].'
-				ORDER BY catorder ASC';
+			$subcat = "SELECT id, name, seftitle, description, subcat
+				FROM "._PRE."categories
+				WHERE published = 'YES'
+					AND subcat = $c[id]
+				ORDER BY catorder ASC";
 			if ($subcat_result = db() -> query($subcat)) {
 				echo '<ul>';
 				while ($s = dbfetch($subcat_result)) {
@@ -1598,27 +1609,27 @@ function contact() {
 
 // NEW COMMENTS
 function new_comments($number = 5, $stringlen = 30) {
-	$query = 'SELECT
+	$query = "SELECT
 			a.id AS aid,a.title,a.seftitle AS asef,
 			a.category,co.id,co.articleid,co.name AS coname,co.comment,
 			c.name,c.seftitle AS csef,c.subcat,
 			x.name,x.seftitle AS xsef
-		FROM '._PRE.'comments'.' AS co
-		LEFT OUTER JOIN '._PRE.'articles'.' AS a
-			ON co.articleid = a.id AND a.published = 1 AND (a.commentable = \'YES\' OR a.commentable = \'FREEZ\')
-		LEFT OUTER JOIN '._PRE.'categories'.' AS c
-			ON a.category = c.id AND c.published =\'YES\'
-		LEFT OUTER JOIN '._PRE.'categories'.' AS x
-			ON c.subcat = x.id AND x.published =\'YES\'
-		WHERE co.approved = \'True\'
-		ORDER BY co.id DESC LIMIT '.$number;
+		FROM "._PRE."comments AS co
+		LEFT OUTER JOIN "._PRE."articles AS a
+			ON co.articleid = a.id AND a.published = 1 AND (a.commentable = 'YES' OR a.commentable = 'FREEZ')
+		LEFT OUTER JOIN "._PRE."categories AS c
+			ON a.category = c.id AND c.published = 'YES'
+		LEFT OUTER JOIN "._PRE."categories AS x
+			ON c.subcat = x.id AND x.published = 'YES'
+		WHERE co.approved = 'True'
+		ORDER BY co.id DESC LIMIT ".$number;
 	if ($result = db() -> query($query)) {
 	 	$comlim = s('comment_limit');
 		$num = 0;
 	 	$comment_limit = $comlim < 1 ? 1 : $comlim;
 	 	$comments_order = s('comments_order');
 	 	while ($r = dbfetch($result)) {
-			$loopr = "SELECT id FROM "._PRE.'comments'."
+			$loopr = "SELECT id FROM "._PRE."comments
 				WHERE articleid = '$r[articleid]'
 				AND approved = 'True'
 				ORDER BY id $comments_order";
@@ -1691,15 +1702,15 @@ function search($limit = 20) {
 		$keyCount = count($keywords);
 		$mkeywords = explode(',', $search_query);
 		$mkeyCount = count($mkeywords);
-		$query = 'SELECT a.id
-			FROM '._PRE.'articles'.' AS a
-			LEFT OUTER JOIN '._PRE.'categories'.' as c
-				ON a.category = c.id AND c.published =\'YES\'
-			LEFT OUTER JOIN '._PRE.'categories'.' as x
-				ON c.subcat =  x.id AND x.published =\'YES\'
+		$query = "SELECT a.id
+			FROM "._PRE."articles AS a
+			LEFT OUTER JOIN "._PRE."categories as c
+				ON a.category = c.id AND c.published = 'YES'
+			LEFT OUTER JOIN "._PRE."categories as x
+				ON c.subcat =  x.id AND x.published = 'YES'
 			WHERE a.position <> 2
 				AND a.published = 1
-				AND';
+				AND";
 		if (!_ADMIN){
 			$query = $query.' a.visible = \'YES\' AND ';
 		}
@@ -1741,17 +1752,17 @@ function search($limit = 20) {
 				return;
 			}
 			echo '<p><strong>'.$numrows.'</strong> '.l('resultsfound').' <strong>'.stripslashes($search_query).'</strong>.</p>';
-			$Or_id = implode(' OR ',$Or_id);
-			$sql = 'SELECT
+			$Or_id = implode(' OR ', $Or_id);
+			$sql = "SELECT
 					title, a.seftitle AS asef, a.date AS date,
 					c.name AS name, c.seftitle AS csef, a.category,
 					x.name AS xname, x.seftitle AS xsef
-				FROM '._PRE.'articles'.' AS a
-				LEFT OUTER JOIN '._PRE.'categories'.' as c
+				FROM "._PRE."articles AS a
+				LEFT OUTER JOIN "._PRE."categories as c
 					ON category = c.id
-				LEFT OUTER JOIN '._PRE.'categories'.' as x
+				LEFT OUTER JOIN "._PRE."categories as x
 					ON c.subcat =  x.id
-				WHERE '.$Or_id;
+				WHERE ".$Or_id;
 			if ($res = db() -> query($sql)) {
 				while ($s = dbfetch($res)) {
 					$date = date(s('date_format'), strtotime($s['date']));
@@ -1772,10 +1783,10 @@ function search($limit = 20) {
 
 // RSS FEED - LINK BUILDER
 function rss_links() {
-	$query = 'SELECT COUNT(id) as articles_count,
-		(SELECT COUNT(id) FROM '._PRE.'articles WHERE position = 3 AND published = 1) as pages_count,
-		(SELECT COUNT(id) FROM '._PRE.'comments WHERE approved = "True" ) as comments_count
-		FROM '._PRE.'articles WHERE position = 1 AND published = 1';
+	$query = "SELECT COUNT(id) as articles_count,
+		(SELECT COUNT(id) FROM "._PRE."articles WHERE position = 3 AND published = 1) as pages_count,
+		(SELECT COUNT(id) FROM "._PRE."comments WHERE approved = 'True') as comments_count
+		FROM "._PRE."articles WHERE position = 1 AND published = 1";
 	if ($result = db() -> query($query)) {
 		$l_error = array(); // catch any errors
 		while ($r = dbfetch($result)) {
@@ -1863,8 +1874,7 @@ function category_list($id) {
 	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {$var = $id;}
 	echo '<select name="subcat" id="subcat">';
 	$selected =' selected="selected"';
-	$query = 'SELECT id,name FROM '._PRE.'categories
-			WHERE subcat = 0 ORDER BY catorder, id';
+	$query = "SELECT id, name FROM "._PRE."categories WHERE subcat = 0 ORDER BY catorder, id";
 	$parent_selection = !empty($var) ? $selected : '';
 	if ($result = db() -> query($query)) {
 		echo '<option value="0"'.$parent_selection.'>'.l('not_sub').'</option>';
