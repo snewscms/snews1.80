@@ -3,7 +3,7 @@
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
   Last Update		June 23, 2016 - 11:45 GMT+0
-  Developpers: 		Rui Mendes, Stéphane Fritsch(Skiane), Nukpana
+  Developpers: 		Rui Mendes, Stï¿½phane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
   Licence:			sNews is licensed under a Creative Commons License.
@@ -12,14 +12,14 @@
 // Start sNews session
 session_start();
 
-// error_reporting(E_ALL ^ E_NOTICE)
+// error_reporting(E_ALL ^ E_NOTICE);
 error_reporting(0);
 
 // RETURN INI FILE
 function ini_value($section, $key, $file = 'config.php') {
 	static $ini, $array;
-	if( $ini !== $file ) {	
-		$ini   = $file;		
+	if( $ini !== $file ) {
+		$ini   = $file;
 		$array = parse_ini_file($file, TRUE);
 	}
 	$value = isset($array[$section][$key]) ? $array[$section][$key] : '';
@@ -82,7 +82,7 @@ function populate_retr_cache($selector, $value) {
 				$retr_cache_cat['id'][$r['id']] = $r['seftitle'];
 				$retr_cache_cat['seftitle'][$r['seftitle']] = $r['name'];
 			}
-		}	
+		}
 	}
 	return isset($retr_cache_cat[$selector][$value]) ? $retr_cache_cat[$selector][$value] : '';
 }
@@ -111,7 +111,7 @@ function retrieve($column, $table, $field, $value) {
 // SITE - Automatically detects the scripts location.
 function site() {
 	$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? 'https://' : 'http://';
-	$host = $protocol.$_SERVER['HTTP_HOST'];	
+	$host = $protocol.$_SERVER['HTTP_HOST'];
 	$directory = dirname($_SERVER['SCRIPT_NAME']);
 	$website = $directory == '/' ? $host.'/' : $host.$directory.'/';
 	return $website;
@@ -197,7 +197,7 @@ function mathCaptcha() {
 function checkUserPass($input) {
 	$output = cleanXSS($input);
 	$output = strip_tags($output);
-	$result = ctype_alnum($output) === true && 
+	$result = ctype_alnum($output) === true &&
 		strlen($output) > 3 && strlen($output) < 14 ? $output : null;
 	return $result;
 }
@@ -206,6 +206,7 @@ function checkUserPass($input) {
 function readAddons() {
 	static $admin_mods;
 	if (!$admin_mods) {
+		$admin_mods = Array();
 		$fd = opendir('addons/');
 		while (($file = @readdir($fd)) == true) {
 			clearstatcache();
@@ -219,16 +220,13 @@ function readAddons() {
 			}
 		}
 		closedir($fd);
-		return;
 	}
-	else {
-		return implode(',', $admin_mods);
-	}
+	return implode(',', $admin_mods);
 }
 readAddons();
 
 // LANGUAGE VARIABLES
-	s('language') != 'EN' && file_exists('lang/'.s('language').'.php') == true ? include('lang/'.s('language').'.php') : include('lang/EN.php');
+@include('lang/'.s('language').'.php');
 
 // LANGUAGE
 function l($var) {
@@ -286,7 +284,7 @@ function check_category($category) {
 function cat_rel($var, $column) {
 	$parent = '';
 	$categoryid = $var;
-	$join = "SELECT parent.$column 
+	$join = "SELECT parent.$column
 		FROM "._PRE.'categories'." as child
 		INNER JOIN "._PRE.'categories'." as parent
 			ON parent.id = child.subcat
@@ -350,8 +348,8 @@ function notification($error = 0, $note = '', $link = '') {
 // CHECK URL - NOT HOME
 if ($_GET) {
 	if (isset($_GET['category']) && !empty($_GET['category'])) {
-		$url = function_exists('filter_input') ? 
-			filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING) : 
+		$url = function_exists('filter_input') ?
+			filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING) :
 			$_GET['category'];
 		$url = explode('/', clean($url));
 		# CATEGORY
@@ -587,7 +585,7 @@ function categories() {
 			$category_title = $r['seftitle'];
 			$r['name'] = (s('language')!='EN' && $r['name'] == 'Uncategorized' && $r['parent']==1) ? l('uncategorised') : $r['name'];
 			$class = $category_title == $categorySEF ? ' class="current"' : '';
-			if (isset($r['total'])) {$num=' ('.$r['total'].')';}
+			$num = isset($r['total']) ? ' ('.$r['total'].')': '';
 			if (!in_array($category_title, $ignore)) {
 				echo '<li><a'.$class.' href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
 				$parent = $r['parent'];
@@ -644,14 +642,14 @@ function pages() {
 	# HOME
 	if (!in_array('home', $ignore)) {
 		$class = empty($categorySEF) ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'">'.l('home').'</a></li>';	
+		echo '<li><a'.$class.' href="'._SITE.'">'.l('home').'</a></li>';
 	}
 	# ARCHIVE
 	if (!in_array('archive', $ignore)) {
 		$class = ($categorySEF == 'archive') ? ' class="current"' : '';
 		echo '<li><a'.$class.' href="'._SITE.'archive/">'.l('archive').'</a></li>';
 	}
-	# PAGES YOU CREATED	
+	# PAGES YOU CREATED
 	$query = "SELECT id, seftitle, title FROM "._PRE.'articles'." WHERE position = 3 $qwr ORDER BY artorder ASC, id";
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
@@ -839,7 +837,7 @@ function show_404() {
 
 // PREPARE TEXT TO DATABASE
 function clean_mysql($text) {
-	if ((function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) || 
+	if ((function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) ||
 		(ini_get('magic_quotes_sybase') && (strtolower(ini_get('magic_quotes_sybase')) != "off"))) {
 			$text = stripslashes(addslashes($text));
 			$text = str_replace('\\\"', '"', $text);
@@ -915,8 +913,8 @@ function articles() {
 		if (($_TYPE == 3 || $_TYPE == 6) && $_catID != 0) {$num = stats('articles', '', 'category='.$_catID.' AND position = 1');} else
 		if ($_TYPE == 5) {$num = stats('articles', '', 'id='.$_ID);} else
 		if ($_TYPE == 7  || $_TYPE == 4) {
-			$num = $display != 0 && $_TYPE == 7 ? 
-				stats('articles', '', 'id='.$_ID) : 
+			$num = $display != 0 && $_TYPE == 7 ?
+				stats('articles', '', 'id='.$_ID) :
 				stats('articles', '', 'show_on_home = "YES" AND position = 1');
 		}
 		if ($num != 0) {
@@ -937,17 +935,17 @@ function articles() {
 			if (!isset($currentPage) || !is_numeric($currentPage) || $currentPage < 1) {$currentPage = 1;}
 			# QUERY
 			$query_articles = 'SELECT
-					a.id AS aid,title,a.seftitle AS asef,text,a.date, a.category, 
+					a.id AS aid,title,a.seftitle AS asef,text,a.date, a.category,
 					a.displaytitle,a.displayinfo,a.commentable,a.visible
 				FROM '._PRE.'articles'.' AS a
 				WHERE a.position = '.$position.'
-					AND a.published = 1 '.$with_category.$articleID.$visible.' 
+					AND a.published = 1 '.$with_category.$articleID.$visible.'
 				ORDER BY a.artorder ASC, a.date DESC
 				LIMIT '.($currentPage - 1) * $article_limit.','.$article_limit;
 			if ($result = db() -> query($query_articles)) {
 				$link = '<a href="'._SITE;
 				while ($r = dbfetch($result)) {
-					$infoline = $r['displayinfo'] == 'YES' ? true : false;
+					$infoline = $r['displayinfo'] == 'YES';
 					$text = stripslashes($r['text']);
 					if (!empty($currentPage) && $_ID == 0 && !empty($text)) {
 						$short_display = strpos($text, '[break]');
@@ -974,13 +972,13 @@ function articles() {
 					$commentable = $r['commentable'];
 					$hide = '?action=hide&amp;item=snews_articles&amp;id='.$r['aid'].'&amp;back='.$uri;
 					$show = '?action=show&amp;item=snews_articles&amp;id='.$r['aid'].'&amp;back='.$uri;
-					$visiblity = $r['visible'] == 'YES' ? 
+					$visiblity = $r['visible'] == 'YES' ?
 						$link.$hide.'">'.l('hide').'</a>' :
 						l('hidden').' ( '.$link.$show.'">'.l('show').'</a> )';
 					$edit_link = $link.'?action=admin_article&amp;id='.$r['aid'].'" title="'.$title.'">'.l('edit').'</a> ';
 					$edit_link.= ' '.l('divider').' '.$visiblity;
 					if (!empty($currentPage)) {
-						if ($infoline == true) {
+						if ($infoline) {
 							$tag = explode(',', tags('infoline'));
 							foreach ($tag as $tag) {
 								switch (true) {
@@ -1002,13 +1000,13 @@ function articles() {
 										break;
 								}
 							}
-						} else 
+						} else
 						if (_ADMIN) {
 							echo '<p>'.$edit_link.'</p>';
 						}
-					} else 
+					} else
 					if (empty($currentPage) || $_TYPE == 2) {
-						if ($infoline == true) {
+						if ($infoline) {
 							$tag = explode(',', tags('infoline'));
 							foreach ($tag as $tag ) {
 								switch ($tag) {
@@ -1025,7 +1023,7 @@ function articles() {
 										echo $tag;
 								}
 							}
-						} else 
+						} else
 						if (_ADMIN) {
 							echo '<p>'.$edit_link.'</p>';
 						}
@@ -1037,10 +1035,10 @@ function articles() {
 				paginator( $currentPage, $totalPages, l('paginator'));
 			}
 			// COMMENTS
-			if ($_ID > 0 && $infoline == true) {
+			if ($_ID > 0 && $infoline) {
 				if ($commentable == 'YES') {
 					comment('unfreezed');
-				} else 
+				} else
 				if ($commentable == 'FREEZ') {
 					comment('freezed');
 				}
@@ -1087,7 +1085,7 @@ function cleanXSS($val, $all = false) {
 	return $source;
 }
 
-// SOME TAGS ARE NOT ALLOWED 
+// SOME TAGS ARE NOT ALLOWED
 function transformTags($source) {
 	$ignore = array('<', '>', '&nvgt;', '"', '\\\'', '"');
 	$replace= array('&lt;', '&gt;', '&amp;nvgt;','&quot;', '&#39;', '&#34;');
@@ -1202,7 +1200,7 @@ function comment($freeze_status) {
 				$time = date('Y-m-d H:i:s');
 				unset($_SESSION[_SITE.'poster']);
 				$approved = s('approve_comments') != 'on'|| _ADMIN ? 'True' : '';
-				$query = 'INSERT INTO '._PRE.'comments (articleid, name, url, comment, time, approved) 
+				$query = 'INSERT INTO '._PRE.'comments (articleid, name, url, comment, time, approved)
 					VALUES (:articleid, :name, :url, :comment, :time, :approved)';
 				if ($sql = db() -> prepare($query)) {
 					dbfetch($sql, true, [
@@ -1579,7 +1577,7 @@ function contact() {
 		$message = (isset($message[10]) && ! isset($message[6000]) ) ? strip_tags($message) : null;
 		$time = (isset($_SESSION[_SITE.'time']) && $_SESSION[_SITE.'time'] === (int)$time && (time() - $time) > 10) ? $time : null;
 		if ( isset($ip) && $ip === $_SERVER['REMOTE_ADDR'] && $time
-			&& $name && $mail && $message && checkMathCaptcha()) 
+			&& $name && $mail && $message && checkMathCaptcha())
 		{
 			unset($_SESSION[_SITE.'time']);
 			$send_array = array(
@@ -1658,9 +1656,9 @@ function new_comments($number = 5, $stringlen = 30) {
 function searchform() { ?>
 	<form id="search_engine" method="post" action="<?php echo _SITE; ?>" accept-charset="<?php echo s('charset');?>">
 		<p>
-			<input class="searchfield" name="search_query" type="text" id="keywords" value="<?php echo l('search_keywords');?>" 
-				onfocus="document.forms['search_engine'].keywords.value='';" 
-				onblur="if (document.forms['search_engine'].keywords.value == '') 
+			<input class="searchfield" name="search_query" type="text" id="keywords" value="<?php echo l('search_keywords');?>"
+				onfocus="document.forms['search_engine'].keywords.value='';"
+				onblur="if (document.forms['search_engine'].keywords.value == '')
 					document.forms['search_engine'].keywords.value='<?php echo l('search_keywords'); ?>';" />
 			<input class="searchbutton" name="submit" type="submit" value="<?php echo l('search_button')?>" />
 		</p>
@@ -1671,9 +1669,9 @@ function searchform() { ?>
 function searchform2() {
 	$charset = s('charset');
 	echo '<form id = "search_engine2" method="post" class="navbar-form navbar-right" action="'._SITE.'searching/" accept-charset="'.$charset.'">
-		<input class="searchfield" name="search_query" type="text" id="keywords2" class="form-control" value="'.l('search_keywords').'" 
+		<input class="searchfield" name="search_query" type="text" id="keywords2" class="form-control" value="'.l('search_keywords').'"
 			onfocus="document.forms[\'search_engine2\'].keywords2.value=\'\';"
-			onblur="if (document.forms[\'search_engine2\'].keywords2.value == \'\') 
+			onblur="if (document.forms[\'search_engine2\'].keywords2.value == \'\')
 				document.forms[\'search_engine2\'].keywords2.value = \''.l('search_keywords').'\';" />
 		<input type="hidden"  name="search2" id="s2" value="'.substr(session_id(), 2, 7).'" />
 		<button type="submit" class="btn btn-sm btn-default" name="submit">'.l('search_button').'</button>
@@ -1684,7 +1682,7 @@ function searchform2() {
 function search($limit = 20) {
 	$search_query = cleanXSS($_POST['search_query']);
 	if (isset($_POST['search2']) && $_POST['search2'] == substr(session_id(), 2, 7)) {searchform2();}
-	echo '<h2>'.l(search_results).'</h2>';
+	echo '<h2>'.l('search_results').'</h2>';
 	if (strlen($search_query) < 4 || $search_query == l('search_keywords')) {
 		echo '<p>'.l('charerror').'</p>';
 	}
@@ -1865,7 +1863,7 @@ function category_list($id) {
 	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {$var = $id;}
 	echo '<select name="subcat" id="subcat">';
 	$selected =' selected="selected"';
-	$query = 'SELECT id,name FROM '._PRE.'categories 
+	$query = 'SELECT id,name FROM '._PRE.'categories
 			WHERE subcat = 0 ORDER BY catorder, id';
 	$parent_selection = !empty($var) ? $selected : '';
 	if ($result = db() -> query($query)) {
@@ -2046,23 +2044,6 @@ function send_email($send_array) {
 	return false;
 }
 
-// MAKE A CLEAN SEF URL
-function cleanSEF($string) {
-	$string = str_replace(' ', '-', $string);
-	$string = preg_replace('/[^0-9a-zA-Z-_]/', '', $string);
-	$string = str_replace('-', ' ', $string);
-	$string = preg_replace('/^\s+|\s+$/', '', $string);
-	$string = preg_replace('/\s+/', ' ', $string);
-	$string = str_replace(' ', '-', $string);
-	return strtolower($string);
-}
-
-// CLEAN CHECK SEF
-function cleancheckSEF($string) {
-	$ret = !preg_match('/^[a-z0-9-_]+$/i', $string) ? 'notok' : 'ok';
-	return $ret;
-}
-
 // CENTER
 function center() {
 	global $_catID, $categorySEF, $articleSEF;
@@ -2079,7 +2060,7 @@ function center() {
 			case isset($_POST['contactform'])	: contact(); return; break;
 			case isset($_POST['Loginform'])		: verify_login(); return; break;
 			case isset($_POST['process'])		: if (_ADMIN) {processing();} return; break;
-			case isset($_POST['action']) 		: 
+			case isset($_POST['action']) 		:
 				if (_ADMIN && $_POST['action'] == 'process') {
 					processing();
 				}
@@ -2099,7 +2080,7 @@ function center() {
 		}
 	}
 	# CHECK GET NOW
-	else 
+	else
 	if ($_GET) {
 		$action = !empty($categorySEF) ? $categorySEF : '404';
 		switch ($action) {
