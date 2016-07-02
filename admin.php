@@ -1814,7 +1814,7 @@ function processing() {
 												$extra2 = "UPDATE "._PRE."articles
 													SET category = :cat, page_extra = :extra_id WHERE id = :id";
 												if ($res_xtra = db() -> prepare($extra2)) {
-													dbfetch($res_art, true, [
+													dbfetch($res_xtra, true, [
 														':cat'		=>	'0',
 														':extra_id'	=>	'',
 														':id'		=>	$xtra_id
