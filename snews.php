@@ -206,7 +206,6 @@ function checkUserPass($input) {
 function readAddons() {
 	static $admin_mods;
 	if (!$admin_mods) {
-		global $l;
 		$admin_mods = [];
 		$fd = opendir('addons/');
 		while (($file = @readdir($fd)) == true) {
@@ -314,12 +313,11 @@ function stats($table, $position, $other = '', $count = true) {
 	$pos = !empty($position) ? " WHERE position = $position" : "";
 	$alternative = empty($position) && !empty($other) ? " WHERE ".$other : "";
 	$query = "SELECT ".$field." as num FROM "._PRE.$table.$pos.$alternative;
+	$numrows = 0;
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$numrows = $r['num'];
 		}
-	} else {
-		$numrows = 0;
 	}
 	return $numrows;
 }
@@ -865,7 +863,7 @@ function clean_mysql($text) {
 
 // MENU ARTICLES
 function menu_articles($start = 0, $size = 5, $cat_specific = 0) {
-	global $categorySEF, $_catID,$subcatSEF;
+	global $_catID,$subcatSEF;
 	$no_articles = '<li>'.l('no_articles').'</li>';
 	switch ($cat_specific) {
 		case 1 : $subcat = !empty($_catID) && empty($subcatSEF) ? 'AND c.subcat = '.$_catID : ''; break;
@@ -2056,7 +2054,7 @@ function send_email($send_array) {
 
 // CENTER
 function center() {
-	global $_catID, $categorySEF, $articleSEF;
+	global $categorySEF;
 	# FATAL SESSION
 	if (isset($_SESSION[_SITE.'fatal'])) {unset($_SESSION[_SITE.'fatal']); return;}
 	# BAD ADMIN REQUEST OR NOT LOGGED
