@@ -70,3 +70,9 @@ It is different if you search for "snews color", in this case both words must ma
 - [search] - fixed missing quotes
 - [articles] - Better syntax with bool expression
 - simplified language file loading code - change include langfile to require.
+
+*** 03 July *** by Skiane & Rui
+- removed unused var (center, rss-feeds, menu_articles && center)
+- move global $l from readAddons to addon (hello)
+- processing - admin_article - fixed - Bug in article deletion with extra
+- processing - admin_article - fixed - when change page to extra/article then reset extra pointer to this page

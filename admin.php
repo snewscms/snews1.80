@@ -1641,7 +1641,7 @@ function processing() {
 							if ($key != 'reorder' && $key != 'order' && $key != $table && $key != l('order_content') && $key != $_POST['order']) {
 								$query = "UPDATE "._PRE.$table." SET $order_type = :type WHERE id = :id";
 								if ($result = db() -> prepare($query)) {
-									$data = dbfetch($result, true,[
+									$data = dbfetch($result, true, [
 										':type'	=> $value,
 										':id'	=> $type_id
 									]);
@@ -1703,7 +1703,8 @@ function processing() {
 							unset($_SESSION[_SITE.'temp']);
 							break;
 						default:
-							$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ? intval($_POST['artorder']) :
+							$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ? 
+								intval($_POST['artorder']) :
 								stats('articles', '', ' category = '.$category.' AND position = '.$position)+1;
 							switch (true) {
 								case (isset($_POST['add_article'])):
@@ -1750,8 +1751,8 @@ function processing() {
 												$xtra_id = $xtra['id'];
 												$sql = "UPDATE "._PRE."articles SET category = :cat, page_extra = :pg_extra
 													WHERE id = :id";
-												if ($rextra = db() -> prepare($chk_extra_query)) {
-													$ok = dbfetch($rextra, true, [
+												if ($r_extra = db() -> prepare($sql)) {
+													$ok = dbfetch($r_extra, true, [
 														':cat'	=>	'-1',
 														':pg_extra'	=> '',
 														':id'	=> $xtra_id
@@ -1814,7 +1815,7 @@ function processing() {
 												$extra2 = "UPDATE "._PRE."articles
 													SET category = :cat, page_extra = :extra_id WHERE id = :id";
 												if ($res_xtra = db() -> prepare($extra2)) {
-													dbfetch($res_art, true, [
+													dbfetch($res_xtra, true, [
 														':cat'		=>	'0',
 														':extra_id'	=>	'',
 														':id'		=>	$xtra_id
