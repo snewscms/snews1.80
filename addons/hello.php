@@ -3,6 +3,7 @@
 /* SIMPLE EXAMPLE HOW TO USE ADDON */
 
 // LANG
+global $l;
 $l['hello_title'] = 'Hello World';
 $l['hello_desc'] = 'This is simple addon to show how this works';
 $l['wyname'] = 'What is your name';

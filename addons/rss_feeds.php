@@ -2,7 +2,7 @@
 
 // RSS FEED - ARTICLES/PAGES/COMMENTS
 function rss_contents($rss_item) {
-	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $commentsPage;
+	global $categorySEF, $articleSEF, $commentsPage;
  	header('Content-type: text/xml; charset='.s('charset').'');
  	$limit = s('rss_limit');
  	switch($rss_item) {
