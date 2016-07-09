@@ -125,7 +125,7 @@ function showAdmAddons() {
 			for ($i = 0; $i < count($list); $i++) {
 				$field = str_replace('admin_', '', $list[$i]).'_title';
 				if (isset($l[$field])) {
-					echo '<p>'.l($field).': <a href="'._SITE.'?action='.$list[$i].'">'.l('administration').'</a></p>';
+					echo '<p>'.l($field).': <a href="'._SITE.$list[$i].'">'.l('administration').'</a></p>';
 				}
 			}
 		}

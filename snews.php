@@ -223,7 +223,7 @@ function readAddons() {
 				include_once('addons/'.$file);
 				$name = str_replace('.php', '', $file);
 				if (function_exists('admin_'.$name)) {
-					addRoute($name, "$name admin page", 'admin_'.$name);
+					addRoute("admin_$name", "$name admin page", 'admin_'.$name);
 					$admin_mods[] = 'admin_'.$name;
 				}
 				if (function_exists('public_'.$name)) {
@@ -2098,8 +2098,8 @@ function center() {
 	elseif ($_GET) {
 		$action = !empty($categorySEF) ? $categorySEF : '404';
 		switch ($action) {
-			case 'searching': searchform2(); break;
-			case '404'		: show_404(); break;
+			case 'searching': searchform2(); return; break;
+			case '404'		: show_404(); return; break;
 			default :
 					if (_ADMIN) {
 						$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
