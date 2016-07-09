@@ -495,7 +495,7 @@ function buttons(){
 	$insert = [
 		'img' => 'js_image1,js_image2',
 		'link' => 'js_link1,js_link2',
-		'include' => 'js_file,on', 
+		'include' => 'js_file,on',
 		'func' => 'js_func1,js_func2',
 		'intro' => 'on,on'
 	];
@@ -1703,7 +1703,7 @@ function processing() {
 							unset($_SESSION[_SITE.'temp']);
 							break;
 						default:
-							$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ? 
+							$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ?
 								intval($_POST['artorder']) :
 								stats('articles', '', ' category = '.$category.' AND position = '.$position)+1;
 							switch (true) {
@@ -1909,5 +1909,11 @@ function processing() {
 		}
 	}
 }
+
+addRoute('administration', l('administration'), administration);
+addRoute('logout', l('logout'), logout);
+addRoute('snews_settings', l('settings'),	settings);
+addRoute('snews_files',	l('files'),	files);
+addRoute('admin_addons', l('admin_addons'), showAdmAddons);
 
 ?>

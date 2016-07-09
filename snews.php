@@ -12,7 +12,7 @@
 // Start sNews session
 session_start();
 
-// error_reporting(E_ALL ^ E_NOTICE);
+//error_reporting(E_ALL ^ E_NOTICE);
 error_reporting(0);
 
 // RETURN INI FILE
@@ -202,6 +202,14 @@ function checkUserPass($input) {
 	return $result;
 }
 
+// Add route to a new page
+$routes = array();
+
+function addRoute($sef,$title,$func) {
+	global $routes;
+	$routes[$sef] = array('title' => $title, 'func' => $func);
+}
+
 // INCLUDE ADDONS
 function readAddons() {
 	static $admin_mods;
@@ -215,7 +223,11 @@ function readAddons() {
 				include_once('addons/'.$file);
 				$name = str_replace('.php', '', $file);
 				if (function_exists('admin_'.$name)) {
+					addRoute($name, "$name admin page", 'admin_'.$name);
 					$admin_mods[] = 'admin_'.$name;
+				}
+				if (function_exists('public_'.$name)) {
+					addRoute($name, "$name page", 'public_'.$name);
 				}
 			}
 		}
@@ -280,8 +292,9 @@ function update_articles() {
 
 // CATEGORY CHECK
 function check_category($category) {
+	global $routes;
 	$main_menu = explode(',', l('cat_listSEF'));
-	return in_array($category, $main_menu) ? true : false;
+	return (!empty($category) && in_array($category, $main_menu)) || isset($routes[$category]);
 }
 
 // GET PARENT/CHILD FROM AN id
@@ -466,14 +479,11 @@ if ($_GET) {
 			if ($main = db() -> query($MainQuery)) {
 				$R = dbfetch($main);
 			} else
-			if (!in_array($action, explode(',', l('cat_listSEF')))) {
-				if (function_exists('public_'.$categorySEF)) {$_TYPE = 10;}
-				else {
+			if (!check_category($action)) {
 					$categorySEF = '404';
 					header('HTTP/1.1 404 Not Found');
 					unset($subcatSEF, $articleSEF);
 					set_error();
-				}
 			}
 			else {$_TYPE = 11;}
 			update_articles();
@@ -690,7 +700,7 @@ function extra($mode = '', $styleit = 0, $classname = '', $idname = '') {
 	$url = $categorySEF.(!empty($subcatSEF) ? '/'.$subcatSEF : '').(!empty($articleSEF) ? '/'.$articleSEF : '');
 	$url = !empty($url) ? $url : 'home';
 	$sql_cat = 'AND (
-		(category = -1'.($_subID != 0 ? ' AND show_in_subcats = \'YES\'' : '').') 
+		(category = -1'.($_subID != 0 ? ' AND show_in_subcats = \'YES\'' : '').')
 		'.($_ID != 0 && $_catID == 0  ? ' OR (category = -3 AND (page_extra = 0 OR page_extra = '.$_ID.'))' : '').'
 		'.($_catID != 0 && $_subID == 0 ? ' OR (category = '.$_catID.')' : '').'
 		'.($_subID != 0 && empty($subcatSEF)? ' OR (category = '.$_catID.')' : '').'
@@ -721,7 +731,7 @@ function extra($mode = '', $styleit = 0, $classname = '', $idname = '') {
 					$print = true;
 					break;
 				case ($category == -3 && $_catID == 0 && $getArt != $page && $page == 0
-						&& $categorySEF != '' && !in_array($categorySEF, explode(',', l('cat_listSEF')))
+						&& !check_category($categorySEF)
 						&& substr( $categorySEF, 0, 2) != l('paginator') ) :
 					$print = true;
 					break;
@@ -2059,9 +2069,16 @@ function center() {
 	if (isset($_SESSION[_SITE.'fatal'])) {unset($_SESSION[_SITE.'fatal']); return;}
 	# BAD ADMIN REQUEST OR NOT LOGGED
 	if (isset($_GET['action']) && !_ADMIN) {set_error(); return;}
-	# CHECK POST FIRST
+	# (1) CHECK BUILTIN PAGES FIRST
+	if (check_category($categorySEF)) {
+		global $routes;
+		if ($page = isset($routes[$categorySEF]) ? $routes[$categorySEF] : null) {
+			$page['func']();
+			return;
+		}
+	}
+	# (2) CHECK POST THEN
 	if ($_POST) {
-		if (_ADMIN) {include('admin.php');}
 		switch(true) {
 			case isset($_POST['search_query'])	: search(); return; break;
 			case isset($_POST['comment']) 		: comment('comment_posted'); return; break;
@@ -2071,86 +2088,51 @@ function center() {
 			case isset($_POST['action']) 		:
 				if (_ADMIN && $_POST['action'] == 'process') {
 					processing();
-				}
-				else {set_error();}
-				return;
-				break;
-			default :
-				if (isset($_POST['addon']) && function_exists('public_'.$categorySEF)) {
-					$func = 'public_'.$categorySEF;
-					$func();
 					return;
-					break;
 				}
-				else {set_error();}
-			return;
-			break;
 		}
+		set_error();
+		return;
 	}
-	# CHECK GET NOW
-	else
-	if ($_GET) {
+	# (3) CHECK GET NOW
+	elseif ($_GET) {
 		$action = !empty($categorySEF) ? $categorySEF : '404';
 		switch ($action) {
-			case 'archive'	: archive(); break;
-			case 'sitemap'	: sitemap(); break;
-			case 'contact'	: contact(); break;
-			case 'login'	: login(); 	 break;
 			case 'searching': searchform2(); break;
 			case '404'		: show_404(); break;
 			default :
-				if (_ADMIN) {
-					include('admin.php');
-					$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
-					switch ($action) {
-						case 'administration'	:	administration(); break;
-						case 'snews_settings'	:	settings(); break;
-						case 'snews_categories'	:	admin_categories(); break;
-						case 'admin_category'	:	form_categories(); break;
-						case 'admin_subcategory':	form_categories('sub'); break;
-						case 'groupings'		:	admin_groupings(); break;
-						case 'admin_groupings'	:	form_groupings(); break;
-						case 'snews_articles'	:	admin_articles('article_view'); break;
-						case 'extra_contents'	:	admin_articles('extra_view'); break;
-						case 'snews_pages'		:	admin_articles('page_view'); break;
-						case 'admin_article'	:	form_articles(''); break;
-						case 'article_new'		:	form_articles('article_new'); break;
-						case 'extra_new'		:	form_articles('extra_new'); break;
-						case 'page_new'			:	form_articles('page_new'); break;
-						case 'editcomment'		:	edit_comment(); break;
-						case 'process'			:	processing(); break;
-						case 'admin_addons'		:	showAdmAddons();break;
-						case 'snews_files'		:	files(); return; break;
-						case 'hide'				:	visibility('hide'); break;
-						case 'show'				:	visibility('show'); break;
-						case 'logout'			:	logout(); return; break;
-						default:
-							if (!empty($action)) {
-								if (substr($action, 0, 6) == 'admin_' && function_exists($action)) {
-									$action();
-									return;
-								}
-								if (function_exists('public_'.$categorySEF)) {
-									$func = 'public_'.$categorySEF;
-									$func();
-									return;
-								}
-								articles();
-							}
+					if (_ADMIN) {
+						$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
+						switch ($action) {
+							case 'snews_categories'	:	admin_categories(); return; break;
+							case 'admin_category'	:	form_categories(); return; break;
+							case 'admin_subcategory':	form_categories('sub'); return; break;
+							case 'groupings'		:	admin_groupings(); return; break;
+							case 'admin_groupings'	:	form_groupings(); return; break;
+							case 'snews_articles'	:	admin_articles('article_view'); return; break;
+							case 'extra_contents'	:	admin_articles('extra_view'); return; break;
+							case 'snews_pages'		:	admin_articles('page_view'); return; break;
+							case 'admin_article'	:	form_articles(''); return; break;
+							case 'article_new'		:	form_articles('article_new'); return; break;
+							case 'extra_new'		:	form_articles('extra_new'); return; break;
+							case 'page_new'			:	form_articles('page_new'); return; break;
+							case 'editcomment'		:	edit_comment(); return; break;
+							case 'process'			:	processing(); return; break;
+							case 'hide'				:	visibility('hide'); return; break;
+							case 'show'				:	visibility('show'); return; break;
+						}
 					}
-				}
-				else {
-					if (function_exists('public_'.$categorySEF)) {
-						$func = 'public_'.$categorySEF;
-						$func();
-					} else {
-						articles();
-					}
-				}
-		}
-	} else {
-		articles();
+			}
 	}
+	articles();
+}
+
+addRoute('login', l('login'), login);
+addRoute('contact', l('contact'), contact);
+addRoute('sitemap', l('sitemap'), sitemap);
+addRoute('archive', l('archive'), archive);
+if (_ADMIN) {
+	include('admin.php');
 }
 
 ?>
