@@ -76,3 +76,6 @@ It is different if you search for "snews color", in this case both words must ma
 - move global $l from readAddons to addon (hello)
 - processing - admin_article - fixed - Bug in article deletion with extra
 - processing - admin_article - fixed - when change page to extra/article then reset extra pointer to this page
+
+*** 10 July *** by Skiane
+- Introduced "routes" to map SEFs to php functions

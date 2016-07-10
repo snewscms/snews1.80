@@ -1910,9 +1910,10 @@ function processing() {
 	}
 }
 
+// ROUTES
 addRoute('administration', l('administration'), administration);
 addRoute('logout', l('logout'), logout);
-addRoute('snews_settings', l('settings'),	settings);
+addRoute('snews_settings', l('settings'), settings);
 addRoute('snews_files',	l('files'),	files);
 addRoute('admin_addons', l('admin_addons'), showAdmAddons);
 
