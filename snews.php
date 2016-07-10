@@ -206,7 +206,7 @@ function checkUserPass($input) {
 $routes = array();
 
 // ADD ROUTE - Add route to a new page
-function addRoute($sef,$title,$func) {
+function addRoute($sef, $title, $func) {
 	global $routes;
 	$routes[$sef] = array('title' => $title, 'func' => $func);
 }
