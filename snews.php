@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		July 03, 2016 - 11:15 GMT+0
+  Last Update		July 10, 2016 - 20:50 GMT+0
   Developpers: 		Rui Mendes, Stephane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
@@ -202,9 +202,10 @@ function checkUserPass($input) {
 	return $result;
 }
 
-// Add route to a new page
+// ROUTES ARRAY
 $routes = array();
 
+// ADD ROUTE - Add route to a new page
 function addRoute($sef,$title,$func) {
 	global $routes;
 	$routes[$sef] = array('title' => $title, 'func' => $func);
@@ -2062,6 +2063,11 @@ function send_email($send_array) {
 	return false;
 }
 
+// INCLUDE ADMIN IF LOGGED
+if (_ADMIN) {
+	include('admin.php');
+}
+
 // CENTER
 function center() {
 	global $categorySEF;
@@ -2127,12 +2133,10 @@ function center() {
 	articles();
 }
 
+// ROUTES
 addRoute('login', l('login'), login);
 addRoute('contact', l('contact'), contact);
 addRoute('sitemap', l('sitemap'), sitemap);
 addRoute('archive', l('archive'), archive);
-if (_ADMIN) {
-	include('admin.php');
-}
 
 ?>
