@@ -169,6 +169,7 @@ function clean($text) {
 
 // CHECK MATH CAPTCHA RESULT
 function checkMathCaptcha() {
+	if (_ADMIN) return true; // Captcha non requested for admin
 	$result = false;
 	$testNumber = isset($_SESSION[_SITE.'mathCaptcha-digit']) ? intval($_SESSION[_SITE.'mathCaptcha-digit']) : 'none';
 	unset($_SESSION[_SITE.'mathCaptcha-digit']);
@@ -180,6 +181,7 @@ function checkMathCaptcha() {
 
 // MATH CAPTCHA
 function mathCaptcha() {
+	if (_ADMIN) return ""; // Captcha non requested for admin
 	$x = rand(1, 9);
 	$y = rand(1, 9);
 	if (!isset($_SESSION[_SITE.'mathCaptcha-digit'])) {
