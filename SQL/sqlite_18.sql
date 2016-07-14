@@ -112,4 +112,3 @@ CREATE TABLE [settings] (
 	INSERT INTO [settings] VALUES (31, 'file_extensions', 'phps,php,txt,inc,htm,html');
 	INSERT INTO [settings] VALUES (32, 'allowed_files', 'php,htm,html,txt,inc,css,js,swf');
 	INSERT INTO [settings] VALUES (33, 'allowed_images', 'gif,jpg,jpeg,png');
-

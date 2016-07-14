@@ -1,7 +1,14 @@
 --
---  Use this file to create the tables in a new sNews 1.80 database only.
---  Last Updated: April 25, 2016
+--  Use this file to create the tables in a NEW sNews 1.80 database only.
+--  Last Updated: July 14, 2016
 -- -----------------------------------------------------------------------------
+
+-- DON'T FORGET TO CHANGE DATABASE NAME IN THIS CASE I WILL USE snews18
+ALTER DATABASE `snews18` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+SET NAMES 'utf8';
+
+SET storage_engine = INNODB;
 
 DROP TABLE IF EXISTS articles;
 -- ---- Create Articles Table:
