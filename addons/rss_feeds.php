@@ -1,8 +1,17 @@
 <?php
 
+// PREPARING ARTICLE FOR XML USED ON FEED
+function strip($text) {
+	$search = array('/\[include\](.*?)\[\/include\]/', '/\[func\](.*?)\[\/func\]/', '/\[break\]/', '/</', '/>/');
+	$replace = array('', '', '', '<', '>');
+	$output = preg_replace($search, $replace, $text);
+	$output = stripslashes(strip_tags($output, '<a><img><h1><h2><h3><h4><h5><ul><li><ol><p><hr><br><b><i><strong><em><blockquote>'));
+	return $output;
+}
+
 // RSS FEED - ARTICLES/PAGES/COMMENTS
 function rss_contents($rss_item) {
-	global $categorySEF, $articleSEF, $commentsPage;
+	global $categorySEF, $subcatSEF, $articleSEF, $_ID, $commentsPage;
  	header('Content-type: text/xml; charset='.s('charset').'');
  	$limit = s('rss_limit');
  	switch($rss_item) {

@@ -49,3 +49,12 @@ paginator = 'p_'
 
 ; Used in comments pagination links
 comment_pages = 'c_'
+
+
+
+[INFO_TAGS]
+; Infoline 
+infoline = '<p class="date">,readmore,comments,date,edit,</p>'
+
+; Comments 
+comments = '<p class="meta">,name, $on ,date,edit,</p>,<p class="comment">,comment,</p>'
