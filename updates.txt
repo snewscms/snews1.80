@@ -79,3 +79,15 @@ It is different if you search for "snews color", in this case both words must ma
 
 *** 10 July *** by Skiane
 - Introduced "routes" to map SEFs to php functions
+
+*** 14 July *** by Skiane and Rui
+- No MathCaptcha For Admin
+- Addroute - Undefined constant - fixed converted to string
+- [clean_mysql] moved to admin.php
+- Info-tags - moved - user must change if want in config.php
+- [logout] moved to admin.php
+- [strip] moved to rss_feeds.php (addons)
+- Mysql Database change collation to UTF-8 and type for InnoDB in new fresh database
+- [html_input] moved again to snews.php (hello addon need it)
+- [readAddons] rewrite to accept auto-addons (auto_addon) and addons as controllers
+- [breadcrumbs] fixed for addons
