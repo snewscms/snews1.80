@@ -5,7 +5,12 @@ $pagename = substr($_SERVER['SCRIPT_NAME'], strripos($_SERVER['SCRIPT_NAME'], DI
 if ($pagename == 'admin.php') {die('Bye bye');}
 if (!defined('SECURE_ID') || SECURE_ID != '1234') { // SECURE_ID MUST BE THE SAME AS config.php
 	die('ACCESS DENIED');
-} if (!_ADMIN) {echo( notification(1, l('error_not_logged_in'), 'login')); set_error();}
+}
+// NOT LOGGED - > ERROR
+if (!_ADMIN){
+	echo( notification(1, l('error_not_logged_in'), 'login'));
+	set_error();
+}
 
 // ADMINISTRATION
 function administration() {
@@ -42,11 +47,16 @@ function administration() {
 		echo '</p>';
 		# ADDONS
 		echo '<p>'.l('admin_addons').': ';
-		if (empty(readAddons())) {echo l('none');}
-		else {echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';}
+		$addons = readAddons();
+		if (empty($addons)) {
+			echo l('none');
+		} else {
+			echo '<a href="'._SITE.'admin_addons/">'.l('view').'</a>';
+		}
 		echo '</p>';
 		echo '</div>';
-		$query = 'SELECT id, articleid, name FROM '._PRE.'comments'.' WHERE approved != \'True\'';
+		# COMMENTS
+		$query = "SELECT id, articleid, name FROM "._PRE."comments WHERE approved != 'True'";
 		$unapproved = stats('comments', '', 'approved != \'True\'');
 		if ($unapproved > 0) {
 			echo '<div class="adminpanel"><p class="admintitle">'.l('comments').'</p>';
@@ -59,8 +69,10 @@ function administration() {
 					echo '<p class="spacelink">'.$r['name'].' (<strong>'.$articleTITLE.'</strong>) '.l('divider').'
 					<a href="'._SITE.'?action=editcomment&amp;commentid='.$r['id'].'">'.l('edit').'</a></p>';
 				}
-			} echo '</div></div>';
+			}
+			echo '</div></div>';
 		}
+		# SITE PANEL
 		echo '<div class="message"><p class="admintitle">'.l('site_settings').'</p>';
 		echo '<p><a href="'._SITE.'snews_settings/">'.l('settings').'</a>&nbsp;|&nbsp;
 			<a href="'._SITE.'snews_files/">'.l('files').'</a></p></div>';
@@ -71,16 +83,19 @@ function administration() {
 
 // SHOW ADDONS IN ADMIN
 function showAdmAddons() {
+	global $l;
 	echo '<div class="adminpanel">';
-	echo '<p class="admintitle">'.l('admin_addons').'</p>';
-	$funcs = readAddons();
-	if (!empty($funcs)) {
-		$list = explode(',', $funcs);
-		for ($i = 0; $i < count($list); $i++) {
-			$name = str_replace('admin_', '', $list[$i]);
-			echo '<p>'.l('hello_title').': <a href="'._SITE.'?action='.$list[$i].'">'.l('administration').'</a>';
+		echo '<p class="admintitle">'.l('admin_addons').'</p>';
+		$funcs = readAddons();
+		if (!empty($funcs)) {
+			$list = explode(',', $funcs);
+			for ($i = 0; $i < count($list); $i++) {
+				$field = str_replace('admin_', '', $list[$i]).'_title';
+				if (isset($l[$field])) {
+					echo '<p>'.l($field).': <a href="'._SITE.$list[$i].'/">'.l('administration').'</a></p>';
+				}
+			}
 		}
-	}
 	echo '</div>';
 }
 
@@ -132,7 +147,7 @@ function settings() {
 		echo '<p><a onclick="toggle(\'sub1\')" style="cursor: pointer;" title="'.l('a_openclose').''.l('settings').'">'.l('settings').'</a></p>';
 		echo '<div id="sub1" style="display: none;">';
 		echo html_input('text', 'website_title', 'webtitle', s('website_title'), l('a_website_title'),'','','','','','','','','','');
-		echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '', 
+		echo html_input('text', 'home_sef', 'webSEF', s('home_sef') == '' ? l('home_sef') : s('home_sef'), l('a_home_sef'), '',
 			'onkeypress="return SEFrestrict(event);"','','','','','','','','');
 		echo html_input('text', 'website_description', 'wdesc', s('website_description'), l('a_description'),'','','','','','','','','','');
 		echo html_input('text', 'website_keywords', 'wkey', s('website_keywords'), l('a_keywords'),'','','','','','','','','','');
@@ -157,7 +172,7 @@ function settings() {
 		echo html_input('text', 'rss_limit', 'rssl', s('rss_limit'), l('a_rss_limit'),'','','','','','','','','','');
 		echo '<p><label for="dp">'.l('a_display_page').':</label><br /> <select name="display_page" id="dp">';
 		echo '<option value="0"'.(s('display_page') == 0 ? ' selected="selected"' : '').'>'.l('none').'</option>';
-		$query = 'SELECT id,title FROM '._PRE.'articles'.' WHERE position = 3 ORDER BY id ASC';
+		$query = "SELECT id,title FROM "._PRE."articles WHERE position = 3 ORDER BY id ASC";
 		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				echo '<option value="'.$r['id'].'"';
@@ -235,8 +250,9 @@ function admin_categories() {
 	$num_cat = stats('categories', '', 'subcat = 0');
 	if ($num_cat == 0) {
 		echo '<p>'.l('category_not_exist').'</p>';
-	} else {
-		$query = 'SELECT id, name, description, published, catorder FROM '._PRE.'categories'.' WHERE subcat = 0 ORDER BY catorder,id ASC';
+	}
+	else {
+		$query = "SELECT id, name, description, published, catorder FROM "._PRE."categories WHERE subcat = 0 ORDER BY catorder,id ASC";
 		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				$cat_input = '<input type="text" name="cat_'.$r['id'].'" value="'.$r['catorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
@@ -244,16 +260,19 @@ function admin_categories() {
 					'.l('divider').' <a href="'._SITE.$link.'&amp;id='.$r['id'].'" title="'.$r['description'].'">'.l('edit').'</a> ';
 				echo $r['published'] != 'YES' ? ' '.l('divider').' ['.l('status').' '.l('unpublished').']' : '';
 				echo ' '.l('divider').' <a href="'._SITE.$link.'&amp;sub_id='.$r['id'].'" title="'.$r['description'].'">'.l('add_subcategory').'</a></p>';
-				$subquery = 'SELECT id,name,description,published,catorder FROM '._PRE.'categories'.' WHERE subcat = '.$r['id'].' ORDER BY catorder,id ASC';
-				if ($res = db() -> query($subquery)) { $tab2 = 1;
+				$subquery = "SELECT id,name,description,published,catorder FROM "._PRE."categories WHERE subcat = $r[id] ORDER BY catorder,id ASC";
+				if ($res = db() -> query($subquery)) {
+					$tab2 = 1;
 					while ($sub = dbfetch($res)) {
 					    $subcat_input = '<input type="text" name="cat_'.$sub['id'].'" value="'.$sub['catorder'].'" size="1" tabindex="'.$tab2.'" /> &nbsp;';
 					    echo '<p class="subcat">'.$subcat_input.'<strong>'.$sub['name'].'</strong>'.l('divider').' ';
 						echo '<a href="'._SITE.$link.'&amp;id='.$sub['id'].'" title="'.$sub['description'].'">'.l('edit').'</a> ';
 					    echo ($sub['published'] != 'YES' ? ' '.l('divider').' ['.l('status').' '.l('unpublished').']' : '');
-					    echo '</p>'; $tab2++;
+					    echo '</p>';
+						$tab2++;
 					}
-				} $tab++;
+				}
+				$tab++;
 			}
 		}
 	}
@@ -267,10 +286,10 @@ function admin_categories() {
 // CATEGORIES FORM
 function form_categories($subcat = 'cat') {
 	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-		$categoryid = $_GET['id'];
-		$query = 'SELECT id,name,seftitle,published,description,subcat,catorder FROM '._PRE.'categories'.' WHERE id='.$categoryid;
+		$categoryid = intval($_GET['id']);
+		$query = "SELECT id,name,seftitle,published,description,subcat,catorder FROM "._PRE."categories WHERE id = $categoryid";
 		if ($result = db() -> query($query)) {$r = dbfetch($result);}
-		$qwr = "select name from "._PRE."categories	where id = ".$r['subcat'];
+		$qwr = "SELECT name FROM "._PRE."categories	WHERE id = ".$r['subcat'];
 		if ($jresult = db() -> query($qwr)) {
 			while ($rr = dbfetch($jresult)) {$name = $rr['name'];}
 		}
@@ -284,10 +303,11 @@ function form_categories($subcat = 'cat') {
 		$catorder = isset($r['catorder']) ? $r['catorder'] : 0;
 		$frm_task = 'edit_category';
 		$frm_submit = l('edit_button');
-	} else {
-		$sub_cat = isset($_GET['sub_id']) ? $_GET['sub_id'] : '0';
+	}
+	else {
+		$sub_cat = isset($_GET['sub_id']) ? intval($_GET['sub_id']) : '0';
 		if ($sub_cat !=' cat') {
-			$query = 'SELECT name FROM '._PRE.'categories'.' WHERE id = '.$sub_cat;
+			$query = "SELECT name FROM "._PRE."categories WHERE id = ".$sub_cat;
 			if ($result = db() -> query($query)) {
 				while ($r = dbfetch($result)) {$name = $r['name'];}
 			}
@@ -306,12 +326,14 @@ function form_categories($subcat = 'cat') {
 	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', $frm_action, '');
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.$frm_add_edit.'</p>';
-	echo html_input('text', 'name', 't', $frm_name, l('name'), '', 
+	echo html_input('text', 'name', 't', $frm_name, l('name'), '',
 		'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 	echo html_input('text', 'seftitle', 's', $frm_sef_title, l('sef_title_cat'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('text', 'description', 'desc', $frm_description, l('description'), '', '', '', '', '', '', '', '', '', '');
 	if (empty($sub_cat) && !empty($categoryid)) {
-		echo '<p>'.l('subcategory').': <br />'; category_list($categoryid); echo '</p>';
+		echo '<p>'.l('subcategory').': <br />';
+		category_list($categoryid);
+		echo '</p>';
 	}
 	$publish = $subcat == 'cat' ? l('publish_category') : l('publish_subcategory');
 	echo html_input('checkbox', 'publish', 'pub', 'YES', $publish, '', '', '', '', $frm_publish, '', '', '', '', '');
@@ -326,7 +348,7 @@ function form_categories($subcat = 'cat') {
 	if (!empty($categoryid)) {
 		echo '&nbsp;&nbsp;';
 		echo html_input('hidden', 'id', 'id', $categoryid, '', '', '', '', '', '', '', '', '', '', '');
-		echo html_input('submit', 'delete_category', 'delete_category', l('delete'), '', 'button', 
+		echo html_input('submit', 'delete_category', 'delete_category', l('delete'), '', 'button',
 			'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
 	}
 	echo '</p></form>';
@@ -338,14 +360,14 @@ function delete_cat($id) {
 	$cat_order = $catdata['catorder'];
 	$cat_subcat = $catdata['subcat'];
 	# DELETE CATEGORY
-	$query = "DELETE FROM "._PRE.'categories'." WHERE id = $id";
+	$query = "DELETE FROM "._PRE."categories WHERE id = $id";
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
 	# RE-ORDER
-	$sql = "SELECT id, catorder FROM "._PRE.'categories'." WHERE catorder > $cat_order AND subcat = $cat_subcat";
+	$sql = "SELECT id, catorder FROM "._PRE."categories WHERE catorder > $cat_order AND subcat = $cat_subcat";
 	if ($res = db() -> query($sql)) {
 		while ($rr = dbfetch($res)) {
 			$order = $rr['catorder'] -1;
-			$sq = "UPDATE "._PRE.'categories'." SET catorder = :order WHERE id = :id";
+			$sq = "UPDATE "._PRE."categories SET catorder = :order WHERE id = :id";
 			if ($ru = db() -> prepare($sq)) {
 				$ru = dbfetch($ru, true, [
 					':order' => $order,
@@ -370,8 +392,8 @@ function delete_item($table, $field, $id) {
 function form_groupings() {
  	if (s('enable_extras') == 'YES') {
 		if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-			$extraid = $_GET['id'];
-			$query = 'SELECT id,name,seftitle,description FROM '._PRE.'extras'.' WHERE id='.$extraid;
+			$extraid = intval($_GET['id']);
+			$query = "SELECT id, name, seftitle, description FROM "._PRE."extras WHERE id = ".$extraid;
 			if ($result = db() -> query($query)) {$r = dbfetch($result);}
 			$frm_action = _SITE.'?action=process&amp;task=admin_groupings&amp;id='.$extraid;
 			$frm_add_edit = l('edit');
@@ -380,7 +402,8 @@ function form_groupings() {
 			$frm_description = $r['description'];
 			$frm_task = 'edit_groupings';
 			$frm_submit = l('edit_button');
-		} else {
+		}
+		else {
 			$frm_action = _SITE.'?action=process&amp;task=admin_groupings';
 			$frm_add_edit = l('add_groupings');
 			$frm_name = $_POST['name'];
@@ -418,15 +441,14 @@ function admin_groupings() {
 	if (s('enable_extras') == 'YES') {
 		if (stats('extras', '') > 0) {
 			$add = ' - <a href="'._SITE.'admin_groupings/" title="'.l('add_new').'">'.l('add_new').'</a>';
-		} else {
-			$add = '';
 		}
+		else {$add = '';}
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle">'.l('groupings').$add.'</p>';
 		$num = stats('extras', '');
 		if ($num == 0) {echo '<p>'.l('group_not_exist').'</p>';}
 		else {
-			$query = 'SELECT id,name,description FROM '._PRE.'extras'.' ORDER BY id ASC';
+			$query = "SELECT id,name,description FROM "._PRE."extras ORDER BY id ASC";
 			if ($result = db() -> query($query)) {
 				while ($r = dbfetch($result)) {
 					echo '<p>';
@@ -434,7 +456,8 @@ function admin_groupings() {
 						echo '<a href="'._SITE.'?action=admin_groupings&amp;id='.$r['id'].'" title="'.$r['description'].'">'.l('edit').'</a>';
 					echo '</p>';
 				}
-			} else {echo '<p>'.l('group_not_exist').'</p>';}
+			}
+			else {echo '<p>'.l('group_not_exist').'</p>';}
 		}
 		echo '</div>';
 	}
@@ -454,15 +477,22 @@ function buttons(){
 		'br' => ''
 	);
 	foreach ($formatting as $key => $var) {
-		$css = $var == 'key' ? $key :'buttons';
-		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\')" value="'.
+		$css = $var == 'key' ? $key : 'buttons';
+		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="'.$css.'" onclick="tag(\''.$key.'\',\'\',\'\')" value="'.
 		l($key.'_value').'" />';
 	}
 	echo '</p><br class="clearer" /><p>'.l('insert').': <br class="clearer" />';
-	$insert = array('img', 'link', 'include', 'func','intro');
-	foreach ($insert as $key) {
+	$insert = [
+		'img' => 'js_image1,js_image2',
+		'link' => 'js_link1,js_link2',
+		'include' => 'js_file,on',
+		'func' => 'js_func1,js_func2',
+		'intro' => 'on,on'
+	];
+	foreach ($insert as $key => $val) {
+		$lng = explode(',', $val);
 		echo '<input type="button" name="'.$key.'" title="'.l($key).'" class="buttons" onclick="tag(\''.
-		$key.'\')" value="'.l($key.'_value').'" />';
+		$key.'\',\''.l($lng[0]).'\',\''.l($lng[1]).'\')" value="'.l($key.'_value').'" />';
 	}
 	echo '<br class="clearer" /></p>';
 }
@@ -470,16 +500,19 @@ function buttons(){
 // ARTICLES FORM
 function form_articles($contents) {
  	if (isset($_GET['id']) && is_numeric($_GET['id']) && !is_null($_GET['id'])) {
-		$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
-		$frm_position1 = ''; $frm_position2 = ''; $frm_position3 = '';
- 		$query = 'SELECT * FROM '._PRE.'articles'.' WHERE id = '.$id;
+		$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
+		$frm_position1 = '';
+		$frm_position2 = '';
+		$frm_position3 = '';
+ 		$query = "SELECT * FROM "._PRE."articles WHERE id = $id";
  		if ($result = db() -> query($query)) {
 			while ($r = dbfetch($result)) {
 				$article_category = $r['category'];
 				$edit_option = $r['position'] == 0 ? 1 : $r['position'];
 				$edit_page = $r['page_extra'];
 				$extraid = $r['extraid'];
-				$title = $r['seftitle'];
+				$title = $r['title'];
+				$seftitle = $r['seftitle'];
 				$text = $r['text'];
 				$dmeta = $r['description_meta'];
 				$keywords = $r['keywords_meta'];
@@ -511,7 +544,7 @@ function form_articles($contents) {
 		}
 		$frm_action = _SITE.'?action=process&amp;task=admin_article&amp;id='.$id;
 		$frm_title = isset($_SESSION[_SITE.'temp']['title']) ? $_SESSION[_SITE.'temp']['title'] : $title;
-		$frm_sef_title = isset($_SESSION[_SITE.'temp']['seftitle']) ? cleanSEF($_SESSION[_SITE.'temp']['seftitle']) : $title;
+		$frm_sef_title = isset($_SESSION[_SITE.'temp']['seftitle']) ? cleanSEF($_SESSION[_SITE.'temp']['seftitle']) : $seftitle;
 		$frm_text = isset($_SESSION[_SITE.'temp']['text']) ? str_replace('&', '&amp;', $_SESSION[_SITE.'temp']['text']) : $text;
 		$frm_meta_desc = isset($_SESSION[_SITE.'temp']['description_meta']) ?
 			cleanSEF($_SESSION[_SITE.'temp']['description_meta']) : $dmeta;
@@ -526,7 +559,8 @@ function form_articles($contents) {
 		$frm_task = 'edit_article';
 		$frm_submit = l('edit_button');
 		$pos = $edit_option;
-	} else {
+	}
+	else {
 		switch ($contents) {
 			case 'article_new':
 				$edit_option = 1;
@@ -573,22 +607,25 @@ function form_articles($contents) {
 	$catnum = stats('categories', '');
  	if ($contents == 'article_new' && isset($catnum['catnum']) && $catnum['catnum'] < 1) {
  		echo l('create_cat');
- 	} else {
+ 	}
+	else {
 		echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', $frm_action, '');
 		echo '<div class="adminpanel">';
 		if (!empty($toggle_div) && $toggle_div == 'show') {
 		    echo '<p class="admintitle"><a onclick="toggle(\'edit_article\')" style="cursor: pointer;" title="'.$frm_fieldset.'">'.$frm_fieldset.'</a></p>';
 		    echo '<div id="edit_article" style="display: none;">';
-		} else {
+		}
+		else {
 			echo '<p class="admintitle">'.$frm_fieldset.'</p>';
 		}
-		echo html_input('text', 'title', 'at', $frm_title, l('title'), '', 
+		echo html_input('text', 'title', 'at', $frm_title, l('title'), '',
 			'onchange="genSEF(this,document.forms[\'post\'].seftitle)"', 'onkeyup="genSEF(this,document.forms[\'post\'].seftitle)"', '', '', '', '', '', '', '');
 		if ($contents == 'extra_new' || $edit_option == 2) {
 			echo '<div style="display: none;">';
 			echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
 			echo '</div>';
-		} else {
+		}
+		else {
 			echo html_input('text', 'seftitle', 'as', $frm_sef_title, l('sef_title'), '', '', '', '', '', '', '', '', '', '');
 		}
 		echo html_input('textarea', 'text', 'txt', $frm_text, l('text'), '', '', '', '', '', '2', '100', '', '', '');
@@ -597,14 +634,22 @@ function form_articles($contents) {
 		if ($contents != 'page_new' && $edit_option != 3) {
 			echo '<p><label for="cat">';
 			$article_category = isset($article_category) ? $article_category : -1;
+			# NEW EXTRA
 			echo ($contents == 'extra_new' || $edit_option == 2) ?  l('appear_category') : l('category');
 			if ($contents == 'extra_new' || $edit_option == 2) {
 				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'extra\');">';
 				echo '<option value="-1"'.($article_category == -1 ? ' selected="selected"' : '').'>'.l('all').'</option>';
 				echo '<option value="-3"'.($article_category == -3 ? ' selected="selected"' : '').'>'.l('page_only').'</option>';
-			} else {echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'snews_articles\');">';}
-			$category_query = 'SELECT id,name,subcat FROM '._PRE.'categories'.'
-				WHERE published = \'YES\' AND subcat = 0 ORDER BY catorder,id ASC';
+			}
+			# NEW ARTICLE
+			else {
+				echo ':</label><br /><select name="define_category" id="cat" onchange="dependancy(\'snews_articles\');">';
+			}
+			# CATEGORIES AND SUB-CATEGORIES
+			$category_query = "SELECT id, name, subcat
+				FROM "._PRE."categories
+				WHERE published = 'YES' AND subcat = 0
+				ORDER BY catorder, id ASC";
 			if ($cat_result = db() -> query($category_query)) {
 				while ($cat = dbfetch($cat_result)) {
 					echo '<option value="'.$cat['id'].'"';
@@ -612,8 +657,10 @@ function form_articles($contents) {
 						echo ' selected="selected"';
 					}
 					echo '>'.$cat['name'].'</option>';
-					$subquery = 'SELECT id,name,subcat FROM '._PRE.'categories'.'
-						WHERE subcat = '.$cat['id'].' ORDER BY catorder,id ASC';
+					$subquery = "SELECT id, name, subcat
+						FROM "._PRE."categories
+						WHERE subcat = $cat[id]
+						ORDER BY catorder, id ASC";
 					if ($subresult = db() -> query($subquery)) {
 						while ($s = dbfetch($subresult)) {
 							echo '<option value="'.$s['id'].'"';
@@ -628,22 +675,27 @@ function form_articles($contents) {
 			echo '</select></p>';
 			# EXTRA
 			if ($contents == 'extra_new' || $edit_option == 2) {
+				$sub_display = $article_category == -1 ? 'inline' : 'none';
+				echo '<div id="def_subcat" style="display:'.$sub_display.';"><p>';
+				echo html_input('checkbox', 'show_in_subcats', 'asc', 'YES', l('show_in_subcats'), '', '', '', '', $show_in_subcats, '', '', '', '', '');
+				echo '</p></div>';
 				$none_display = $article_category == -1 ? 'none' : 'inline';
-				echo '<div id="def_page" style="display:'.$none_display.';"><p><label for="dp">'.l('appear_page').':</label>
-					<br /><select name="define_page" id="dp">';
+				echo '<div id="def_page" style="display:'.$none_display.';"><p>';
+				echo '<label for="dp">'.l('appear_page').':</label><br />
+					<select name="define_page" id="dp">';
 				echo '<option value="0"'.($edit_option != '2' ? ' selected="selected"' : '').'>'.l('all').'</option>';
-				$query = 'SELECT id,title FROM '._PRE.'articles'.' WHERE position = 3 ORDER BY id ASC';
+				$query = "SELECT id, title FROM "._PRE."articles WHERE position = 3 ORDER BY id ASC";
 				if ($result = db() -> query($query)) {
 					while ($r = dbfetch($result)) {
 						echo '<option value="'.$r['id'].'"';
 						if ($edit_page == $r['id']) {
-							echo ' selected="selected"';
+							echo ' selected = "selected"';
 						}
 						echo '>'.$r['title'].'</option>';
 					}
 				}
-				echo '</select><br />'.
-				html_input('checkbox', 'show_in_subcats', 'asc', 'YES', l('show_in_subcats'), '', '', '', '', $show_in_subcats, '', '', '', '', '').'</p></div>';
+				echo '</select><br />';
+				echo '</p></div>';
 			}
 		}
 		if ($contents == 'article_new' || $edit_option == 1) {
@@ -654,30 +706,33 @@ function form_articles($contents) {
 			echo '</div>';
 		}
 		echo '</div>';
+		# PREVIEW PANEL
 		echo '<div class="adminpanel">';
 			echo '<p class="admintitle"><a onclick="toggle(\'preview\')" style="cursor: pointer;" title="'.l('preview').'">'.l('preview').'</a></p>';
 			echo '<div id="preview" style="display: none;"></div>';
 		echo '</div>';
+		# CUSTOMIZE PANEL
 		echo '<div class="adminpanel">';
 		echo '<p class="admintitle"><a onclick="toggle(\'customize\')" style="cursor: pointer;" title="'.l('customize').'">'.l('customize').'</a></p>';
 		echo '<div id="customize" style="display: none;">';
 		# EXTRA
 		if ($contents == 'extra_new' || $edit_option == 2) {
 			if (s('enable_extras') == 'YES') {
-				echo '<p><label for="ext">'.l('define_extra').'</label><br />';
-				echo '<select name="define_extra" id="ext">';
-				$extra_query = 'SELECT id,name FROM '._PRE.'extras'.' ORDER BY id ASC';
+				echo '<p><label for = "ext">'.l('define_extra').'</label><br />';
+				echo '<select name = "define_extra" id = "ext">';
+				$extra_query = "SELECT id, name FROM "._PRE."extras ORDER BY id ASC";
 				if ($extra_result = db() -> query($extra_query)) {
 					while ($ex = dbfetch($extra_result)) {
-						echo '<option value="'.$ex['id'].'"';
+						echo '<option value = "'.$ex['id'].'"';
 						if ($contents != 'extra_new' && $extraid == $ex['id']) {
-							echo ' selected="selected"';
+							echo ' selected = "selected"';
 						}
 						echo '>'.$ex['name'].'</option>';
 					}
 				}
 				echo '</select></p>';
-			} else {
+			}
+			else {
 				echo html_input('hidden', 'define_extra', 'ext', 1, '', '', '', '', '', '', '', '', '', '', '');
 			}
 		}
@@ -689,7 +744,8 @@ function form_articles($contents) {
 			echo '<option value="2"'.$frm_position2.'>'.l('side').'</option>';
 			echo '<option value="3"'.$frm_position3.'>'.l('display_page').'</option>';
 			echo '</select></p>';
-		} else {
+		}
+		else {
 			$pos = $contents == 'article_new' ? 1 : ($contents == 'extra_new' ? 2 : 3);
 			echo html_input('hidden', 'position', 'position', $pos, '', '', '', '', '', '', '', '', '', '', '');
 		}
@@ -705,9 +761,11 @@ function form_articles($contents) {
 					echo '<p><input name="freeze" type="checkbox" id="fc"';
 					if ($r['commentable'] == 'FREEZ') {
 						echo ' checked="checked" />';
-					} else if ($r['commentable'] == 'YES') {
+					}
+					else if ($r['commentable'] == 'YES') {
 						echo ' />';
-					} else {
+					}
+					else {
 						echo ' />';
 					}
 					echo ' <label for="fc"> '.l('freeze_comments').'</label></p>';
@@ -735,18 +793,46 @@ function form_articles($contents) {
 			echo html_input('hidden', 'artorder', 'artorder', $artorder, '', '', '', '', '', '', '', '', '', '', '');
 			echo html_input('hidden', 'article_category', 'article_category', $article_category, '', '', '', '', '', '', '', '', '', '', '');
 			echo html_input('hidden', 'id', 'id', $id, '', '', '', '', '', '', '', '', '', '', '').' ';
-			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '', 'button', 
+			echo html_input('submit', 'delete_article', 'delete_article', l('delete'), '', 'button',
 				'onclick="javascript: return pop(\''.l('js_delete2').'\')"', '', '', '', '', '', '', '', '');
 		}
 		echo '</p></form>';
 	}
 }
 
+// PRINT ARTICLE DETAILS
+function printArticleDetails($articleData, $articleClass, $order) {
+	if ($order !== null) {
+		$order_input = '<input type="text" name="page_'.$articleData['id'].'" value="'.$articleData['artorder'].'" size="1" tabindex="'.$order.'" /> &nbsp;';
+	} else {
+		$order_input = '';
+	}
+	echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($articleData['date'])).'">	'.$articleData['title'].'</strong> ';
+	$url = isset($articleData['catSEF']) ? $articleData['catSEF'].'/'.$articleData['seftitle'] : $articleData['seftitle'];
+	if ($articleClass != 'extra_contents') {
+		echo l('divider').' <a href="'._SITE.$url.'/">'.l('view').'</a> ';
+	}
+	if (isset($articleData['default_page']) && $articleData['default_page'] != 'YES') {
+		echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$articleData['id'].'">'.l('edit').'</a> ';
+	}
+	$visiblity = $articleData['visible'] == 'YES' ?
+		'<a href="'._SITE.'?action=hide&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('hide').'</a>' :
+		l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$articleClass.'&amp;id='.$articleData['id'].'">'.l('show').'</a> )';
+	echo ' '.l('divider').' '.$visiblity;
+	if ($articleData['published'] == 2) {
+		echo  l('divider').' ['.l('status').' '.l('future_posting').']';
+	}
+	if ($articleData['published'] == 0) {
+		echo  l('divider').' ['.l('status').' '.l('unpublished').']';
+	}
+	echo '</p>';
+}
+
 // ARTICLES
 function admin_articles($contents) {
 	global $categorySEF, $subcatSEF;
 	$link = '<a href="'._SITE.$categorySEF.'/';
-	$item = $contents == 'extra_view' ? 'extra_contents': 'snews_articles';
+	$item = $contents == 'extra_view' ? 'extra_contents' : 'snews_articles';
 	$filter_year = defined('DBTYPE') && DBTYPE == 'sqlite' ? 'strftime(\'%Y\', date)' : 'YEAR(date)';
 	$filter_month = defined('DBTYPE') && DBTYPE == 'sqlite' ? 'strftime(\'%m\', date)' : 'MONTH(date)';
 	switch ($contents) {
@@ -777,21 +863,20 @@ function admin_articles($contents) {
 	if (!empty($subcatSEF) && $subcatSEF != 'extras') {
 		$array = explode(';', $subcatSEF);
 		foreach ($array as &$key) {
-			$val = split('=', $key);
+			$val = explode('=', $key);
 			if (!isset($val[1])) {$option['option'] = $val[0];}
 			else {$option[$val[0]] = $val[1];}
 		}
 	}
-	$mextra = s('enable_extras') == 'YES' && $p == 2 && !isset($option['extraid'])? ' / '.$link.'extras">'.l('extra').'</a>' : '';
+	$mextra = s('enable_extras') == 'YES' && $p == 2 && !isset($option['extraid'])? ' / '.$link.'extras/">'.l('extra').'</a>' : '';
 	$filter_extra = isset($option['extraid']) ? ';extraid='.$option['extraid'] : '';
 	if (stats('articles', $p) > 0) {
 		$add = ' - <a href="'.$sef.'/" title="'.l('add_new').'">
 			'.l('add_new').'</a> - '.l('see').' ('.$link.'">'.l('all').'</a>) -
 			'.l('filter').' ('.$link.'year'.$filter_extra.'">'.l('year').'</a> / '.$link.'month'.$filter_extra.'">
 			'.l('month').'</a>'.$mextra.')';
-	} else {
-		$add = '';
 	}
+	else {$add = '';}
 	$tab = 1;
 	# MULTI-EXTRAS
 	if ($subcatSEF == 'extras') {
@@ -806,7 +891,9 @@ function admin_articles($contents) {
 			while ($rpx = dbfetch($xres)) {
 				echo '<p>'.$link.'extraid='.$rpx['id'].'">'.$rpx['name'].'</a></p>';
 			}
-		} echo '</div>'; return;
+		}
+		echo '</div>';
+		return;
 	}
 	# OPTION YEAR AND MONTH
 	if ($subcatSEF == 'year' || $subcatSEF == 'month' || isset($option['option'])) {
@@ -818,30 +905,30 @@ function admin_articles($contents) {
 		echo $link.'month'.$filter_extra.'">'.l('month').'</a> '.$mextra.')';
 		echo '</p></legend><br /><p>';
 		$month_names = explode(', ', l('month_names'));
-		$query = 'SELECT DISTINCT('.$filter_year.') AS dyear 
-			FROM '._PRE.'articles'.' 
-			WHERE '.$qw.' ORDER BY date DESC';
+		$query = "SELECT DISTINCT($filter_year) AS dyear FROM "._PRE."articles WHERE $qw ORDER BY date DESC";
 		if ($sqr = db() -> query($query)) {
 			while ($r = dbfetch($sqr)) {
 			 	$ryear = $r['dyear'];
-				echo ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month') ? 
+				echo ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month') ?
 					'<span style="color: #0000FF">'.$r['dyear'].'</span>' :
 					$link.'year='.$r['dyear'].$filter_extra.'">'.$r['dyear'].'</a> ');
 				if ($subcatSEF == 'month' || (isset($option['option']) && $option['option'] == 'month')) {
-				    $qx = "SELECT DISTINCT(".$filter_month.") AS dmonth 
-						FROM "._PRE.'articles'." 
-						WHERE $qw AND ".$filter_year."='$ryear' ORDER BY date ASC";
+				    $qx = "SELECT DISTINCT(".$filter_month.") AS dmonth
+						FROM "._PRE.'articles'."
+						WHERE $qw AND $filter_year = '$ryear' ORDER BY date ASC";
 					if ($rqx = db() -> query($qx)) {
 						while ($rx = dbfetch($rqx)) {
 							$m = $rx['dmonth'] - 1;
 							echo ' '.l('divider').' '.$link.'year='.$r['dyear'].';'.'month='.$rx['dmonth'].$filter_extra.'">'.$month_names[$m].'</a> ';
-						}	
+						}
 					}
-				
+
 				}
 				echo '<br />';
 			}
-		} echo '</p></div>'; return;
+		}
+		echo '</p></div>';
+		return;
 	}
 	$year = isset($option['year']) ? $option['year'] : '';
 	$month = isset($option['month']) ? $option['month'] : '';
@@ -860,17 +947,18 @@ function admin_articles($contents) {
 			$legend_label = $cat_value == -3 ? l('pages') : l('all');
 			$page_only_xsql = $cat_value == -3 ? 'page_extra ASC,' : '';
 			$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page, page_extra
-	 			FROM "._PRE.'articles'."
+	 			FROM "._PRE."articles
 	 			WHERE category = $cat_value
 	 				AND position = $p $filterquery $sqx
-	 			ORDER BY $page_only_xsql artorder ASC, date DESC ";
+	 			ORDER BY $page_only_xsql artorder ASC, date DESC";
 			$num_rows = stats('articles', '', 'category = '.$cat_value.' AND position = '.$p.' '.$filterquery);
 			$tab = 1;
 			echo '<div class="innerpanel">';
 			echo '<p class="admintitle">'.$legend_label.'</p>';
 			if ($num_rows == 0) {
 				echo $no_content;
-			} else {
+			}
+			else {
 				$lbl_filter = -5;
 				if ($result = db() -> query($sql)) {
 					while ($r = dbfetch($result)) {
@@ -880,24 +968,9 @@ function admin_articles($contents) {
 							    echo !$assigned_page ? l('all_pages') : $assigned_page;
 							}
 					    }
-					    $order_input = '<input type="text" name="page_'.$r['id'].'" value="'.$r['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-					    echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($r['date'])).'">	'.$r['title'].'</strong> ';
-					    if ($r['default_page'] != 'YES') {
-							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
-					    }
-					    $visiblity = $r['visible'] == 'YES' ?
-					    	'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )';
-						echo ' '.l('divider').' '.$visiblity;
-						if ($r['published'] == 2) {
-							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-						}
-						if ($r['published'] == 0) {
-							echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-						}
-						echo '</p>';
-						$tab++;
-						$lbl_filter = $r['page_extra'];
+					    printArticleDetails($r, $item, $tab);
+					    $tab++;
+					    $lbl_filter = $r['page_extra'];
 					}
 				}
 			}
@@ -909,111 +982,64 @@ function admin_articles($contents) {
 		$num = stats('categories', '', 'subcat = 0');
 		if ($num == 0) {
 			echo '<p>'.l('no_categories').'</p>';
-		} else {
-			$num_rows = stats('articles', '', 'category = 0 AND position = '.$p.' '.$subquery);
+		}
+		else {
+			$nsql = ($p == 1 ? "category < 1" : "").($p == 2 ? "category = 0" : "");
+			$num_rows = stats('articles', '', $nsql.' AND position = '.$p.' '.$subquery);
 			$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
-				FROM "._PRE.'articles'."
-				WHERE (category = '0' OR category = '-1' OR category = -3)
-					AND position = $p $subquery
-					ORDER BY artorder ASC, date DESC ";
+				FROM "._PRE."articles
+				WHERE ".$nsql." AND position = $p
+				ORDER BY artorder ASC, date DESC";
 			if ($num_rows > 0) {
 				echo '<div class="innerpanel">';
 				echo '<p class="admintitle">'.l('no_category_set').'</p>';
 				if ($res = db() -> query($sql)) {
 					while ($O = dbfetch($res)) {
-						$order_input = '<input type="text" name="page_'.$O['id'].'" value="'.$O['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-						echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($O['date'])).'">'.$O['title'].'</strong> ';
-						if ($O['default_page'] != 'YES'){
-							echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$O['id'].'">'.l('edit').'</a> ';
-						}
-						$visiblity = $O['visible'] == 'YES' ?
-							'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('hide').'</a>' :
-							l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$O['id'].'">'.l('show').'</a> )' ;
-							echo ' '.l('divider').' '.$visiblity;
-						if ($O['published'] == 2) {
-							echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-						}
-						if ($O['published'] == 0) {
-							echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-						}
-						echo '</p>';
+						printArticleDetails($O, $item, $tab);
 						$tab++;
 					}
 				}
 				echo '</div>';
 			}
-			$cat_query = "SELECT id, name, seftitle FROM "._PRE.'categories'." WHERE subcat = 0";
+			$cat_query = "SELECT id, name, seftitle FROM "._PRE."categories WHERE subcat = 0";
 			if ($cat_res = db() -> query($cat_query)) {
 				while ($row = dbfetch($cat_res)) {
 					echo '<div class="adminpanel">';
 					echo '<p class="admintitle">'.$row['name'].'</p>';
 					$sql1 = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
-						FROM "._PRE.'articles'."
-						WHERE category = '".$row['id']."'
-							AND position = $p $subquery $filterquery
-						ORDER BY artorder ASC, date DESC ";
+						FROM "._PRE."articles
+						WHERE category = $row[id]
+							AND position = $p $filterquery
+						ORDER BY artorder ASC, date DESC";
 					$num_rows = stats('articles', '', 'category = '.$row['id'].' AND position = '.$p.' '.$subquery.' '.$filterquery);
 					if ($num_rows == 0) {
 						echo $no_content;
 					} else
 					if ($res1 = db() -> query($sql1)) {
 						while ($r = dbfetch($res1)) {
-							$order_input = '<input type="text" name="page_'.$r['id'].'" value="'.$r['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-							echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($r['date'])).'">
-								'.$r['title'].'</strong> '.l('divider').'
-								<a href="'._SITE.$row['seftitle'].'/'.$r['seftitle'].'/">'.l('view').'</a> ';
-							if ($r['default_page'] != 'YES'){
-								echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
-							}
-							$visiblity = $r['visible'] == 'YES' ?
-								'<a href="'._SITE.'?action=hide&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-								l('hidden').' ( <a href="'._SITE.'?action=show&amp;item='.$item.'&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-							echo ' '.l('divider').' '.$visiblity;
-							if ($r['published'] == 2) {
-								echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-							}
-							if ($r['published'] == 0) {
-								echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-							}
-							echo '</p>';
+							$r['catSEF'] = $row['seftitle'];
+							printArticleDetails($r, $item, $tab);
 							$tab++;
 						}
 					}
-					$query2 = "SELECT id, name, seftitle FROM "._PRE.'categories'." WHERE subcat = '$row[id]' ORDER BY catorder ASC";
+					$query2 = "SELECT id, name, seftitle FROM "._PRE."categories WHERE subcat = $row[id] ORDER BY catorder ASC";
 					$tab2 = 1;
 					if ($res2 = db() -> query($query2)) {
 						while ($row2 = dbfetch($res2)) {
 							echo '<a class="subcat" onclick="toggle(\'subcat'.$row2['id'].'\')" style="cursor: pointer;">'.$row2['name'].'</a><br />';
 							echo '<div id="subcat'.$row2['id'].'" style="display: none;" class="subcat">';
-							$catart_sql2 = "SELECT id, title, seftitle, date, published, artorder, visible
-								FROM "._PRE.'articles'."
-								WHERE category = '$row2[id]' $subquery $filterquery
-								ORDER BY category ASC, artorder ASC, date DESC ";
+							$catart_sql2 = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
+								FROM "._PRE."articles
+								WHERE category = $row2[id] $subquery $filterquery
+								ORDER BY category ASC, artorder ASC, date DESC";
 							$num_rows2 = stats('articles', '', 'category = '.$row2['id'].' '.$subquery.' '.$filterquery);
 							if ($num_rows2 == 0) {
 								echo $no_content;
 							}
 							if ($res3 = db() -> query($catart_sql2)) {
 								while ($ca_r2 = dbfetch($res3)) {
-									$order_input2 = '<input type="text" name="page_'.$ca_r2['id'].'" value="'.$ca_r2['artorder'].'" 
-										size="1" tabindex="'.$tab2.'" /> &nbsp;';
-									$catSEF = cat_rel($row2['id'],'seftitle');
-									echo '<p>'.$order_input2.'<strong title="'.date(s('date_format'), strtotime($ca_r2['date'])).'">
-										'.$ca_r2['title'].'</strong> '.l('divider').'
-										<a href="'._SITE.$catSEF.'/'.$ca_r2['seftitle'].'/">'.l('view').'</a> ';
-									echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$ca_r2['id'].'">'.l('edit').'</a> ';
-									$visiblity2 = $ca_r2['visible'] == 'YES' ?
-										'<a href="'._SITE.'?action=hide&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">'.l('hide').'</a>' :
-									l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_articles&amp;id='.$ca_r2['id'].'">
-										'.l('show').'</a> )';
-									echo ' '.l('divider').' '.$visiblity2;
-									if ($ca_r2['published'] == 2) {
-										echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-									}
-									if ($ca_r2['published'] == 0) {
-										echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-									}
-									echo '</p>';
+									$ca_r2['catSEF'] = cat_rel($row2['id'], 'seftitle');
+									printArticleDetails($ca_r2, 'snews_articles', $tab2);
 								}
 							}
 							echo '</div>';
@@ -1027,33 +1053,16 @@ function admin_articles($contents) {
 	# PAGE
 	} elseif ($contents == 'page_view') {
 		$sql = "SELECT id, title, seftitle, date, published, artorder, visible, default_page
-			FROM "._PRE.'articles'."
-			WHERE position = 3 $subquery
-			ORDER BY artorder ASC, date DESC ";
+			FROM "._PRE."articles
+			WHERE position = 3 $subquery $filterquery
+			ORDER BY artorder ASC, date DESC";
 		$num_rows = stats('articles', '', 'position = 3 '.$subquery);
 		if ($num_rows == 0) {
 			echo '<p>'.l('article_not_exist').'</p>';
 		}
 		if ($result = db() -> query($sql)) {
 			while ($r = dbfetch($result)) {
-				$order_input = '<input type="text" name="page_'.$r['id'].'" value="'.$r['artorder'].'" size="1" tabindex="'.$tab.'" /> &nbsp;';
-				echo '<p>'.$order_input.'<strong title="'.date(s('date_format'), strtotime($r['date'])).'">
-					'.$r['title'].'</strong> '.l('divider').'
-					<a href="'._SITE.$r['seftitle'].'/">'.l('view').'</a> ';
-				if ($r['default_page'] != 'YES') {
-					echo  l('divider').' <a href="'._SITE.'?action=admin_article&amp;id='.$r['id'].'">'.l('edit').'</a> ';
-				}
-				$visiblity = $r['visible'] == 'YES' ?
-					'<a href="'._SITE.'?action=hide&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('hide').'</a>' :
-					l('hidden').' ( <a href="'._SITE.'?action=show&amp;item=snews_pages&amp;id='.$r['id'].'">'.l('show').'</a> )' ;
-				echo ' '.l('divider').' '.$visiblity;
-				if ($r['published'] == 2) {
-					echo  l('divider').' ['.l('status').' '.l('future_posting').']';
-				}
-				if ($r['published'] == 0) {
-					echo  l('divider').' ['.l('status').' '.l('unpublished').']';
-				}
-				echo '</p>';
+				printArticleDetails($r,'snews_pages',$tab);
 				$tab++;
 			}
 		}
@@ -1066,14 +1075,16 @@ function admin_articles($contents) {
 
 // COMMENTS - EDIT
 function edit_comment() {
-	$commentid = $_GET['commentid'];
-	$query = 'SELECT id,articleid,name,url,comment,approved FROM '._PRE.'comments'.' WHERE id='.$commentid;
+	$commentid = intval($_GET['commentid']);
+	$query = "SELECT id, articleid, name, url, comment, approved FROM "._PRE."comments WHERE id = $commentid";
 	if ($result = db() -> query($query)) {$r = dbfetch($result);}
 	$articleTITLE = retrieve('title', 'articles', 'id', $r['articleid']);
+	$comment = stripslashes($r['comment']);
+	$comment = str_replace('<br />', '', $comment);
 	echo html_input('form', '', 'post', '', '', '', '', '', '', '', '', '', 'post', '?action=process&amp;task=editcomment&amp;id='.$commentid, '');
 	echo '<div class="adminpanel">';
 	echo '<p class="admintitle">'.l('edit_comment').' (<strong> '.$articleTITLE.'</strong> )</p>';
-	echo html_input('textarea', 'editedcomment', 'ec', stripslashes($r['comment']), l('comment'), '', '', '', '', '', '2', '100', '', '', '');
+	echo html_input('textarea', 'editedcomment', 'ec', $comment, l('comment'), '', '', '', '', '', '2', '100', '', '', '');
 	echo html_input('text', 'name', 'n', $r['name'], l('name'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('text', 'url', 'url', $r['url'], l('url'), '', '', '', '', '', '', '', '', '', '');
 	echo html_input('checkbox', 'approved', 'a', '', l('approved'), '', '', '', '', $r['approved'] == 'True' ? 'ok' : '', '', '', '', '', '');
@@ -1104,22 +1115,26 @@ function files() {
 			$filetype = $_FILES['imagefile']['type'];
 			if (!in_array(substr(strrchr($filename, '.'), 1), $extension) || in_array($filename, $ignore)) {
 				die(notification(2,l('file_error'),'snews_files'));
-			} else {
+			}
+			else {
 				$upload_dir = $_POST['upload_dir'].'/';
 				copy ($filetemp, $upload_dir.$filename) or die (l('file_error'));
 				echo notification(0,'','snews_files');
 				$kb_size = round(($_FILES['imagefile']['size'] / 1024), 1);
 				echo '<p><a href="'.$upload_dir.$filename.'" title="'.$filename.'">'.$filename.'</a> ['.$kb_size.' KB] ['.$filetype.']</p>';
 			}
-		} else {
+		}
+		else {
 			die(notification(2,l('file_error'),'snews_files'));
 		}
-	} else {
+	}
+	else {
 		if (isset($_GET['task']) == 'delete') {
 			$file_to_delete = $_GET['folder'].'/'.$_GET['file'];
 			@unlink($file_to_delete);
 			echo notification(0,'','snews_files');
-		} else {
+		}
+		else {
 			echo '<div class="adminpanel">';
 			echo '<p class="admintitle">'.l('upload').'</p>';
 			echo '<form method="post" action="snews_files/" enctype="multipart/form-data">';
@@ -1227,18 +1242,20 @@ function check_if_unique($what, $text, $not_id = 'x', $subcat) {
 				AND id != '.$not_id : '"');
 			break;
 	}
-	$query = 'SELECT count(DISTINCT id) as total FROM '.$sql;
+	$query = "SELECT count(DISTINCT id) as total FROM ".$sql;
+	$rows = 0;
 	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {$rows = $r['total'];}
-	} else {$rows = 0;}
-	if ($rows == 0) {return false;} 
-	else {return true;}
+		while ($r = dbfetch($result)) {
+			$rows = $r['total'];
+		}
+	}
+	return ($rows > 0);
 }
 
 // HIDE/SHOW
 function visibility($mode) {
-	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
-	$item = clean(cleanXSS($_GET['item']));
+	$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
+	$item = cleanXSS($_GET['item']);
 	$back = isset($_GET['back']) ? $_GET['back'] : '';
 	$no_yes = $mode == 'hide' ? 'NO' : 'YES';
 	switch ($item) {
@@ -1261,7 +1278,8 @@ function visibility($mode) {
 			':visible'	=> $no_yes,
 			':id'		=> $id
 		]);
-	} echo notification(0, l('please_wait'));
+	}
+	echo notification(0, l('please_wait'));
 	$link = $link != 'home' ? $link : '';
 	echo '<meta http-equiv="refresh" content="1; url='._SITE.$link.'/">';
 }
@@ -1269,581 +1287,584 @@ function visibility($mode) {
 /*** PROCESSING (CATEGORIES, CONTENTS, COMMENTS) ***/
 function processing() {
 	if (!_ADMIN) {
-		echo (notification(1,l('error_not_logged_in'),'home')); return;
-	} else {
-	$action = clean(cleanXSS($_GET['action']));
-	$id = isset($_GET['id']) ? clean(cleanXSS($_GET['id'])) : 0;
-	$commentid = isset($_POST['commentid']) ? intval(clean(cleanXSS($_POST['commentid']))) : 0;
-	$approved = isset($_POST['approved']) && $_POST['approved'] == 'on' ? 'True' : '';
-	$name = isset($_POST['name']) ? clean(entity($_POST['name'])) : '';
-	$category = !empty($_POST['define_category']) ? intval(clean(cleanXSS($_POST['define_category']))) : 0;
-	$subcat = isset($_POST['subcat']) ? intval(clean(cleanXSS($_POST['subcat']))) : 0;
-	$page = isset($_POST['define_page']) ? $_POST['define_page'] : '';
-	$def_extra = isset($_POST['define_extra']) ? $_POST['define_extra'] : '';
-	$description = isset($_POST['description']) ? clean(entity($_POST['description'])) : '';
-	$title = isset($_POST['title']) ? clean(entity($_POST['title'])) : '';
-	$seftitle = isset($_POST['seftitle']) ? clean($_POST['seftitle']) : '';
-	$url = isset($_POST['url']) ? cleanXSS($_POST['url']) : '';
-	$comment = isset($_POST['editedcomment']) ? $_POST['editedcomment'] : '';
-	$text = isset($_POST['text']) ? clean_mysql($_POST['text']) : '';
-	$date = date('Y-m-d H:i:s');
-	$description_meta = isset($_POST['description_meta']) ? entity($_POST['description_meta']) : '';
-	$keywords_meta = isset($_POST['keywords_meta']) ? entity($_POST['keywords_meta']) : '';
-	$display_title = isset($_POST['display_title']) && $_POST['display_title'] == 'on' ? 'YES' : 'NO';
-	$display_info = isset($_POST['display_info']) && $_POST['display_info'] == 'on' ? 'YES' : 'NO';
-	$commentable = isset($_POST['commentable']) && $_POST['commentable'] == 'on' ? 'YES' : 'NO';
-	$freez = isset($_POST['freeze']) && $_POST['freeze'] == 'on' ? 'YES' : 'NO';
-	if ($freez == 'YES' && $commentable == 'YES') {
-		$commentable = 'FREEZ';
+		echo (notification(1,l('error_not_logged_in'),'home'));
+		return;
 	}
-	$position = isset($_POST['position']) && $_POST['position'] > 0 ? intval($_POST['position']) : 1;
-	$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
-	$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
-	$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
-	$publish_category = isset($_POST['publish']) && $_POST['publish'] == 'on' ? 'YES' : 'NO';
-	$fpost_enabled = false;
-	if (isset($_POST['fposting']) && $_POST['fposting'] == 'on') {
-		$fpost_enabled = true;
-		$date = $_POST['fposting_year'].'-'.$_POST['fposting_month'].'-'.$_POST['fposting_day'].' '.
-		$_POST['fposting_hour'].':'.$_POST['fposting_minute'].':00';
-		if (date('Y-m-d H:i:s') < $date) $publish_article = 2;
-	}
-	$task = isset($_POST['task']) ? clean(cleanXSS($_POST['task'])) : '';
-	if ($_POST) {
-		switch ($task) {
-			case 'save_settings':
-		 		if (isset($_POST['save'])) {
-					$website_title = $_POST['website_title'];
-					$home_sef = $_POST['home_sef'];
-					$website_description = $_POST['website_description'];
-					$website_keywords = $_POST['website_keywords'];
-					$website_email = $_POST['website_email'];
-					$contact_subject = $_POST['contact_subject'];
-					$language = $_POST['language'];
-					$charset = $_POST['charset'];
-					$date_format = $_POST['date_format'];
-					$article_limit = $_POST['article_limit'];
-					$rss_limit = $_POST['rss_limit'];
-					$display_page = $_POST['display_page'];
-					$display_new_on_home = isset($_POST['display_new_on_home']) ? $_POST['display_new_on_home'] : '';
-					$display_pagination = isset($_POST['display_pagination']) ? $_POST['display_pagination'] : '';
-					$num_categories = $_POST['num_categories'];
-					$show_cat_names = isset($_POST['show_cat_names']) && $_POST['show_cat_names'] ? $_POST['show_cat_names'] : '';
-					$approve_comments = isset($_POST['approve_comments']) ? $_POST['approve_comments'] : '';
-					$mail_on_comments = isset($_POST['mail_on_comments']) ? $_POST['mail_on_comments'] : '';
-					$comments_order = $_POST['comments_order'];
-					$comment_limit = $_POST['comment_limit'];
-					$word_filter_enable = isset($_POST['word_filter_enable']) ? $_POST['word_filter_enable'] : '';
-					$word_filter_file = $_POST['word_filter_file'];
-					$word_filter_change = $_POST['word_filter_change'];
-					$enable_extras = isset($_POST['enable_extras']) && $_POST['enable_extras'] == 'on' ? 'YES' : 'NO';
-					$enable_comments = isset($_POST['enable_comments']) && $_POST['enable_comments'] == 'on' ? 'YES' : 'NO';
-					$comment_repost_timer = is_numeric($_POST['comment_repost_timer']) ? intval($_POST['comment_repost_timer']) : '15';
-					$freeze_comments = isset($_POST['freeze_comments']) && $_POST['freeze_comments'] == 'on' ? 'YES' : 'NO';
-					$file_ext = $_POST['file_ext'];
-					$allowed_file = $_POST['allowed_file'];
-					$allowed_img = $_POST['allowed_img'];
-					$ufield = array(
-						'website_title' => $website_title,
-						'home_sef' => $home_sef,
-						'website_description' => $website_description,
-						'website_keywords' => $website_keywords,
-						'website_email' => $website_email,
-						'contact_subject' => $contact_subject,
-						'language' => $language,
-						'charset' => $charset,
-						'date_format' => $date_format,
-						'article_limit' => $article_limit,
-						'rss_limit' => $rss_limit,
-						'display_page' => $display_page,
-						'comments_order' => $comments_order,
-						'comment_limit' => $comment_limit,
-						'word_filter_file' => $word_filter_file,
-						'word_filter_change' => $word_filter_change,
-						'display_new_on_home' => $display_new_on_home,
-						'display_pagination' => $display_pagination,
-						'num_categories' => $num_categories,
-						'show_cat_names' => $show_cat_names,
-						'approve_comments' => $approve_comments,
-						'mail_on_comments' => $mail_on_comments,
-						'word_filter_enable' => $word_filter_enable,
-						'enable_extras' => $enable_extras,
-						'enable_comments' => $enable_comments,
-						'freeze_comments' => $freeze_comments,
-						'comment_repost_timer' => $comment_repost_timer,
-						'file_extensions' => $file_ext,
-						'allowed_files' => $allowed_file,
-						'allowed_images' => $allowed_img
-				);
-				while (list($key, $value) = each($ufield)) {
-					$sql = "UPDATE "._PRE.'settings'." SET value = :val WHERE name = :name";
-					if ($result = db() -> prepare($sql)) {
-						$r = dbfetch($result, true, [
-							':val' =>  $value,
-							':name' => $key
-						]);
-						unset($result);
-					}
-				}
-				echo notification(0,'','snews_settings');
+	else {
+		$action = cleanXSS($_GET['action']);
+		$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'], true)) : 0;
+		$commentid = isset($_POST['commentid']) ? intval(cleanXSS($_POST['commentid'], true)) : 0;
+		$approved = isset($_POST['approved']) && $_POST['approved'] == 'on' ? 'True' : '';
+		$name = isset($_POST['name']) ? clean(entity($_POST['name'])) : '';
+		$category = !empty($_POST['define_category']) ? intval(cleanXSS($_POST['define_category'], true)) : 0;
+		$subcat = isset($_POST['subcat']) ? intval(cleanXSS($_POST['subcat'], true)) : 0;
+		$page = isset($_POST['define_page']) ? $_POST['define_page'] : '';
+		$def_extra = isset($_POST['define_extra']) ? $_POST['define_extra'] : '';
+		$description = isset($_POST['description']) ? clean(entity($_POST['description'])) : '';
+		$title = isset($_POST['title']) ? clean(entity($_POST['title'])) : '';
+		$seftitle = isset($_POST['seftitle']) ? clean($_POST['seftitle']) : '';
+		$url = isset($_POST['url']) ? cleanXSS($_POST['url']) : '';
+		$comment = isset($_POST['editedcomment']) ? cleanComment($_POST['editedcomment']) : '';
+		$text = isset($_POST['text']) ? clean_mysql($_POST['text']) : '';
+		$date = date('Y-m-d H:i:s');
+		$description_meta = isset($_POST['description_meta']) ? entity($_POST['description_meta']) : '';
+		$keywords_meta = isset($_POST['keywords_meta']) ? entity($_POST['keywords_meta']) : '';
+		$display_title = isset($_POST['display_title']) && $_POST['display_title'] == 'on' ? 'YES' : 'NO';
+		$display_info = isset($_POST['display_info']) && $_POST['display_info'] == 'on' ? 'YES' : 'NO';
+		$commentable = isset($_POST['commentable']) && $_POST['commentable'] == 'on' ? 'YES' : 'NO';
+		$freez = isset($_POST['freeze']) && $_POST['freeze'] == 'on' ? 'YES' : 'NO';
+		if ($freez == 'YES' && $commentable == 'YES') {
+			$commentable = 'FREEZ';
+		}
+		$position = isset($_POST['position']) && $_POST['position'] > 0 ? intval($_POST['position']) : 1;
+		$publish_article = (isset($_POST['publish_article']) && $_POST['publish_article'] == 'on') ? 1 : 0;
+		$show_in_subcats = isset($_POST['show_in_subcats']) && $_POST['show_in_subcats'] == 'on' ? 'YES' : 'NO';
+		$show_on_home = ((isset($_POST['show_on_home']) && $_POST['show_on_home'] == 'on') || $position > 1) ? 'YES' : 'NO';
+		$publish_category = isset($_POST['publish']) && $_POST['publish'] == 'on' ? 'YES' : 'NO';
+		$fpost_enabled = isset($_POST['fposting']) && $_POST['fposting'] == 'on';
+		if ($fpost_enabled) {
+			$date = $_POST['fposting_year'].'-'.$_POST['fposting_month'].'-'.$_POST['fposting_day'].' '.
+				$_POST['fposting_hour'].':'.$_POST['fposting_minute'].':00';
+			if (date('Y-m-d H:i:s') < $date) {
+				$publish_article = 2;
 			}
-			break;
-			case 'changeup':
-				if (isset($_POST['submit_pass'])) {
-					$user = checkUserPass($_POST['uname']);
-					$pass1 = checkUserPass($_POST['pass1']);
-					$pass2 = checkUserPass($_POST['pass2']);
-					if ($user && $pass1 && $pass2 && $pass1 === $pass2) {
-						$uname = md5($user);
-						$pass = md5($pass2);
-						# USERNAME
-						$q1 = "UPDATE "._PRE.'settings'." SET value = :val WHERE name = :name";
-						if ($res1 = db() -> prepare($q1)) {
-							$r1 = dbfetch($res1, true, [
-								':val' => $uname,
-								':name' => 'username'
+		}
+		$task = isset($_POST['task']) ? cleanXSS($_POST['task']) : '';
+		if ($_POST) {
+			switch ($task) {
+				case 'save_settings':
+			 		if (isset($_POST['save'])) {
+						$website_title = $_POST['website_title'];
+						$home_sef = $_POST['home_sef'];
+						$website_description = $_POST['website_description'];
+						$website_keywords = $_POST['website_keywords'];
+						$website_email = function_exists('filter_var') ? filter_var($_POST['website_email'], FILTER_VALIDATE_EMAIL) : $_POST['website_email'];
+						$contact_subject = $_POST['contact_subject'];
+						$language = $_POST['language'];
+						$charset = $_POST['charset'];
+						$date_format = $_POST['date_format'];
+						$article_limit = $_POST['article_limit'];
+						$rss_limit = $_POST['rss_limit'];
+						$display_page = $_POST['display_page'];
+						$display_new_on_home = isset($_POST['display_new_on_home']) ? $_POST['display_new_on_home'] : '';
+						$display_pagination = isset($_POST['display_pagination']) ? $_POST['display_pagination'] : '';
+						$num_categories = $_POST['num_categories'];
+						$show_cat_names = isset($_POST['show_cat_names']) && $_POST['show_cat_names'] ? $_POST['show_cat_names'] : '';
+						$approve_comments = isset($_POST['approve_comments']) ? $_POST['approve_comments'] : '';
+						$mail_on_comments = isset($_POST['mail_on_comments']) ? $_POST['mail_on_comments'] : '';
+						$comments_order = $_POST['comments_order'];
+						$comment_limit = $_POST['comment_limit'];
+						$word_filter_enable = isset($_POST['word_filter_enable']) ? $_POST['word_filter_enable'] : '';
+						$word_filter_file = $_POST['word_filter_file'];
+						$word_filter_change = $_POST['word_filter_change'];
+						$enable_extras = isset($_POST['enable_extras']) && $_POST['enable_extras'] == 'on' ? 'YES' : 'NO';
+						$enable_comments = isset($_POST['enable_comments']) && $_POST['enable_comments'] == 'on' ? 'YES' : 'NO';
+						$comment_repost_timer = is_numeric($_POST['comment_repost_timer']) ? intval($_POST['comment_repost_timer']) : '15';
+						$freeze_comments = isset($_POST['freeze_comments']) && $_POST['freeze_comments'] == 'on' ? 'YES' : 'NO';
+						$file_ext = $_POST['file_ext'];
+						$allowed_file = $_POST['allowed_file'];
+						$allowed_img = $_POST['allowed_img'];
+						$ufield = array(
+							'website_title' => $website_title,
+							'home_sef' => $home_sef,
+							'website_description' => $website_description,
+							'website_keywords' => $website_keywords,
+							'website_email' => $website_email,
+							'contact_subject' => $contact_subject,
+							'language' => $language,
+							'charset' => $charset,
+							'date_format' => $date_format,
+							'article_limit' => $article_limit,
+							'rss_limit' => $rss_limit,
+							'display_page' => $display_page,
+							'comments_order' => $comments_order,
+							'comment_limit' => $comment_limit,
+							'word_filter_file' => $word_filter_file,
+							'word_filter_change' => $word_filter_change,
+							'display_new_on_home' => $display_new_on_home,
+							'display_pagination' => $display_pagination,
+							'num_categories' => $num_categories,
+							'show_cat_names' => $show_cat_names,
+							'approve_comments' => $approve_comments,
+							'mail_on_comments' => $mail_on_comments,
+							'word_filter_enable' => $word_filter_enable,
+							'enable_extras' => $enable_extras,
+							'enable_comments' => $enable_comments,
+							'freeze_comments' => $freeze_comments,
+							'comment_repost_timer' => $comment_repost_timer,
+							'file_extensions' => $file_ext,
+							'allowed_files' => $allowed_file,
+							'allowed_images' => $allowed_img
+					);
+					while (list($key, $value) = each($ufield)) {
+						$sql = "UPDATE "._PRE.'settings'." SET value = :val WHERE name = :name";
+						if ($result = db() -> prepare($sql)) {
+							$r = dbfetch($result, true, [
+								':val' =>  $value,
+								':name' => $key
 							]);
-							unset($res1);
+							unset($result);
 						}
-						# PASSWORD
-						$q2 = "UPDATE "._PRE.'settings'." SET value= :val WHERE name = :name";
-						if ($res2 = db() -> prepare($q2)) {
-							$r2 = dbfetch($res2, true, [
-								':val'  => $pass,
-								':name' => 'password'
-							]);
-							unset($res2);
-						}
-						echo notification(0,'','administration');
-					} else {
-						die(notification(2,l('pass_mismatch'),'snews_settings'));
 					}
-				}
-			break;
-			case 'admin_groupings':
-				switch (true) {
-					case (empty($name)):
-						echo notification(1,l('err_TitleEmpty').l('errNote'));
-						form_groupings();
-						break;
-					case (empty($seftitle)):
-						echo notification(1,l('err_SEFEmpty').l('errNote'));
-						form_groupings();
-						break;
-					case(check_if_unique('group_name', $name, $id, '')):
-						echo notification(1,l('err_TitleExists').l('errNote'));
-						form_groupings();
-						break;
-					case(check_if_unique('group_seftitle', $seftitle, $id, '')):
-						echo notification(1,l('err_SEFExists').l('errNote'));
-						form_groupings();
-						break;
-					case(cleancheckSEF($seftitle) == 'notok'):
-						echo notification(1,l('err_SEFIllegal').l('errNote'));
-						form_groupings();
-						break;
-					default:
-						switch (true) {
-							case (isset($_POST['add_groupings'])):
-								$sql1 = "INSERT INTO "._PRE.'extras'."(name, seftitle, description)
-									VALUES(:name, :sef, :desc)";
-								if ($result = db() -> prepare($sql1)) {
-									$r = dbfetch($result, true, [
-										':name' => $name,
-										':sef'  => $seftitle,
-										':desc' => $description
-									]);
-									unset($result);
-								}
-								break;
-							case (isset($_POST['edit_groupings'])):
-								$sql2 = "UPDATE "._PRE.'extras'." SET
-									name = :name,
-									seftitle = :sef,
-									description = :desc
-									WHERE id = :id";
-								if ($result = db() -> prepare($sql2)) {
-									$r = dbfetch($result, true,[
-										':name' => $name,
-										':sef'  => $seftitle,
-										':desc' => $description,
-										':id'   => $id
-									]);
-									unset($result);
-								}
-								break;
-							case (isset($_POST['delete_groupings'])):
-								$sql3 = "DELETE FROM "._PRE.'extras'." WHERE id = :id";
-								if ($result = db() -> prepare($sql3)) {
-									$r = dbfetch($result, true, [
-										':id' => $id
-									]);
-								}
-								break;
-						}
-					echo notification(0,'','groupings');
+					echo notification(0,'','snews_settings');
 				}
 				break;
-			case 'admin_category':
-			case 'admin_subcategory':
-				switch (true) {
-					case (empty($name)):
-						echo notification(1,l('err_TitleEmpty').l('errNote'));
-						form_categories();
-						break;
-					case (empty($seftitle)):
-						echo notification(1,l('err_SEFEmpty').l('errNote'));
-						form_categories();
-						break;
-					case (isset($_POST['add_category']) && check_if_unique('subcat_name', $name, '', $subcat)):
-						echo notification(1,l('err_TitleExists').l('errNote'));
-						form_categories();
-						break;
-					case (isset($_POST['add_category']) && check_if_unique('subcat_seftitle', $seftitle, '', $subcat)):
-						echo notification(1,l('err_SEFExists').l('errNote'));
-						form_categories();
-						break;
-					case (isset($_POST['edit_category']) && $subcat == 0 && check_if_unique('cat_name_edit', $name, $id, '')):
-						echo notification(1,l('err_TitleExists').l('errNote'));
-						form_categories();
-						break;
-					case (isset($_POST['edit_category']) && $subcat == 0 && check_if_unique('cat_seftitle_edit', $seftitle, $id, '')):
-						echo notification(1,l('err_SEFExists').l('errNote'));
-						form_categories();
-						break;
-					case (isset($_POST['edit_category']) && $subcat != 0 && check_if_unique('subcat_name_edit', $name, $id, $subcat)):
-						echo notification(1,l('err_TitleExists').l('errNote'));
-						form_categories();
-						break;
-					case (isset($_POST['edit_category']) && $subcat != 0 && check_if_unique('subcat_seftitle_edit', $seftitle, $id, $subcat)):
-						echo notification(1,l('err_SEFExists').l('errNote'));
-						form_categories();
-						break;
-					case (cleancheckSEF($seftitle) == 'notok'):
-						echo notification(1,l('err_SEFIllegal').l('errNote'));
-						form_categories();
-						break;
-					case ($subcat==$id && $id != 0):
-						echo ' '.$id;
-						echo notification(1,l('errNote'));
-						form_categories();
-						break;
-					default:
-						switch(true) {
-							case(isset($_POST['add_category'])):
-								$catorder = stats('categories', '', 'subcat = '.$subcat, false);	
-								$catorder = $catorder + 1;
-								$query = "INSERT INTO "._PRE.'categories'."
-									(name, seftitle, description, published, catorder, subcat) VALUES
-									(:name, :sef, :desc, :published, :catorder, :subcat)";
-								if ($sql = db() -> prepare($query)) {
-									$r = dbfetch($sql, true, [
-										':name' => $name,
-										':sef'	=> $seftitle,
-										':desc' => $description, 
-										':published' => $publish_category,
-										':catorder'  => $catorder,
-										':subcat'	 => $subcat
-									]);
-									unset($sql);
-								}
-								break;
-							# EDIT CATEGORY
-							case(isset($_POST['edit_category'])):
-								$catorder = stats('categories', '', 'subcat = '.$subcat, false);
-								$catorder = isset($_POST['catorder']) ? $_POST['catorder'] : $catorder + 1;
-								$query = "UPDATE "._PRE.'categories'." 
-									SET	name = :name, seftitle = :sef, description = :desc, published = :pub, subcat = :subcat, catorder = :cat_order 
-									WHERE id = :id";
-								if ($res = db() -> prepare($query)) {
-									$data = dbfetch($res, true, [
-										':name'	=> $name,
-										':sef'	=> $seftitle,
-										':desc'	=> $description,
-										':pub'	=> $publish_category,
-										':subcat' => $subcat,
-										':cat_order'=> $catorder,
-										':id'	=> $id
-									]);
-								} break;
-							# DELETE CATEGORY
-							case (isset($_POST['delete_category'])):
-								$any_subcats = stats('categories', '', 'subcat = '.$id);
-								$any_articles = stats('articles', '', 'category = '.$id);
-								if ($any_subcats > 0 || $any_articles > 0) {
-									echo notification(1,l('warn_catnotempty'),'');
-									echo '<p><a href="'._SITE.'administration/" title="'.l('administration').'">
-										'.l('administration').'</a>  OR  ';
-									echo '<a href="'._SITE.'?action=process&amp;task=delete_category_all&amp;id='.$id.'" ';
-									echo 'onclick="javascript: return pop(\''.l('js_delete1').'\')" title="'.l('administration').'">'.l('empty_cat').'</a></p>';
-									$no_success = true;
-								} else {delete_cat($id);}
-								break;
-						}
-					$success = isset($no_success) ? '' : notification(0,'','snews_categories');
-					echo $success;
-				}
-				break;
-			case 'reorder':
-				if (isset($_POST['reorder'])) {
-					switch ($_POST['order']){
-						case 'snews_articles':
-						case 'extra_contents':
-						case 'snews_pages':
-							$table = 'articles';
-							$order_type = 'artorder';
-							$remove = 'page_';
-							break;
-						case 'snews_categories':
-							$table = 'categories';
-							$order_type = 'catorder';
-							$remove = 'cat_';
-							break;
-					}
-					foreach ($_POST as $key => $value){
-						$type_id = str_replace($remove,'',$key);
-						$key = clean(cleanXSS(trim($value)));
-						if ($key != 'reorder' && $key != 'order' && $key != $table && $key != l('order_content') && $key != $_POST['order']){
-							$query = "UPDATE "._PRE.$table." SET $order_type = :type WHERE id = :id";
-							if ($result = db() -> prepare($query)) {
-								$data = dbfetch($result, true,[
-									':type'	=> $value,
-									':id'	=> $type_id
+				case 'changeup':
+					if (isset($_POST['submit_pass'])) {
+						$user = checkUserPass($_POST['uname']);
+						$pass1 = checkUserPass($_POST['pass1']);
+						$pass2 = checkUserPass($_POST['pass2']);
+						if ($user && $pass1 && $pass2 && $pass1 === $pass2) {
+							$uname = md5($user);
+							$pass = md5($pass2);
+							# USERNAME
+							$q1 = "UPDATE "._PRE.'settings'." SET value = :val WHERE name = :name";
+							if ($res1 = db() -> prepare($q1)) {
+								$r1 = dbfetch($res1, true, [
+									':val' => $uname,
+									':name' => 'username'
 								]);
+								unset($res1);
 							}
+							# PASSWORD
+							$q2 = "UPDATE "._PRE.'settings'." SET value= :val WHERE name = :name";
+							if ($res2 = db() -> prepare($q2)) {
+								$r2 = dbfetch($res2, true, [
+									':val'  => $pass,
+									':name' => 'password'
+								]);
+								unset($res2);
+							}
+							echo notification(0,'','administration');
+						}
+						else {
+							die(notification(2,l('pass_mismatch'),'snews_settings'));
 						}
 					}
-					echo notification(0,l('please_wait'));
-					echo '<meta http-equiv="refresh" content="1; url='._SITE.$_POST['order'].'/">';
-				}
 				break;
-			case 'admin_article':
-				$_SESSION[_SITE.'temp']['title'] = $_POST['title'];
-				$_SESSION[_SITE.'temp']['seftitle'] = $_POST['seftitle'];
-				$_SESSION[_SITE.'temp']['text'] = $_POST['text'];
-				switch ($position) {
-					case 1: $from = $id != 0 ? '' : 'article_new';	$link = 'snews_articles'; break;
-					case 2: $from = $id != 0 ? '' : 'extra_new';	$link = 'extra_contents'; break;
-					case 3: $from = $id != 0 ? '' : 'page_new';		$link = 'snews_pages'; break;
-				}
-				switch (true) {
-					case (empty($title)):
-						echo notification(1,l('err_TitleEmpty').l('errNote'), $link);
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					case (empty($seftitle)):
-						echo notification(1,l('err_SEFEmpty').l('errNote'));
-						$_SESSION[_SITE.'temp']['seftitle'] = clean($_SESSION[_SITE.'temp']['title']);
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					case (cleancheckSEF($seftitle) == 'notok'):
-						echo notification(1,l('err_SEFIllegal').l('errNote'));
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
-							&& check_if_unique('article_title', $title, $category, '')):
-						echo notification(1,l('err_TitleExists').l('errNote'));
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
-							&& check_if_unique('article_seftitle', $seftitle, $category, '')):
-						echo notification(1,l('err_SEFExists').l('errNote'));
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					case (!isset($_POST['delete_article']) && !isset($_POST['edit_article'])
-							&& check_if_unique('article_title', $title, $category, '')):
-						echo notification(1,l('err_TitleExists').l('errNote'));
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					case (!isset($_POST['delete_article']) && !isset($_POST['edit_article'])
-							&& check_if_unique('article_seftitle', $seftitle, $category, '')):
-						echo notification(1,l('err_SEFExists').l('errNote'));
-						form_articles($from);
-						unset($_SESSION[_SITE.'temp']);
-						break;
-					default:
-						$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ? intval($_POST['artorder']) :
-							stats('articles', '', ' category = '.$category.' AND position = '.$position)+1;
-						switch (true) {
-							case (isset($_POST['add_article'])):
-								$query = "INSERT INTO "._PRE."articles (
-									title, seftitle, text, date, category,
-									position, extraid, page_extra, displaytitle,
-									displayinfo, commentable, published, description_meta,
-									keywords_meta, show_on_home, show_in_subcats, artorder)
-								VALUES (:title, :sef, :text, :date, :cat, 
-									:pos, :extraid, :page_extra, :disp_title, 
-									:disp_info, :comment, :pub, :dmeta, 
-									:keywords, :shome, :ssub, :order)";
-								if ($result = db() -> prepare($query)) {
-									$data = dbfetch($result, true, [
-										':title' 	=> $title, 
-										':sef'		=> $seftitle,
-										':text'		=> $text,
-										':date'		=> $date,
-										':cat'		=> $category,
-										':pos'		=> $position,
-										':extraid'	=> $def_extra,
-										':page_extra' => $page,
-										':disp_title' => $display_title,
-										':disp_info'  => $display_info,
-										':comment'	=> $commentable,
-										':pub'		=> $publish_article,
-										':dmeta'	=> $description_meta,
-										':keywords'	=> $keywords_meta,
-										':shome'	=> $show_on_home,
-										':ssub'		=> $show_in_subcats,
-										':order'	=> $artorder
-									]);
-								}	
-								break;
-							case (isset($_POST['edit_article'])):
-								$category = $position == 3 ? 0 : $category;
-								$old_pos = retrieve('position', 'articles', 'id', $id);
-								// Only do this if page is changed to art/extra
-								if ($position != $old_pos && $old_pos == 3) {
-									$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
-										WHERE position = 2 AND category = -3 AND page_extra = :id";
-									if ($rextra = db() -> prepare($chk_extra_query)) {
-										while ($xtra = dbfetch($rextra, true, [':id'=> $id])) {
-											$xtra_id = $xtra['id'];
-											$sql = "UPDATE "._PRE.'articles'." SET category = :cat, page_extra = :pg_extra
-												WHERE id = :id";
-											if ($rextra = db() -> prepare($chk_extra_query)) {
-												$ok = dbfetch($rextra, true, [
-													':cat'	=>	'0',
-													':pg_extra'	=> '',
-													':id'	=> $xtra_id
-												]);
-											}
-										}
+				case 'admin_groupings':
+					switch (true) {
+						case (empty($name)):
+							echo notification(1,l('err_TitleEmpty').l('errNote'));
+							form_groupings();
+							break;
+						case (empty($seftitle)):
+							echo notification(1,l('err_SEFEmpty').l('errNote'));
+							form_groupings();
+							break;
+						case(check_if_unique('group_name', $name, $id, '')):
+							echo notification(1,l('err_TitleExists').l('errNote'));
+							form_groupings();
+							break;
+						case(check_if_unique('group_seftitle', $seftitle, $id, '')):
+							echo notification(1,l('err_SEFExists').l('errNote'));
+							form_groupings();
+							break;
+						case(cleancheckSEF($seftitle) == 'notok'):
+							echo notification(1,l('err_SEFIllegal').l('errNote'));
+							form_groupings();
+							break;
+						default:
+							switch (true) {
+								case (isset($_POST['add_groupings'])):
+									$sql1 = "INSERT INTO "._PRE.'extras'."(name, seftitle, description)
+										VALUES(:name, :sef, :desc)";
+									if ($result = db() -> prepare($sql1)) {
+										$r = dbfetch($result, true, [
+											':name' => $name,
+											':sef'  => $seftitle,
+											':desc' => $description
+										]);
+										unset($result);
 									}
-								}
-								if ($fpost_enabled == true) {
-									$future = "date = '$date',";
-									//allows backdating of article
-									$publish_article = strtotime($date) < time() ? 1 : $publish_article;
-								} else {
-									$future = '';
-								}
-								$art_qwr = "UPDATE "._PRE.'articles'." SET
-									title = :title, seftitle = :sef, text = :text, ".$future." category = :cat, position = :pos, 
-									extraid = :extraid, page_extra = :page_extra, displaytitle = :disp_title, displayinfo = :disp_info, 
-									commentable = :comment, published = :pub, description_meta = :dmeta, keywords_meta = :keyw, show_on_home = :shome,
-									show_in_subcats = :ssubcat, artorder = :order
-									WHERE id = :id";
-								if ($res_art = db() -> prepare($art_qwr)) {
-									$dart = dbfetch($res_art, true, [
-										':title'	=> $title,
-										':sef'		=> $seftitle,
-										':text'		=> $text,
-										':cat'		=> $category,
-										':pos'		=> $position,
-										':extraid'	=> $def_extra,
-										':page_extra'	=> $page,
-										':disp_title'	=> $display_title,
-										':disp_info'	=> $display_info,
-										':comment'		=> $commentable,
-										':pub'			=> $publish_article,
-										':dmeta'		=> $description_meta,
-										':keyw'			=> $keywords_meta,
-										':shome'		=> $show_on_home,
-										':ssubcat'		=> $show_in_subcats,
-										':order' 		=> $artorder,
-										':id'			=> $id
-									]);
-								}
-								break;
-							case(isset($_POST['delete_article'])):
-								if ($position == 3) {
-									$chk_extra_query = "SELECT id FROM "._PRE.'articles'."
-										WHERE position = 2 AND category = -3 AND  page_extra = $id";
-									if ($res1 = db() -> query($chk_extra_query)) {
-										while ($xtra = dbfetch($res1)) {
-											$xtra_id = $xtra['id'];
-											$extra2 = "UPDATE "._PRE.'articles'." 
-												SET category = :cat, page_extra = :extra_id WHERE id = :id";
-											if ($res_xtra = db() -> prepare($extra2)) {
-												dbfetch($res_art, true, [
-													':cat'		=>	'0',
-													':extra_id'	=>	'',
-													':id'		=>	$xtra_id
-												]);
-											}
-										}
+									break;
+								case (isset($_POST['edit_groupings'])):
+									$sql2 = "UPDATE "._PRE.'extras'." SET
+										name = :name,
+										seftitle = :sef,
+										description = :desc
+										WHERE id = :id";
+									if ($result = db() -> prepare($sql2)) {
+										$r = dbfetch($result, true,[
+											':name' => $name,
+											':sef'  => $seftitle,
+											':desc' => $description,
+											':id'   => $id
+										]);
+										unset($result);
 									}
-								}
-								delete_item('articles', 'id', $id);
-								delete_item('articles', 'articleid', $id);
-								if ($id == s('display_page')) {
-									$qwr1 = "UPDATE "._PRE.'settings'." SET VALUE = :val WHERE name = :name";
-									if ($r1 = db() -> prepare($qwr1)) {
-										$ok = dbfetch($r1, true, [
-											':val'	=>	'0',
-											':name'	=>	'display_page'
+									break;
+								case (isset($_POST['delete_groupings'])):
+									$sql3 = "DELETE FROM "._PRE.'extras'." WHERE id = :id";
+									if ($result = db() -> prepare($sql3)) {
+										$r = dbfetch($result, true, [
+											':id' => $id
 										]);
 									}
-								}
+									break;
+							}
+						echo notification(0,'','groupings');
+					}
+					break;
+				case 'admin_category':
+				case 'admin_subcategory':
+					switch (true) {
+						case (empty($name)):
+							echo notification(1,l('err_TitleEmpty').l('errNote'));
+							form_categories();
+							break;
+						case (empty($seftitle)):
+							echo notification(1,l('err_SEFEmpty').l('errNote'));
+							form_categories();
+							break;
+						case (isset($_POST['add_category']) && check_if_unique('subcat_name', $name, '', $subcat)):
+							echo notification(1,l('err_TitleExists').l('errNote'));
+							form_categories();
+							break;
+						case (isset($_POST['add_category']) && check_if_unique('subcat_seftitle', $seftitle, '', $subcat)):
+							echo notification(1,l('err_SEFExists').l('errNote'));
+							form_categories();
+							break;
+						case (isset($_POST['edit_category']) && $subcat == 0 && check_if_unique('cat_name_edit', $name, $id, '')):
+							echo notification(1,l('err_TitleExists').l('errNote'));
+							form_categories();
+							break;
+						case (isset($_POST['edit_category']) && $subcat == 0 && check_if_unique('cat_seftitle_edit', $seftitle, $id, '')):
+							echo notification(1,l('err_SEFExists').l('errNote'));
+							form_categories();
+							break;
+						case (isset($_POST['edit_category']) && $subcat != 0 && check_if_unique('subcat_name_edit', $name, $id, $subcat)):
+							echo notification(1,l('err_TitleExists').l('errNote'));
+							form_categories();
+							break;
+						case (isset($_POST['edit_category']) && $subcat != 0 && check_if_unique('subcat_seftitle_edit', $seftitle, $id, $subcat)):
+							echo notification(1,l('err_SEFExists').l('errNote'));
+							form_categories();
+							break;
+						case (cleancheckSEF($seftitle) == 'notok'):
+							echo notification(1,l('err_SEFIllegal').l('errNote'));
+							form_categories();
+							break;
+						case ($subcat==$id && $id != 0):
+							echo ' '.$id;
+							echo notification(1,l('errNote'));
+							form_categories();
+							break;
+						default:
+							switch(true) {
+								case(isset($_POST['add_category'])):
+									$catorder = stats('categories', '', 'subcat = '.$subcat, false);
+									$catorder = $catorder + 1;
+									$query = "INSERT INTO "._PRE.'categories'."
+										(name, seftitle, description, published, catorder, subcat) VALUES
+										(:name, :sef, :desc, :published, :catorder, :subcat)";
+									if ($sql = db() -> prepare($query)) {
+										$r = dbfetch($sql, true, [
+											':name' => $name,
+											':sef'	=> $seftitle,
+											':desc' => $description,
+											':published' => $publish_category,
+											':catorder'  => $catorder,
+											':subcat'	 => $subcat
+										]);
+										unset($sql);
+									}
+									break;
+								# EDIT CATEGORY
+								case(isset($_POST['edit_category'])):
+									$catorder = stats('categories', '', 'subcat = '.$subcat, false);
+									$catorder = isset($_POST['catorder']) ? $_POST['catorder'] : $catorder + 1;
+									$query = "UPDATE "._PRE."categories
+										SET	name = :name, seftitle = :sef, description = :desc, published = :pub, subcat = :subcat, catorder = :cat_order
+										WHERE id = :id";
+									if ($res = db() -> prepare($query)) {
+										$data = dbfetch($res, true, [
+											':name'	=> $name,
+											':sef'	=> $seftitle,
+											':desc'	=> $description,
+											':pub'	=> $publish_category,
+											':subcat' => $subcat,
+											':cat_order'=> $catorder,
+											':id'	=> $id
+										]);
+									}
+									break;
+								# DELETE CATEGORY
+								case (isset($_POST['delete_category'])):
+									$any_subcats = stats('categories', '', 'subcat = '.$id);
+									$any_articles = stats('articles', '', 'category = '.$id);
+									if ($any_subcats > 0 || $any_articles > 0) {
+										echo notification(1,l('warn_catnotempty'),'');
+										echo '<p><a href="'._SITE.'administration/" title="'.l('administration').'">
+											'.l('administration').'</a>  OR  ';
+										echo '<a href="'._SITE.'?action=process&amp;task=delete_category_all&amp;id='.$id.'" ';
+										echo 'onclick="javascript: return pop(\''.l('js_delete1').'\')" title="'.l('administration').'">';
+										echo ''.l('empty_cat').'</a></p>';
+										$no_success = true;
+									}
+									else {delete_cat($id);}
+									break;
+							}
+						$success = isset($no_success) ? '' : notification(0,'','snews_categories');
+						echo $success;
+					}
+					break;
+				case 'reorder':
+					if (isset($_POST['reorder'])) {
+						switch ($_POST['order']){
+							case 'snews_articles':
+							case 'extra_contents':
+							case 'snews_pages':
+								$table = 'articles';
+								$order_type = 'artorder';
+								$remove = 'page_';
+								break;
+							case 'snews_categories':
+								$table = 'categories';
+								$order_type = 'catorder';
+								$remove = 'cat_';
 								break;
 						}
-					echo notification(0, '', $link);
-					unset($_SESSION[_SITE.'temp']);
-				}
-				break;
-			case 'editcomment':
-				$articleID = retrieve('articleid', 'comments', 'id', $commentid);
-				$articleSEF = retrieve('seftitle', 'articles', 'id', $articleID);
-				$articleCAT = retrieve('category','articles','seftitle',$articleSEF);
-				$postCat = cat_rel($articleCAT, 'seftitle');
-				$link = $postCat.'/'.$articleSEF;
-				if (isset($_POST['submit_text'])) {
-					$q2 = "UPDATE "._PRE.'comments'." 
-						SET name = :name, url = :url, comment = :comment, approved = :approved WHERE id = :id";
-					if ($r2 = db() -> prepare($q2)) {
-						$d2 = dbfetch($r2, true,[
-							':name'		=>	$name,
-							':url'		=>	$url,
-							':comment'	=>	$comment, 
-							':approved' =>	$approved,
-							':id'		=>	$commentid
-						]);
-					}
-				} else if (isset($_POST['delete_text'])) {
-					delete_item('comments', 'id', $commentid);
-				}
-				echo notification(0,'',$link);
-				break;
-				# DELETE ARTICLES FROM SUB-CATEGORY
-				$sub_query = "SELECT id FROM "._PRE.'categories'." WHERE subcat = :sub";
-				if ($r4 = db() -> prepare($sub_query)) {
-					while ($rsub = dbfetch($r4, true, [':sub' => $id])) {
-						$art_query1 = "SELECT id FROM "._PRE.'articles'." WHERE category = :cat2";
-						if ($r5 = db() -> prepare($art_query1)) {	
-							while ($rart1 = dbfetch($r5, true, [':cat2' => $rsub['id']])) {
-								delete_item('comments', 'articleid', $rart1['id']);
-								delete_item('articles', 'category',  $rart1['id']);
+						foreach ($_POST as $key => $value){
+							$type_id = str_replace($remove,'',$key);
+							$key = cleanXSS(trim($value));
+							if ($key != 'reorder' && $key != 'order' && $key != $table && $key != l('order_content') && $key != $_POST['order']) {
+								$query = "UPDATE "._PRE.$table." SET $order_type = :type WHERE id = :id";
+								if ($result = db() -> prepare($query)) {
+									$data = dbfetch($result, true, [
+										':type'	=> $value,
+										':id'	=> $type_id
+									]);
+								}
 							}
 						}
+						echo notification(0,l('please_wait'));
+						echo '<meta http-equiv="refresh" content="1; url='._SITE.$_POST['order'].'/">';
 					}
-				}
-				delete_item('categories', 'subcat',  $id); delete_cat($id);
-				echo notification(0,'', 'snews_categories');
-				break;
-			} 
-		} else if ($_GET && $action == 'process') {
-			$task = clean(cleanXSS($_GET['task']));
+					break;
+				case 'admin_article':
+					$_SESSION[_SITE.'temp']['title'] = $_POST['title'];
+					$_SESSION[_SITE.'temp']['seftitle'] = $_POST['seftitle'];
+					$_SESSION[_SITE.'temp']['text'] = $_POST['text'];
+					switch ($position) {
+						case 1: $from = $id != 0 ? '' : 'article_new';	$link = 'snews_articles'; break;
+						case 2: $from = $id != 0 ? '' : 'extra_new';	$link = 'extra_contents'; break;
+						case 3: $from = $id != 0 ? '' : 'page_new';		$link = 'snews_pages'; break;
+					}
+					switch (true) {
+						case (empty($title)):
+							echo notification(1,l('err_TitleEmpty').l('errNote'), $link);
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						case (empty($seftitle)):
+							echo notification(1,l('err_SEFEmpty').l('errNote'));
+							$_SESSION[_SITE.'temp']['seftitle'] = $_SESSION[_SITE.'temp']['title'];
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						case (cleancheckSEF($seftitle) == 'notok'):
+							echo notification(1,l('err_SEFIllegal').l('errNote'));
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
+								&& check_if_unique('article_title', $title, $category, '')):
+							echo notification(1,l('err_TitleExists').l('errNote'));
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						case ($position == 1 && isset($_POST['article_category']) && $_POST['article_category'] != $category && isset($_POST['edit_article'])
+								&& check_if_unique('article_seftitle', $seftitle, $category, '')):
+							echo notification(1,l('err_SEFExists').l('errNote'));
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						case (!isset($_POST['delete_article']) && !isset($_POST['edit_article'])
+								&& check_if_unique('article_title', $title, $category, '')):
+							echo notification(1,l('err_TitleExists').l('errNote'));
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						case (!isset($_POST['delete_article']) && !isset($_POST['edit_article'])
+								&& check_if_unique('article_seftitle', $seftitle, $category, '')):
+							echo notification(1,l('err_SEFExists').l('errNote'));
+							form_articles($from);
+							unset($_SESSION[_SITE.'temp']);
+							break;
+						default:
+							$artorder = isset($_POST['artorder']) && intval($_POST['artorder']) > 0 ?
+								intval($_POST['artorder']) :
+								stats('articles', '', ' category = '.$category.' AND position = '.$position)+1;
+							switch (true) {
+								case (isset($_POST['add_article'])):
+									$query = "INSERT INTO "._PRE."articles (
+										title, seftitle, text, date, category,
+										position, extraid, page_extra, displaytitle,
+										displayinfo, commentable, published, description_meta,
+										keywords_meta, show_on_home, show_in_subcats, artorder)
+									VALUES (:title, :sef, :text, :date, :cat,
+										:pos, :extraid, :page_extra, :disp_title,
+										:disp_info, :comment, :pub, :dmeta,
+										:keywords, :shome, :ssub, :order)";
+									if ($result = db() -> prepare($query)) {
+										$data = dbfetch($result, true, [
+											':title' 	=> $title,
+											':sef'		=> $seftitle,
+											':text'		=> $text,
+											':date'		=> $date,
+											':cat'		=> $category,
+											':pos'		=> $position,
+											':extraid'	=> $def_extra,
+											':page_extra' => $page,
+											':disp_title' => $display_title,
+											':disp_info'  => $display_info,
+											':comment'	=> $commentable,
+											':pub'		=> $publish_article,
+											':dmeta'	=> $description_meta,
+											':keywords'	=> $keywords_meta,
+											':shome'	=> $show_on_home,
+											':ssub'		=> $show_in_subcats,
+											':order'	=> $artorder
+										]);
+									}
+									break;
+								case (isset($_POST['edit_article'])):
+									$category = $position == 3 ? 0 : $category;
+									$old_pos = retrieve('position', 'articles', 'id', $id);
+									// Only do this if page is changed to art/extra
+									if ($position != $old_pos && $old_pos == 3) {
+										$chk_extra_query = "SELECT id FROM "._PRE."articles
+											WHERE position = 2 AND category = -3 AND page_extra = $id";
+										if ($rextra = db() -> query($chk_extra_query)) {
+											while ($xtra = dbfetch($rextra)) {
+												$xtra_id = $xtra['id'];
+												$sql = "UPDATE "._PRE."articles SET category = :cat, page_extra = :pg_extra
+													WHERE id = :id";
+												if ($r_extra = db() -> prepare($sql)) {
+													$ok = dbfetch($r_extra, true, [
+														':cat'	=>	'-1',
+														':pg_extra'	=> '',
+														':id'	=> $xtra_id
+													]);
+												}
+											}
+										}
+									}
+									# CHANGE TO -> ARTICLE / PAGE
+									if ($position == 1 || $position == 3) {
+										$def_extra = '';
+										$page = '';
+									}
+									# CHANGE TO -> EXTRA
+									if ($position == 2) {
+										$def_extra = empty($def_extra) ? 1 : $def_extra;
+										$page = empty($page) ? 0 : $page;
+									}
+									if ($fpost_enabled) {
+										$future = "date = '$date',";
+										$publish_article = strtotime($date) < time() ? 1 : $publish_article;
+									} else {
+										$future = '';
+									}
+									$art_qwr = "UPDATE "._PRE."articles SET
+										title = :title, seftitle = :sef, text = :text, ".$future." category = :cat, position = :pos,
+										extraid = :extraid, page_extra = :page_extra, displaytitle = :disp_title, displayinfo = :disp_info,
+										commentable = :comment, published = :pub, description_meta = :dmeta, keywords_meta = :keyw, show_on_home = :shome,
+										show_in_subcats = :ssubcat, artorder = :order
+										WHERE id = :id";
+									if ($res_art = db() -> prepare($art_qwr)) {
+										$dart = dbfetch($res_art, true, [
+											':title'	=> $title,
+											':sef'		=> $seftitle,
+											':text'		=> $text,
+											':cat'		=> $category,
+											':pos'		=> $position,
+											':extraid'	=> $def_extra,
+											':page_extra'	=> $page,
+											':disp_title'	=> $display_title,
+											':disp_info'	=> $display_info,
+											':comment'		=> $commentable,
+											':pub'			=> $publish_article,
+											':dmeta'		=> $description_meta,
+											':keyw'			=> $keywords_meta,
+											':shome'		=> $show_on_home,
+											':ssubcat'		=> $show_in_subcats,
+											':order' 		=> $artorder,
+											':id'			=> $id
+										]);
+									}
+									break;
+								case(isset($_POST['delete_article'])):
+									if ($position == 3) {
+										$chk_extra_query = "SELECT id FROM "._PRE."articles
+											WHERE position = 2 AND category = -3 AND  page_extra = $id";
+										if ($res1 = db() -> query($chk_extra_query)) {
+											while ($xtra = dbfetch($res1)) {
+												$xtra_id = $xtra['id'];
+												$extra2 = "UPDATE "._PRE."articles
+													SET category = :cat, page_extra = :extra_id WHERE id = :id";
+												if ($res_xtra = db() -> prepare($extra2)) {
+													dbfetch($res_xtra, true, [
+														':cat'		=>	'0',
+														':extra_id'	=>	'',
+														':id'		=>	$xtra_id
+													]);
+												}
+											}
+										}
+									}
+									delete_item('articles', 'id', $id);
+									delete_item('comments', 'articleid', $id);
+									if ($id == s('display_page')) {
+										$qwr1 = "UPDATE "._PRE.'settings'." SET VALUE = :val WHERE name = :name";
+										if ($r1 = db() -> prepare($qwr1)) {
+											$ok = dbfetch($r1, true, [
+												':val'	=>	'0',
+												':name'	=>	'display_page'
+											]);
+										}
+									}
+									break;
+							}
+						echo notification(0, '', $link);
+						unset($_SESSION[_SITE.'temp']);
+					}
+					break;
+				case 'editcomment':
+					$articleID = retrieve('articleid', 'comments', 'id', $commentid);
+					$articleSEF = retrieve('seftitle', 'articles', 'id', $articleID);
+					$articleCAT = retrieve('category','articles','seftitle',$articleSEF);
+					$postCat = cat_rel($articleCAT, 'seftitle');
+					$link = $postCat.'/'.$articleSEF;
+					if (isset($_POST['submit_text'])) {
+						$q2 = "UPDATE "._PRE.'comments'."
+							SET name = :name, url = :url, comment = :comment, approved = :approved WHERE id = :id";
+						if ($r2 = db() -> prepare($q2)) {
+							$d2 = dbfetch($r2, true,[
+								':name'		=>	$name,
+								':url'		=>	$url,
+								':comment'	=>	$comment,
+								':approved' =>	$approved,
+								':id'		=>	$commentid
+							]);
+						}
+					}
+					else if (isset($_POST['delete_text'])) {
+						delete_item('comments', 'id', $commentid);
+					}
+					echo notification(0, '', $link);
+					break;
+			}
+		}
+		else if ($_GET && $action == 'process') {
+			$task = cleanXSS($_GET['task']);
 			switch ($task) {
 				# DELETE CATEGORY AND ALL ARTICLES
 				case 'delete_category_all':
-					$id = isset($_GET['id']) ? intval(clean(cleanXSS($_GET['id']))) : 0;
+					$id = isset($_GET['id']) ? intval(cleanXSS($_GET['id'])) : 0;
 					if ($id == 0) {return;}
-					$query = "SELECT c.id AS subcat, a.id 
+					$query = "SELECT c.id AS subcat, a.id
 						FROM "._PRE."categories AS c
 						LEFT JOIN "._PRE."articles AS a
 						    on ( a.category = c.id OR a.category = $id ) AND a.position = 1
@@ -1854,13 +1875,16 @@ function processing() {
 							delete_item('comments', 'articleid', $r['id']);
 							delete_item('articles', 'id', $r['id']);
 							if (isset($r['subcat'])) {$list[] = $r['subcat'];}
-						} delete_item('categories', 'subcat', $id);
+						}
+						delete_item('categories', 'subcat', $id);
 						delete_cat($id);
-					} echo notification(0, '', 'snews_categories'); break;
+					}
+					echo notification(0, '', 'snews_categories');
+					break;
 				# DELETE COMMENT
 				case 'deletecomment':
-					$commentid = intval(clean(cleanXSS($_GET['commentid'])));
-					$commentid = isset($_GET['commentid']) ? intval(clean(cleanXSS($_GET['commentid']))) : 0;
+					$commentid = intval(cleanXSS($_GET['commentid']));
+					$commentid = isset($_GET['commentid']) ? intval(cleanXSS($_GET['commentid'])) : 0;
 					if ($commentid == 0) {return;}
 					$articleid = retrieve('articleid', 'comments', 'id', $commentid);
 					$articleSEF = retrieve('seftitle', 'articles', 'id', $articleid);

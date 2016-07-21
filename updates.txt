@@ -80,7 +80,8 @@ It is different if you search for "snews color", in this case both words must ma
 *** 10 July *** by Skiane
 - Introduced "routes" to map SEFs to php functions
 
-*** 14 July *** by Skiane and Rui
+*** 21 July *** by Skiane and Rui
+- fix:14 July (admin)
 - No MathCaptcha For Admin
 - Addroute - Undefined constant - fixed converted to string
 - [clean_mysql] moved to admin.php
