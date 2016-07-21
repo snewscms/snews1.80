@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		July 21, 2016 - 02:00 GMT+0
+  Last Update		July 21, 2016 - 17:00 GMT+0
   Developpers: 		Rui Mendes, Stephane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
@@ -13,7 +13,7 @@
 session_start();
 
 //error_reporting(E_ALL ^ E_NOTICE);
-error_reporting(E_ALL ^ E_NOTICE);
+error_reporting(0);
 
 // RETURN INI FILE
 function ini_value($section, $key, $file = 'config.php') {
@@ -272,7 +272,9 @@ function l($var) {
 		$lang['js_inc'] = 'login,contact,article_new'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
 		# DIVIDER CHARACTER
 		$lang['divider'] = ini_value('OPTIONS', 'divider');
-		# Ignore Pages like "home,archive,contact,sitemap"
+		# PAGE LIST
+		$lang['page_list'] = ini_value('OPTIONS', 'page_list');
+		# Ignore Pages you created
 		$lang['ignored_pages'] = ini_value('OPTIONS', 'ignore_pages');
 		# Ignore Categories
 		$lang['ignore_cats'] = ini_value('OPTIONS', 'ignore_cats');
@@ -629,10 +631,10 @@ function categories() {
 		while ($r = dbfetch($result)) {
 			$category_title = $r['seftitle'];
 			$r['name'] = (s('language')!='EN' && $r['name'] == 'Uncategorized' && $r['parent'] == 1) ? l('uncategorised') : $r['name'];
-			$class = $category_title == $categorySEF ? ' class="current"' : '';
+			$class = $category_title == $categorySEF ? ' class="active"' : '';
 			$num = isset($r['total']) ? ' ('.$r['total'].')': '';
 			if (!in_array($category_title, $ignore)) {
-				echo '<li><a'.$class.' href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
+				echo '<li'.$class.'><a href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
 				$parent = $r['parent'];
 				if ($category_title == $categorySEF) {subcategories($parent);}
 				echo '</li>';
@@ -664,14 +666,14 @@ function subcategories($parent) {
 		GROUP BY c.id
 		ORDER BY c.catorder,c.id";
 	if ($result = db() -> query($query)) {
-		echo '<ul>';
+		echo '<ul class="subcat">';
 			while ($s = dbfetch($result)) {
 				$subSEF = $s['subsef'];
-				$class = $subSEF == $subcatSEF ? ' class="current"' : '';
+				$class = $subSEF == $subcatSEF ? ' class="active"' : '';
 				$num = isset($s['total']) ? ' ('.$s['total'].')' : '';
 				if (!in_array($subSEF, $ignore)) {
-					echo '<li class="subcat">';
-						echo '<a'.$class.' href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
+					echo '<li'.$class.'>';
+						echo '<a href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
 					echo '</li>';
 				}
 			}
@@ -680,40 +682,54 @@ function subcategories($parent) {
 }
 
 // DISPLAY PAGES
-function pages() {
+function pages($list = '', $ul = false) {
 	global $categorySEF;
+	$list = empty($list) ? l('page_list') : $list;
+	$pages = explode(',', $list);
 	$ignore = explode(',', l('ignored_pages'));
 	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
-	# HOME
-	if (!in_array('home', $ignore)) {
-		$class = empty($categorySEF) ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'">'.l('home').'</a></li>';
-	}
-	# ARCHIVE
-	if (!in_array('archive', $ignore)) {
-		$class = ($categorySEF == 'archive') ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'archive/">'.l('archive').'</a></li>';
-	}
-	# PAGES YOU CREATED
-	$query = "SELECT id, seftitle, title FROM "._PRE."articles WHERE position = 3 $qwr ORDER BY artorder ASC, id";
-	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {
-			$title = $r['title'];
-			$class = ($categorySEF == $r['seftitle'])? ' class="current"' : '';
-			if ($r['id'] != s('display_page') && !in_array($r['seftitle'], $ignore)) {
-				echo '<li><a'.$class.' href="'._SITE.$r['seftitle'].'/">'.$title.'</a></li>';
-			}
+	for ($i = 0; $i < count($pages); $i++) {
+		switch ($pages[$i]) {
+			# HOME
+			case 'home' :
+				$class = empty($categorySEF) ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'">'.l('home').'</a></li>';
+			break;
+			# ARCHIVE
+			case 'archive' :
+				$class = ($categorySEF == 'archive') ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'archive/">'.l('archive').'</a></li>';
+			break;
+			# CONTACT
+			case 'contact':
+				$class = ($categorySEF == 'contact') ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'contact/">'.l('contact').'</a></li>';
+			break;
+			# SITEMAP
+			case 'sitemap':
+				$class = ($categorySEF == 'sitemap') ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
+			break;
+			# PAGES YOU CREATED
+			case 'pages':
+				$query = "SELECT id, seftitle, title FROM "._PRE."articles WHERE position = 3 $qwr ORDER BY artorder ASC, id";
+				if ($result = db() -> query($query)) {
+					if ($nav) {
+						echo '<ul>';
+					}
+					while ($r = dbfetch($result)) {
+						$title = $r['title'];
+						$class = ($categorySEF == $r['seftitle'])? ' class="active"' : '';
+						if ($r['id'] != s('display_page') && !in_array($r['seftitle'], $ignore)) {
+							echo '<li'.$class.'><a href="'._SITE.$r['seftitle'].'/">'.$title.'</a></li>';
+						}
+					}
+					if ($nav) {
+						echo '</ul>';
+					}
+				}
+			break;
 		}
-	}
-	# CONTACT
-	if (!in_array('contact', $ignore)) {
-		$class = ($categorySEF == 'contact') ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'contact/">'.l('contact').'</a></li>';
-	}
-	# SITEMAP
-	if (!in_array('sitemap', $ignore)) {
-		$class = ($categorySEF == 'sitemap') ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
 	}
 }
 

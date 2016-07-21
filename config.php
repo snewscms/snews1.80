@@ -34,12 +34,14 @@ string_hash = "use_silly_strings"
 
 
 [OPTIONS]
-; Ignore pages (home, sitemap, contact,...)
+; page_list order (home, arcive, contact, sitemap)
+page_list = "home,archive,contact,sitemap,pages"
+
+; Ignore pages that you created
 ignore_pages = ""
 
 ; Ignore category + sub-Categories
 ignore_cats = ""
-
 
 ; Divider character
 divider = '&middot;'
