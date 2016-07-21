@@ -2,11 +2,11 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		July 21, 2016 - 17:00 GMT+0
+  Last Update		July 22, 2016 - 00:15 GMT+0
   Developpers: 		Rui Mendes, Stephane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
-  Licence:			sNews is licensed under a Creative Commons License.
+  Licence: 			sNews is licensed under a Creative Commons License.
 -------------------------------------------------------------------------------- */
 
 // Start sNews session
@@ -2153,24 +2153,31 @@ function center() {
 			case '404'		: show_404(); return; break;
 			default :
 				if (_ADMIN) {
+					$admin_menu = explode(',', l('admin_SEF'));
 					$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
-					switch ($action) {
-						case 'snews_categories'	:	admin_categories(); return; break;
-						case 'admin_category'	:	form_categories(); return; break;
-						case 'admin_subcategory':	form_categories('sub'); return; break;
-						case 'groupings'		:	admin_groupings(); return; break;
-						case 'admin_groupings'	:	form_groupings(); return; break;
-						case 'snews_articles'	:	admin_articles('article_view'); return; break;
-						case 'extra_contents'	:	admin_articles('extra_view'); return; break;
-						case 'snews_pages'		:	admin_articles('page_view'); return; break;
-						case 'admin_article'	:	form_articles(''); return; break;
-						case 'article_new'		:	form_articles('article_new'); return; break;
-						case 'extra_new'		:	form_articles('extra_new'); return; break;
-						case 'page_new'			:	form_articles('page_new'); return; break;
-						case 'editcomment'		:	edit_comment(); return; break;
-						case 'process'			:	processing(); return; break;
-						case 'hide'				:	visibility('hide'); return; break;
-						case 'show'				:	visibility('show'); return; break;
+					if ((!empty($action) && in_array($action, $admin_menu)) || isset($routes[$action])) {
+						switch ($action) {
+							case 'snews_categories'	:	admin_categories(); break;
+							case 'admin_category'	:	form_categories(); break;
+							case 'admin_subcategory':	form_categories('sub'); break;
+							case 'groupings'		:	admin_groupings(); break;
+							case 'admin_groupings'	:	form_groupings(); break;
+							case 'snews_articles'	:	admin_articles('article_view'); break;
+							case 'extra_contents'	:	admin_articles('extra_view'); break;
+							case 'snews_pages'		:	admin_articles('page_view'); break;
+							case 'admin_article'	:	form_articles(''); break;
+							case 'article_new'		:	form_articles('article_new'); break;
+							case 'extra_new'		:	form_articles('extra_new'); break;
+							case 'page_new'			:	form_articles('page_new'); break;
+							case 'editcomment'		:	edit_comment(); break;
+							case 'process'			:	processing(); break;
+							case 'hide'				:	visibility('hide'); break;
+							case 'show'				:	visibility('show'); break;
+						}
+						return;
+					} else {
+						set_error();
+						return;
 					}
 				}
 			}

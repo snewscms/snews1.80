@@ -58,13 +58,13 @@
 	</p>
 	<div id="wrap">
 		<h1>sNews 1.8.0 Readme</h1>
-		<h3>Updated: May 04, 2016</h3>
+		<h3>Updated: July 21, 2016</h3>
 		<p>Welcome to <a href="http://snewscms.com/">sNews 1.8.0</a> a single engine file, template independant, <a href="http://www.php.net/">PHP</a> and <a href="http://www.mysql.com/">MySQL</a> powered, standards compliant <a href="http://en.wikipedia.org/wiki/Content_management_system">Content Management System</a> (CMS). sNews consists of one engine file (snews.php), one config file (config.php), one admin file (admin.php), one language file (EN.php), one XHTML file (index.php) for content presentation, one stylesheet (style.css) for content styling and one javascript file for functionality. This makes sNews the lightest and one of the most user-friendly CMSs available today.</p>
 		<p><strong>Before installing, please check that your server meets the minimum system requirements:</strong></p>
 		<div class="important">
 			<ul>
 				<li><a href="http://www.apache.org/">Apache Server</a> with <strong>mod_rewrite</strong> module enabled</li>
-				<li><a href="#">Database</a> MySQL, sQlite, ...</li>
+				<li>One Database with PDO connection: <a href="https://www.mysql.com/">MySQL</a>, <a href="https://mariadb.org/">MariaDB</a>, <a href="https://www.sqlite.org">sQlite</a>, ...</li>
 				<li><a href="http://www.php.net/">PHP</a>: Hypertext Preprocessor, minimum version 5.1</li>
 			</ul>
 		</div>
@@ -120,25 +120,39 @@
 			<hr />
 			<h4>[OPTIONS]</h4>
 			
-			<p><span class="bluetext">2.9</span> - <em class="graytext">Ignore pages (home, sitemap, contact,...):</em><br />
+			<p><span class="bluetext">2.9</span> - <em class="graytext">page_list order (home, archive, contact, sitemap):</em><br />
+			<strong>page_list</strong> 	= "<em class="redtext">home,archive,contact,sitemap,pages</em>"</p>
+			
+			<p><span class="bluetext">2.10</span> - <em class="graytext">Ignore pages that you created:</em><br />
 			<strong>ignore_pages</strong> 	= "<em class="redtext"></em>"</p>
 			
-			<p><span class="bluetext">2.10</span> - <em class="graytext">Divider character:</em><br />
+			<p><span class="bluetext">2.11</span> - <em class="graytext">IIgnore category + sub-Categories:</em><br />
+			<strong>ignore_cats</strong> 	= "<em class="redtext"></em>"</p>
+			
+			<p><span class="bluetext">2.12</span> - <em class="graytext">Divider character:</em><br />
 			<strong>divider</strong> 	= "<em class="redtext">&amp;middot;</em>"</p>
 			
-			<p><span class="bluetext">2.11</span> - <em class="graytext">Used in article pagination links:</em><br />
+			<p><span class="bluetext">2.13</span> - <em class="graytext">Used in article pagination links:</em><br />
 			<strong>paginator</strong> 	= "<em class="redtext">'p_'</em>"</p>
 			
-			<p><span class="bluetext">2.12</span> - <em class="graytext">Used in comments pagination links:</em><br />
+			<p><span class="bluetext">2.14</span> - <em class="graytext">Used in comments pagination links:</em><br />
 			<strong>comment_pages</strong> 	= "<em class="redtext">c_</em>"</p>
 
+			<hr />
+			<h4>[INFO_TAGS]</h4>
 			
+			<p><span class="bluetext">2.15</span> - <em class="graytext">Infoline:</em><br />
+			<strong>infoline</strong> 	= "<em class="redtext">&lt;p class="date"&gt;,readmore,comments,date,edit,&lt;/p&gt;</em>"</p>
+			
+			<p><span class="bluetext">2.16</span> - <em class="graytext">Comments:</em><br />
+			<strong>comments</strong> 	= "<em class="redtext">&lt;p class="meta"&gt;,name, $on ,date,edit,&lt;/p&gt;,&lt;p class="comment"&gt;,comment,&lt;/p&gt;</em>"</p>
+					
 		</div>
 
 		<h3>3. Upgrade old sNews</h3>
 		<div class="lime">
 			<p>Only for sNews 1.6 you need to use phpMyAdmin or similar database editor to update your database (SQL/<strong>snews16-18.sql</strong>).<br /> 
-			Last step is edit settings for your database - step (2.4).</p>
+			Last step is edit settings for your database - step (2.3 abd 2.4).</p>
 		</div>
 
 		<h3>4. Upload files</h3>

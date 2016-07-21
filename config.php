@@ -3,10 +3,10 @@
 
 [DATABASE]
 ; database engine (mysql,sqlite)
-engine = "mysql"
+engine = "sqlite"
 
-; database.dsn	= "sqlite:snews.db3"
-dsn = "mysql:host=localhost;dbname=snews18"
+; database.dsn	= "mysql:host=localhost;dbname=snews18"
+dsn = "sqlite:snews.db3"
 
 ; Database User
 user = "root"
@@ -34,7 +34,7 @@ string_hash = "use_silly_strings"
 
 
 [OPTIONS]
-; page_list order (home, arcive, contact, sitemap)
+; page_list order (home, archive, contact, sitemap, pages)
 page_list = "home,archive,contact,sitemap,pages"
 
 ; Ignore pages that you created
