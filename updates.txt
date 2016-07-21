@@ -94,3 +94,6 @@ It is different if you search for "snews color", in this case both words must ma
 - [breadcrumbs] fixed for addons
 - ADD option "page_list" in config for user can choose order
 - [pages] changed to support order page list
+
+*** 22 July *** By Rui
+- Refine switch from [center]
