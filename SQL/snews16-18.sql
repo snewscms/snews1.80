@@ -1,7 +1,15 @@
 --
 --  Use this file to update an existing sNews 1.6 database only.
---  Last Updated: October 22, 2010
+--  Last Updated: July 14, 2016
 -- -----------------------------------------------------------------------------
+
+-- DON'T FORGET TO CHANGE DATABASE NAME IN THIS CASE I WILL USE snews18
+ALTER DATABASE `snews18` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+SET NAMES 'utf8';
+
+SET storage_engine = INNODB;
+
 
 -- ---- Alter Articles table:
 	ALTER TABLE `articles`

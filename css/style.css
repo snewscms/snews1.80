@@ -34,7 +34,7 @@ li {
 margin-left:1em;
 }
 
-.subcat {
+.subcat li {
 margin-left:1em;
 }
 
@@ -103,6 +103,10 @@ margin:0 15px;
 
 #topmenu li a:hover {
 color:#F74600;
+}
+
+#topmenu li.active a {
+color:#F74A66;
 }
 
 #search {

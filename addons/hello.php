@@ -31,12 +31,6 @@ function public_hello() {
 	}
 }
 
-// CREATE A GENERIC FUNCTION
-function other_function() {
-	echo '<h3>Generic</h3>';
-	echo '<p>This is a generic function to be used in index.php.</p>';
-}
-
 /* EXPLANATION */
 // --> FILE INSIDE ADDON FOLDER
 // --> FILENAME IS hello not hello.php (ignore .php)

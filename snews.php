@@ -2,11 +2,11 @@
 /*------------------------------------------------------------------------------
   sNews Version:	1.8.0 - Official
   CodeName:			REBORN
-  Last Update		July 03, 2016 - 11:15 GMT+0
+  Last Update		July 22, 2016 - 00:15 GMT+0
   Developpers: 		Rui Mendes, Stephane Fritsch(Skiane), Nukpana
   Thanks to:		@RobsWebsites
   Copyright (C):	Solucija.com
-  Licence:			sNews is licensed under a Creative Commons License.
+  Licence: 			sNews is licensed under a Creative Commons License.
 -------------------------------------------------------------------------------- */
 
 // Start sNews session
@@ -123,8 +123,8 @@ function tags($tag) {
 	static $tags;
 	if (!$tags) {
 		$tags = array(
-			'infoline' => '<p class="date">,readmore,comments,date,edit,</p>',
-			'comments' => '<p class="meta">,name, '.l('on').' ,date,edit,</p>,<p class="comment">,comment,</p>'
+			'infoline' => ini_value('INFO_TAGS', 'infoline'),
+			'comments' => str_replace('$on', l('on'), ini_value('INFO_TAGS', 'comments'))
 		);
 	}
 	return $tags[$tag];
@@ -169,6 +169,7 @@ function clean($text) {
 
 // CHECK MATH CAPTCHA RESULT
 function checkMathCaptcha() {
+	if (_ADMIN) {return true;} // Captcha non requested for admin
 	$result = false;
 	$testNumber = isset($_SESSION[_SITE.'mathCaptcha-digit']) ? intval($_SESSION[_SITE.'mathCaptcha-digit']) : 'none';
 	unset($_SESSION[_SITE.'mathCaptcha-digit']);
@@ -180,6 +181,7 @@ function checkMathCaptcha() {
 
 // MATH CAPTCHA
 function mathCaptcha() {
+	if (_ADMIN) {return "";} // Captcha non requested for admin
 	$x = rand(1, 9);
 	$y = rand(1, 9);
 	if (!isset($_SESSION[_SITE.'mathCaptcha-digit'])) {
@@ -202,26 +204,36 @@ function checkUserPass($input) {
 	return $result;
 }
 
-// Add route to a new page
+// ROUTES ARRAY
 $routes = array();
 
-function addRoute($sef,$title,$func) {
+// ADD ROUTE - Add route to a new page
+function addRoute($sef, $title, $func) {
 	global $routes;
 	$routes[$sef] = array('title' => $title, 'func' => $func);
 }
 
+// SANITIZE GET AS URL
+if (isset($_GET['category']) && !empty($_GET['category'])) {
+	$url = function_exists('filter_input') ?
+		filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING) :
+		$_GET['category'];
+	$url = explode('/', clean($url));
+}
+
 // INCLUDE ADDONS
-function readAddons() {
+function readAddons($return_values = true) {
 	static $admin_mods;
+	global $url;
 	if (!$admin_mods) {
 		$admin_mods = [];
 		$fd = opendir('addons/');
 		while (($file = @readdir($fd)) == true) {
 			clearstatcache();
+			$name = str_replace('.php', '', $file);
 			$ext = substr($file, strrpos($file, '.') + 1);
-			if ($ext == 'php') {
+			if ((_ADMIN || substr($name, 0, 5) == 'auto_' || (isset($url[0]) && $url[0] == $name)) && $ext == 'php') {
 				include_once('addons/'.$file);
-				$name = str_replace('.php', '', $file);
 				if (function_exists('admin_'.$name)) {
 					addRoute("admin_$name", "$name admin page", 'admin_'.$name);
 					$admin_mods[] = 'admin_'.$name;
@@ -235,7 +247,7 @@ function readAddons() {
 	}
 	return implode(',', $admin_mods);
 }
-readAddons();
+$temp = readAddons();
 
 // LANGUAGE VARIABLES
 if (file_exists('lang/'.s('language').'.php')) {
@@ -253,14 +265,16 @@ function l($var) {
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
 		$lang['cat_listSEF'] = 'archive,contact,sitemap,login,searching,verify';
 		if (_ADMIN) {
-			$lang['cat_listSEF'] .= ',administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories,admin_mods';
-			$lang['cat_listSEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
+			$lang['admin_SEF'] = 'administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories,admin_mods';
+			$lang['admin_SEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
 		}
 		# SET FOCUS
 		$lang['js_inc'] = 'login,contact,article_new'.(isset($l['focus']) && !empty($l['focus']) ? $l['focus'] : '');
 		# DIVIDER CHARACTER
 		$lang['divider'] = ini_value('OPTIONS', 'divider');
-		# Ignore Pages like "home,archive,contact,sitemap"
+		# PAGE LIST
+		$lang['page_list'] = ini_value('OPTIONS', 'page_list');
+		# Ignore Pages you created
 		$lang['ignored_pages'] = ini_value('OPTIONS', 'ignore_pages');
 		# Ignore Categories
 		$lang['ignore_cats'] = ini_value('OPTIONS', 'ignore_cats');
@@ -270,8 +284,10 @@ function l($var) {
 		# list of files & folders ignored by upload/file list routine
 		$lang['ignored_items'] = '.,..,cgi-bin,.htaccess,Thumbs.db,snews.php,admin.php,index.php,lib.php,style.css,admin.js,config.php';
 		$lang['ignored_items'].= ','.s('language').'.php';
-		while (list($key, $value) = each($l)) {
-			$lang[$key] = $value;
+		if (is_array($l)) {
+			while (list($key, $value) = each($l)) {
+				$lang[$key] = $value;
+			}
 		}
 	}
 	return $lang[$var];
@@ -293,8 +309,16 @@ function update_articles() {
 // CATEGORY CHECK
 function check_category($category) {
 	global $routes;
-	$main_menu = explode(',', l('cat_listSEF'));
+	$list = _ADMIN ? l('cat_listSEF').','.l('admin_SEF') : l('cat_listSEF');
+	$main_menu = explode(',', $list);
 	return (!empty($category) && in_array($category, $main_menu)) || isset($routes[$category]);
+}
+
+// ADMIN CHECK
+function check_admin($command) {
+	$list = _ADMIN ? l('admin_SEF') : '';
+	$main_menu = explode(',', $list);
+	return (!empty($command) && in_array($command, $main_menu));
 }
 
 // GET PARENT/CHILD FROM AN id
@@ -363,11 +387,7 @@ function notification($error = 0, $note = '', $link = '') {
 
 // CHECK URL - NOT HOME
 if ($_GET) {
-	if (isset($_GET['category']) && !empty($_GET['category'])) {
-		$url = function_exists('filter_input') ?
-			filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING) :
-			$_GET['category'];
-		$url = explode('/', clean($url));
+	if (isset($url[0]) && !empty($url[0])) {
 		# CATEGORY
 		$categorySEF = $url[0];
 		if (check_category($categorySEF)) {$_catID = 0;}
@@ -399,7 +419,7 @@ if ($_GET) {
 			$pub_x = " AND x.published = 'YES'";
 		}
 		// [TYPE = 1] : QUERY FOR ->  CATEGORY/SUBCATEGORY/ARTICLE/
-		if ($articleSEF && substr( $articleSEF, 0, 2) != l('paginator') && substr( $articleSEF, 0, 2) != l('comment_pages')) {
+		if ($articleSEF && substr($articleSEF, 0, 2) != l('paginator') && substr($articleSEF, 0, 2) != l('comment_pages')) {
 			$MainQuery = "SELECT
 				a.id AS id, title, position, description_meta, keywords_meta,
 				c.id AS catID, c.name AS name, c.description, x.name AS xname, x.id AS subID
@@ -415,7 +435,7 @@ if ($_GET) {
 				$_TYPE = 1;
 		}
 	 	// TWO QUERIES FOR ->  CATEGORY / SUBCATEGORY  /  | OR |  / CATEGORY / ARTICLE /
-		else if ($subcatSEF  && substr( $subcatSEF, 0, 2) != l('paginator') && substr( $subcatSEF, 0, 2) != l('comment_pages')) {
+		else if ($subcatSEF  && substr($subcatSEF, 0, 2) != l('paginator') && substr($subcatSEF, 0, 2) != l('comment_pages')) {
 			# [TYPE = 2] : TRY ARTICLE - QUERY  FOR -> CATEGORY/ARTICLE/
 			$Try_Article = "SELECT
 					a.id AS id, title, position, description_meta, keywords_meta,
@@ -449,7 +469,7 @@ if ($_GET) {
 			}
 			unset($num);
 		}
-		else {
+		else if (!check_category($categorySEF)) {
 			# [TYPE = 4] - PAGINATOR
 			if (substr($categorySEF, 0, 2) == l('paginator')) {
 				$MainQuery = '';
@@ -463,8 +483,8 @@ if ($_GET) {
 					$R = dbfetch($result);
 					$_TYPE = 5;
 				}
-				# [TYPE = 6] : QUERY  FOR -> CATEGORY/
-				if (!$R) {
+				# [TYPE = 6] : QUERY  FOR -> CATEGORY/ (NOT INTERNAL)
+				if (!$R && !check_category($categorySEF)) {
 					$MainQuery = "SELECT id AS catID, name, description
 						FROM "._PRE."categories AS c
 						WHERE seftitle = '$categorySEF' AND subcat = 0 ".$pub_c;
@@ -473,26 +493,37 @@ if ($_GET) {
 				}
 			}
 		}
+			
 		// MAIN QUERY
 		if (!empty($MainQuery)) {
 			$action = isset($_GET['action']) ? clean($_GET['action']) : '';
 			if ($main = db() -> query($MainQuery)) {
 				$R = dbfetch($main);
-			} else
-			if (!check_category($action)) {
-					$categorySEF = '404';
-					header('HTTP/1.1 404 Not Found');
-					unset($subcatSEF, $articleSEF);
-					set_error();
+			} else {
+				$_TYPE = 11;
 			}
-			else {$_TYPE = 11;}
 			update_articles();
+		}
+		 else {
+			if (check_admin($categorySEF)) {
+				$_TYPE = 10;
+			} else if (check_category($categorySEF)) {
+				$_TYPE = 11;
+			} else if (check_category($categorySEF)) {
+				$categorySEF = '404';
+				header('HTTP/1.1 404 Not Found');
+				unset($subcatSEF, $articleSEF);
+				set_error();
+			}
 		}
 	}
 	// ADMIN
 	if (_ADMIN && isset($_GET['action'])) {
-		$url = explode('/', clean($_GET['action']));
-		$categorySEF = $url[0];
+		$url2 = explode('/', clean($_GET['action']));
+		$categorySEF = $url2[0];
+		if (check_admin($categorySEF)) {
+			$_TYPE = 10;
+		}
 	}
 }
 // HOME
@@ -504,7 +535,7 @@ else {
 		$_TYPE = 8;
 	}
 }
-unset($Try_Article, $MainQuery, $result, $pub_a, $pub_b, $pub_c, $pub_x);
+unset($Try_Article, $MainQuery, $result, $pub_a, $pub_b, $pub_c, $pub_x, $temp);
 
 // GLOBAL DATA
 if (isset($R)) {
@@ -571,7 +602,9 @@ function breadcrumbs() {
 		echo (!empty($_TITLE)? ' '.l('divider').' '.$_TITLE : '');
 	}
 	if (check_category($categorySEF) == true && $categorySEF != 'administration' && $categorySEF) {
-		echo ' '.l('divider').' '.l($categorySEF);
+		$catSEF = l($categorySEF);
+		$addonSEF = l($categorySEF.'_title');
+		echo ' '.l('divider').' '.(!empty($catSEF) ? $catSEF : $addonSEF);
 	}
 }
 
@@ -597,11 +630,11 @@ function categories() {
 	if ($result = db() -> query($query)) {
 		while ($r = dbfetch($result)) {
 			$category_title = $r['seftitle'];
-			$r['name'] = (s('language')!='EN' && $r['name'] == 'Uncategorized' && $r['parent']==1) ? l('uncategorised') : $r['name'];
-			$class = $category_title == $categorySEF ? ' class="current"' : '';
+			$r['name'] = (s('language')!='EN' && $r['name'] == 'Uncategorized' && $r['parent'] == 1) ? l('uncategorised') : $r['name'];
+			$class = $category_title == $categorySEF ? ' class="active"' : '';
 			$num = isset($r['total']) ? ' ('.$r['total'].')': '';
 			if (!in_array($category_title, $ignore)) {
-				echo '<li><a'.$class.' href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
+				echo '<li'.$class.'><a href="'._SITE.$category_title.'/" title="'.$r['name'].' - '.$r['description'].'">'.$r['name'].$num.'</a>';
 				$parent = $r['parent'];
 				if ($category_title == $categorySEF) {subcategories($parent);}
 				echo '</li>';
@@ -633,14 +666,14 @@ function subcategories($parent) {
 		GROUP BY c.id
 		ORDER BY c.catorder,c.id";
 	if ($result = db() -> query($query)) {
-		echo '<ul>';
+		echo '<ul class="subcat">';
 			while ($s = dbfetch($result)) {
 				$subSEF = $s['subsef'];
-				$class = $subSEF == $subcatSEF ? ' class="current"' : '';
+				$class = $subSEF == $subcatSEF ? ' class="active"' : '';
 				$num = isset($s['total']) ? ' ('.$s['total'].')' : '';
 				if (!in_array($subSEF, $ignore)) {
-					echo '<li class="subcat">';
-						echo '<a'.$class.' href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
+					echo '<li'.$class.'>';
+						echo '<a href="'._SITE.$categorySEF.'/'.$subSEF.'/" title="'.$s['description'].'">'.$s['name'].$num.'</a>';
 					echo '</li>';
 				}
 			}
@@ -649,40 +682,54 @@ function subcategories($parent) {
 }
 
 // DISPLAY PAGES
-function pages() {
+function pages($list = '', $ul = false) {
 	global $categorySEF;
+	$list = empty($list) ? l('page_list') : $list;
+	$pages = explode(',', $list);
 	$ignore = explode(',', l('ignored_pages'));
 	$qwr = !_ADMIN ? ' AND visible=\'YES\'' : '';
-	# HOME
-	if (!in_array('home', $ignore)) {
-		$class = empty($categorySEF) ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'">'.l('home').'</a></li>';
-	}
-	# ARCHIVE
-	if (!in_array('archive', $ignore)) {
-		$class = ($categorySEF == 'archive') ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'archive/">'.l('archive').'</a></li>';
-	}
-	# PAGES YOU CREATED
-	$query = "SELECT id, seftitle, title FROM "._PRE."articles WHERE position = 3 $qwr ORDER BY artorder ASC, id";
-	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {
-			$title = $r['title'];
-			$class = ($categorySEF == $r['seftitle'])? ' class="current"' : '';
-			if ($r['id'] != s('display_page') && !in_array($r['seftitle'], $ignore)) {
-				echo '<li><a'.$class.' href="'._SITE.$r['seftitle'].'/">'.$title.'</a></li>';
-			}
+	for ($i = 0; $i < count($pages); $i++) {
+		switch ($pages[$i]) {
+			# HOME
+			case 'home' :
+				$class = empty($categorySEF) ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'">'.l('home').'</a></li>';
+			break;
+			# ARCHIVE
+			case 'archive' :
+				$class = ($categorySEF == 'archive') ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'archive/">'.l('archive').'</a></li>';
+			break;
+			# CONTACT
+			case 'contact':
+				$class = ($categorySEF == 'contact') ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'contact/">'.l('contact').'</a></li>';
+			break;
+			# SITEMAP
+			case 'sitemap':
+				$class = ($categorySEF == 'sitemap') ? ' class="active"' : '';
+				echo '<li'.$class.'><a href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
+			break;
+			# PAGES YOU CREATED
+			case 'pages':
+				$query = "SELECT id, seftitle, title FROM "._PRE."articles WHERE position = 3 $qwr ORDER BY artorder ASC, id";
+				if ($result = db() -> query($query)) {
+					if ($nav) {
+						echo '<ul>';
+					}
+					while ($r = dbfetch($result)) {
+						$title = $r['title'];
+						$class = ($categorySEF == $r['seftitle'])? ' class="active"' : '';
+						if ($r['id'] != s('display_page') && !in_array($r['seftitle'], $ignore)) {
+							echo '<li'.$class.'><a href="'._SITE.$r['seftitle'].'/">'.$title.'</a></li>';
+						}
+					}
+					if ($nav) {
+						echo '</ul>';
+					}
+				}
+			break;
 		}
-	}
-	# CONTACT
-	if (!in_array('contact', $ignore)) {
-		$class = ($categorySEF == 'contact') ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'contact/">'.l('contact').'</a></li>';
-	}
-	# SITEMAP
-	if (!in_array('sitemap', $ignore)) {
-		$class = ($categorySEF == 'sitemap') ? ' class="current"' : '';
-		echo '<li><a'.$class.' href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
 	}
 }
 
@@ -837,38 +884,11 @@ function set_error() {
 	exit;
 }
 
-// LOGOUT
-function logout() {
-	$_SESSION = array();
-	session_destroy();
-	session_start();
-	session_regenerate_id();
-	echo '<meta http-equiv="refresh" content="2; url='._SITE.'">';
-	echo '<h2>'.l('log_out').'</h2>';
-}
-
 // SHOW ERROR 404 INFORMATION
 function show_404() {
 	header('HTTP/1.1 404 Not Found');
 	echo '<h1>HTTP 404</h1>';
 	echo '<p class="warning">'.l('error_404').'</p>';
-}
-
-// PREPARE TEXT TO DATABASE
-function clean_mysql($text) {
-	if ((function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) ||
-		(ini_get('magic_quotes_sybase') && (strtolower(ini_get('magic_quotes_sybase')) != "off"))) {
-			$text = stripslashes(addslashes($text));
-			$text = str_replace('\\\"', '"', $text);
-	}
-	else { // if you use some RTE maybe you need clean some characters before save to database
-		$text = urldecode($text);
-		$text = str_replace('\\\"', '"', $text);
-		/*$find = array('<', '>');
-		$replace = array('&lt;', '&gt;');
-		$text = str_replace($find, $replace, $text);*/
-	}
-	return $text;
 }
 
 // MENU ARTICLES
@@ -928,9 +948,16 @@ function articles() {
 		return;
 	}
 	if ($_TYPE >= 1 && $_TYPE < 10) {
-		if ($_TYPE == 1 || $_TYPE == 2 || $_TYPE == 9) {$num = stats('articles', '', 'id='.$_ID);} else
-		if (($_TYPE == 3 || $_TYPE == 6) && $_catID != 0) {$num = stats('articles', '', 'category='.$_catID.' AND position = 1');} else
-		if ($_TYPE == 5) {$num = stats('articles', '', 'id='.$_ID);} else
+		if ($_TYPE == 1 || $_TYPE == 2 || $_TYPE == 9) {
+			$num = stats('articles', '', 'id='.$_ID);
+		}
+		else
+		if (($_TYPE == 3 || $_TYPE == 6) && $_catID != 0) {
+			$num = stats('articles', '', 'category='.$_catID.' AND position = 1');
+		} else
+		if ($_TYPE == 5) {
+			$num = stats('articles', '', 'id='.$_ID);
+		} else
 		if ($_TYPE == 7  || $_TYPE == 4) {
 			$num = $display != 0 && $_TYPE == 7 ?
 				stats('articles', '', 'id='.$_ID) :
@@ -1251,13 +1278,13 @@ function comment($freeze_status) {
 					}
 					$to = s('website_email');
 					$send_array = array(
-						'to'=>$to,
-						'name'=>$name,
-						'comment'=>$comment,
-						'ip'=>$ip,
-						'url'=>$url,
-						'subject'=>$subject,
-						'status'=>$status);
+						'to' => $to,
+						'name' => $name,
+						'comment' => $comment,
+						'ip' => $ip,
+						'url' => $url,
+						'subject' => $subject,
+						'status' => $status);
 					send_email($send_array);
 				}
 				// End of Mail
@@ -1454,7 +1481,9 @@ function archive($start = 0, $size = 200) {
 		}
 		echo'</p>';
 	}
-	else {echo '<p>'.l('no_articles').'</p>';}
+	else {
+		echo '<p>'.l('no_articles').'</p>';
+	}
 }
 
 // SITEMAP
@@ -1951,21 +1980,6 @@ function posting_time($time='') {
 	return;
 }
 
-// PREPARING ARTICLE FOR XML USED ON FEED
-function strip($text) {
-	$search = array('/\[include\](.*?)\[\/include\]/', '/\[func\](.*?)\[\/func\]/', '/\[break\]/', '/</', '/>/');
-	$replace = array('', '', '', '<', '>');
-	$output = preg_replace($search, $replace, $text);
-	$output = stripslashes(strip_tags($output, '<a><img><h1><h2><h3><h4><h5><ul><li><ol><p><hr><br><b><i><strong><em><blockquote>'));
-	return $output;
-}
-
-// HTML ENTITIES
-function entity($item) {
-	$item = htmlspecialchars($item, ENT_QUOTES, s('charset'));
-	return $item;
-}
-
 // FILE INCLUSION
 function file_include($text, $shorten) {
 	$fulltext = substr($text, 0, $shorten);
@@ -2029,7 +2043,6 @@ function br2nl($text){
 	$text = str_replace('\r\n','',str_replace("<br />","\n",preg_replace('/<br\\\\s*?\\/??>/i', "\\n", $text)));
 	return $text;
 }
-
 // SEND EMAIL
 function send_email($send_array) {
 	if (function_exists('mail')) {
@@ -2060,6 +2073,44 @@ function send_email($send_array) {
 		echo notification(1, $message, '');
 	}
 	return false;
+}
+
+// FORM GENERATOR
+function html_input($type, $name, $id, $value, $label, $css, $script1, $script2, $script3, $checked, $rows, $cols, $method, $action, $legend) {
+	$lbl = !empty($label) ? '<label for="'.$id.'">'.$label.'</label>' : '';
+	$ID = !empty($id) ? ' id="'.$id.'"' : '';
+	$style = !empty($css) ? ' class="'.$css.'"' : '';
+	$js1 = !empty($script1) ? ' '.$script1 : '';
+	$js2 = !empty($script2) ? ' '.$script2 : '';
+	$js3 = !empty($script3) ? ' '.$script3 : '';
+	$attribs = $ID.$style.$js1.$js2.$js3;
+	$val = ' value="'.$value.'"';
+	$input = '<input type="'.$type.'" name="'.$name.'"'.$attribs;
+	switch ($type) {
+		case 'form': $output = (!empty($method) && $method != 'end') ?
+			'<form method="'.$method.'" action="'.$action.'"'.$attribs.' accept-charset="'.s('charset').'">' : '</form>'; break;
+		case 'fieldset': $output = (!empty($legend) && $legend != 'end') ?
+			'<fieldset><legend'.$attribs.'>'.$legend.'</legend>' : '</fieldset>'; break;
+		case 'text':
+		case 'password': $output = '<p>'.$lbl.':<br />'.$input.$val.' /></p>'; break;
+		case 'checkbox':
+		case 'radio': $check = $checked == 'ok' ? ' checked="checked"' : ''; $output = '<p>'.$input.$check.' /> '.$lbl.'</p>'; break;
+		case 'hidden':
+		case 'submit':
+		case 'reset':
+		case 'button': $output = $input.$val.' />'; break;
+		case 'textarea':
+			$output = '<p>'.$lbl.':<br />
+			<textarea name="'.$name.'" rows="'.$rows.'" cols="'.$cols.'"'.$attribs.'>'.$value.
+			'</textarea></p>';
+		break;
+	}
+	return $output;
+}
+
+// INCLUDE ADMIN IF LOGGED
+if (_ADMIN) {
+	include('admin.php');
 }
 
 // CENTER
@@ -2101,38 +2152,42 @@ function center() {
 			case 'searching': searchform2(); return; break;
 			case '404'		: show_404(); return; break;
 			default :
-					if (_ADMIN) {
-						$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
+				if (_ADMIN) {
+					$admin_menu = explode(',', l('admin_SEF'));
+					$action = isset($_GET['action']) ? cleanXSS($_GET['action']) : $action;
+					if ((!empty($action) && in_array($action, $admin_menu)) || isset($routes[$action])) {
 						switch ($action) {
-							case 'snews_categories'	:	admin_categories(); return; break;
-							case 'admin_category'	:	form_categories(); return; break;
-							case 'admin_subcategory':	form_categories('sub'); return; break;
-							case 'groupings'		:	admin_groupings(); return; break;
-							case 'admin_groupings'	:	form_groupings(); return; break;
-							case 'snews_articles'	:	admin_articles('article_view'); return; break;
-							case 'extra_contents'	:	admin_articles('extra_view'); return; break;
-							case 'snews_pages'		:	admin_articles('page_view'); return; break;
-							case 'admin_article'	:	form_articles(''); return; break;
-							case 'article_new'		:	form_articles('article_new'); return; break;
-							case 'extra_new'		:	form_articles('extra_new'); return; break;
-							case 'page_new'			:	form_articles('page_new'); return; break;
-							case 'editcomment'		:	edit_comment(); return; break;
-							case 'process'			:	processing(); return; break;
-							case 'hide'				:	visibility('hide'); return; break;
-							case 'show'				:	visibility('show'); return; break;
+							case 'snews_categories'	:	admin_categories(); break;
+							case 'admin_category'	:	form_categories(); break;
+							case 'admin_subcategory':	form_categories('sub'); break;
+							case 'groupings'		:	admin_groupings(); break;
+							case 'admin_groupings'	:	form_groupings(); break;
+							case 'snews_articles'	:	admin_articles('article_view'); break;
+							case 'extra_contents'	:	admin_articles('extra_view'); break;
+							case 'snews_pages'		:	admin_articles('page_view'); break;
+							case 'admin_article'	:	form_articles(''); break;
+							case 'article_new'		:	form_articles('article_new'); break;
+							case 'extra_new'		:	form_articles('extra_new'); break;
+							case 'page_new'			:	form_articles('page_new'); break;
+							case 'editcomment'		:	edit_comment(); break;
+							case 'process'			:	processing(); break;
+							case 'hide'				:	visibility('hide'); break;
+							case 'show'				:	visibility('show'); break;
 						}
+						return;
+					} else {
+						set_error();
+						return;
 					}
+				}
 			}
 	}
 	articles();
 }
 
-addRoute('login', l('login'), login);
-addRoute('contact', l('contact'), contact);
-addRoute('sitemap', l('sitemap'), sitemap);
-addRoute('archive', l('archive'), archive);
-if (_ADMIN) {
-	include('admin.php');
-}
-
+// ROUTES
+addRoute('login', l('login'), 'login');
+addRoute('contact', l('contact'), 'contact');
+addRoute('sitemap', l('sitemap'), 'sitemap');
+addRoute('archive', l('archive'), 'archive');
 ?>

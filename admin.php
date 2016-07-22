@@ -12,39 +12,6 @@ if (!_ADMIN){
 	set_error();
 }
 
-// FORM GENERATOR
-function html_input($type, $name, $id, $value, $label, $css, $script1, $script2, $script3, $checked, $rows, $cols, $method, $action, $legend) {
-	$lbl = !empty($label) ? '<label for="'.$id.'">'.$label.'</label>' : '';
-	$ID = !empty($id) ? ' id="'.$id.'"' : '';
-	$style = !empty($css) ? ' class="'.$css.'"' : '';
-	$js1 = !empty($script1) ? ' '.$script1 : '';
-	$js2 = !empty($script2) ? ' '.$script2 : '';
-	$js3 = !empty($script3) ? ' '.$script3 : '';
-	$attribs = $ID.$style.$js1.$js2.$js3;
-	$val = ' value="'.$value.'"';
-	$input = '<input type="'.$type.'" name="'.$name.'"'.$attribs;
-	switch ($type) {
-		case 'form': $output = (!empty($method) && $method != 'end') ?
-			'<form method="'.$method.'" action="'.$action.'"'.$attribs.' accept-charset="'.s('charset').'">' : '</form>'; break;
-		case 'fieldset': $output = (!empty($legend) && $legend != 'end') ?
-			'<fieldset><legend'.$attribs.'>'.$legend.'</legend>' : '</fieldset>'; break;
-		case 'text':
-		case 'password': $output = '<p>'.$lbl.':<br />'.$input.$val.' /></p>'; break;
-		case 'checkbox':
-		case 'radio': $check = $checked == 'ok' ? ' checked="checked"' : ''; $output = '<p>'.$input.$check.' /> '.$lbl.'</p>'; break;
-		case 'hidden':
-		case 'submit':
-		case 'reset':
-		case 'button': $output = $input.$val.' />'; break;
-		case 'textarea':
-			$output = '<p>'.$lbl.':<br />
-			<textarea name="'.$name.'" rows="'.$rows.'" cols="'.$cols.'"'.$attribs.'>'.$value.
-			'</textarea></p>';
-		break;
-	}
-	return $output;
-}
-
 // ADMINISTRATION
 function administration() {
 	foreach ($_POST as $key) {unset($_POST[$key]);}
@@ -125,11 +92,17 @@ function showAdmAddons() {
 			for ($i = 0; $i < count($list); $i++) {
 				$field = str_replace('admin_', '', $list[$i]).'_title';
 				if (isset($l[$field])) {
-					echo '<p>'.l($field).': <a href="'._SITE.$list[$i].'">'.l('administration').'</a></p>';
+					echo '<p>'.l($field).': <a href="'._SITE.$list[$i].'/">'.l('administration').'</a></p>';
 				}
 			}
 		}
 	echo '</div>';
+}
+
+// HTML ENTITIES
+function entity($item) {
+	$item = htmlspecialchars($item, ENT_QUOTES, s('charset'));
+	return $item;
 }
 
 // MAKE A CLEAN SEF URL
@@ -147,6 +120,23 @@ function cleanSEF($string) {
 function cleancheckSEF($string) {
 	$ret = !preg_match('/^[a-z0-9-_]+$/i', $string) ? 'notok' : 'ok';
 	return $ret;
+}
+
+// PREPARE TEXT TO DATABASE
+function clean_mysql($text) {
+	if ((function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) ||
+		(ini_get('magic_quotes_sybase') && (strtolower(ini_get('magic_quotes_sybase')) != "off"))) {
+			$text = stripslashes(addslashes($text));
+			$text = str_replace('\\\"', '"', $text);
+	}
+	else { // if you use some RTE maybe you need clean some characters before save to database
+		$text = urldecode($text);
+		$text = str_replace('\\\"', '"', $text);
+		/*$find = array('<', '>');
+		$replace = array('&lt;', '&gt;');
+		$text = str_replace($find, $replace, $text);*/
+	}
+	return $text;
 }
 
 // SETTINGS FORM
@@ -1910,10 +1900,21 @@ function processing() {
 	}
 }
 
-addRoute('administration', l('administration'), administration);
-addRoute('logout', l('logout'), logout);
-addRoute('snews_settings', l('settings'),	settings);
-addRoute('snews_files',	l('files'),	files);
-addRoute('admin_addons', l('admin_addons'), showAdmAddons);
+// LOGOUT
+function logout() {
+	$_SESSION = array();
+	session_destroy();
+	session_start();
+	session_regenerate_id();
+	echo '<meta http-equiv="refresh" content="2; url='._SITE.'">';
+	echo '<h2>'.l('log_out').'</h2>';
+}
+
+// ROUTES
+addRoute('administration', l('administration'), 'administration');
+addRoute('logout', l('logout'), 'logout');
+addRoute('snews_settings', l('settings'), 'settings');
+addRoute('snews_files',	l('files'),	'files');
+addRoute('admin_addons', l('admin_addons'), 'showAdmAddons');
 
 ?>
