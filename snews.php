@@ -222,7 +222,7 @@ if (isset($_GET['category']) && !empty($_GET['category'])) {
 }
 
 // INCLUDE ADDONS
-function readAddons($return_values = true) {
+function readAddons() {
 	static $admin_mods;
 	global $url;
 	if (!$admin_mods) {
@@ -247,7 +247,6 @@ function readAddons($return_values = true) {
 	}
 	return implode(',', $admin_mods);
 }
-$temp = readAddons();
 
 // LANGUAGE VARIABLES
 if (file_exists('lang/'.s('language').'.php')) {
@@ -263,7 +262,7 @@ function l($var) {
 		global $l;
 		$lang = load_lang();
 		# SYSTEM VARIABLES & RESERVED (not to be translated)
-		$lang['cat_listSEF'] = 'archive,contact,sitemap,login,searching,verify';
+		$lang['cat_listSEF'] = 'login,searching,verify';
 		if (_ADMIN) {
 			$lang['admin_SEF'] = 'administration,admin_category,admin_article,article_new,extra_new,page_new,snews_categories,admin_mods';
 			$lang['admin_SEF'] .= ',snews_articles,extra_contents,snews_pages,snews_settings,snews_files,logout,groupings,admin_groupings';
@@ -493,7 +492,7 @@ if ($_GET) {
 				}
 			}
 		}
-			
+
 		// MAIN QUERY
 		if (!empty($MainQuery)) {
 			$action = isset($_GET['action']) ? clean($_GET['action']) : '';
@@ -697,16 +696,19 @@ function pages($list = '', $ul = false) {
 			break;
 			# ARCHIVE
 			case 'archive' :
+				if (!check_category($pages[$i])) break;
 				$class = ($categorySEF == 'archive') ? ' class="active"' : '';
 				echo '<li'.$class.'><a href="'._SITE.'archive/">'.l('archive').'</a></li>';
 			break;
 			# CONTACT
 			case 'contact':
+			if (!check_category($pages[$i])) break;
 				$class = ($categorySEF == 'contact') ? ' class="active"' : '';
 				echo '<li'.$class.'><a href="'._SITE.'contact/">'.l('contact').'</a></li>';
 			break;
 			# SITEMAP
 			case 'sitemap':
+			if (!check_category($pages[$i])) break;
 				$class = ($categorySEF == 'sitemap') ? ' class="active"' : '';
 				echo '<li'.$class.'><a href="'._SITE.'sitemap/">'.l('sitemap').'</a></li>';
 			break;
@@ -1432,145 +1434,6 @@ function comment($freeze_status) {
 	}
 }
 
-// ARCHIVE
-function archive($start = 0, $size = 200) {
-	echo '<h2>'.l('archive').'</h2>';
-	$query = "SELECT id FROM "._PRE."articles
-		WHERE position = 1
-			AND published = 1
-			AND visible = 'YES'
-		ORDER BY date DESC
-		LIMIT $start, $size";
-	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {
-			$Or_id[] = 'a.id ='.$r['id'];
-		}
-		$last = '';
-		$Or_id = implode(' OR ', $Or_id);
-		$qwr = "SELECT
-				title,a.seftitle AS asef,a.date AS date,
-				c.name AS name,c.seftitle AS csef,
-				x.name AS xname,x.seftitle AS xsef
-			FROM "._PRE."articles AS a
-			LEFT OUTER JOIN "._PRE."categories as c
-				ON category = c.id
-			LEFT OUTER JOIN "._PRE."categories as x
-				ON c.subcat =  x.id
-			WHERE ($Or_id)
-				AND a.published = 1
-				AND c.published = 'YES'
-				AND (x.published ='YES' || x.published IS NULL)
-			ORDER BY date DESC
-				LIMIT $start, $size";
-		$month_names = explode(', ', l('month_names'));
-		$dot = l('divider');
-		echo '<p>';
-		if ($res = db() -> query($qwr)) {
-			while ($rr = dbfetch($res)) {
-				$year = substr($rr['date'], 0, 4);
-				$month = substr($rr['date'], 5, 2) -1;
-				$month_name = (substr($month, 0, 1) == 0) ? $month_names[substr($month, 1, 1)] : $month_names[$month];
-				if ($last <> $year.$month) {
-					echo '<strong>'.$month_name.', '.$year.'</strong><br />';
-				}
-				$last = $year.$month;
-				$link = isset($rr['xsef']) ? $rr['xsef'].'/'.$rr['csef'] : $rr['csef'];
-				echo $dot.' <a href="'._SITE.$link.'/'.$rr['asef'].'/">
-					'.$rr['title'].' ('.$rr['name'].')</a><br />';
-			}
-		}
-		echo'</p>';
-	}
-	else {
-		echo '<p>'.l('no_articles').'</p>';
-	}
-}
-
-// SITEMAP
-function sitemap() {
-	echo '<h2>'.l('sitemap').'</h2>
-		<h3><strong>'.l('pages').'</strong></h3>
-		<ul>';
-	$link = '<li><a href="'._SITE;
-	echo $link.'">'.l('home').'</a></li>';
-	echo $link.'archive/">'.l('archive').'</a></li>';
-	$query = "SELECT id,title,seftitle
-		FROM "._PRE."articles
-		WHERE position = 3
-			AND published = 1
-			AND visible = 'YES'
-			AND id <> ".s('display_page')."
-		ORDER BY artorder ASC, date, id";
-	if ($result = db() -> query($query)) {
-		while ($r = dbfetch($result)) {
-			echo $link.$r['seftitle'].'/">'.$r['title'].'</a></li>';
-		}
-	}
-	echo $link.'contact/">'.l('contact').'</a></li>';
-	echo $link.'sitemap/">'.l('sitemap').'</a></li>';
-	echo '</ul>
-		<h3><strong>'.l('articles').'</strong></h3>
-		<ul>';
-	$art_query = "SELECT title, seftitle, date
-		FROM "._PRE."articles
-		WHERE position = 1
-			AND published = 1
-			AND visible = 'YES'";
-	$cat_query = "SELECT id, name, seftitle, description, subcat
-		FROM "._PRE."categories
-		WHERE published = 'YES'
-			AND subcat = 0
-			ORDER BY catorder, id";
-	if ($result = db() -> query($cat_query)) {
-		while ($c = dbfetch($result)) {
-			$category_title = $c['seftitle'];
-			echo '<li><strong><a href="'._SITE.$category_title.'/" title="'.$c['description'].'">
-				'.$c['name'].'</a></strong>';
-			$catid = $c['id'];
-			$query = $art_query.' AND category = '.$catid.' ORDER BY id DESC';
-			if ($res = db() -> query($query)) {
-				echo '<ul>';
-				while ($r = dbfetch($res)) {
-					echo '<li>'.l('divider').'  <a href="'._SITE.$category_title.'/'.$r['seftitle'].'/">
-						'.$r['title'].'</a></li>';
-				}
-				echo '</ul>';
-			}
-			$subcat = "SELECT id, name, seftitle, description, subcat
-				FROM "._PRE."categories
-				WHERE published = 'YES'
-					AND subcat = $c[id]
-				ORDER BY catorder ASC";
-			if ($subcat_result = db() -> query($subcat)) {
-				echo '<ul>';
-				while ($s = dbfetch($subcat_result)) {
-					$subcat_title = $s['seftitle'];
-					$subcat_name = $s['name'];
-					echo '<li class="subcat"><strong><a href="'.
-						_SITE.$category_title.'/'.$subcat_title.'/" title="'.$s['description'].'">'.$subcat_name.'</a></strong>';
-					$subcatid = $s['id'];
-					$query2 = $art_query.' AND category = '.$subcatid.' ORDER BY id DESC';
-					if ($artresult = db() -> query($query2)) {
-						echo '<ul>';
-						while ($ss = dbfetch($artresult)) {
-							echo '<li class="subcat">'.l('divider').'
-								<a href="'._SITE.$category_title.'/'.$subcat_title.'/'.$ss['seftitle'].'/">
-								'.$ss['title'].'</a></li>';
-						}
-						echo '</ul>';
-					}
-					echo '</li>';
-				}
-				echo '</ul>';
-			}
-			echo '</li>';
-		}
-		echo '</ul>';
-	} else {
-		echo '<li>'.l('no_articles').'</li></ul>';
-	}
-}
-
 // CONTACT FORM
 function contact() {
 	if (!isset($_POST['contactform'])) {
@@ -2188,6 +2051,8 @@ function center() {
 // ROUTES
 addRoute('login', l('login'), 'login');
 addRoute('contact', l('contact'), 'contact');
-addRoute('sitemap', l('sitemap'), 'sitemap');
-addRoute('archive', l('archive'), 'archive');
+
+// LOAD ADDONS
+readAddons();
+
 ?>
