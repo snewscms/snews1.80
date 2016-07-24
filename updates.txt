@@ -97,3 +97,6 @@ It is different if you search for "snews color", in this case both words must ma
 
 *** 22 July *** By Rui
 - Refine switch from [center]
+
+*** 24 July *** By Skiane and Rui
+- SET sitemap, contact and archive as addon
