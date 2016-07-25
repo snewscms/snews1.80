@@ -1900,6 +1900,28 @@ function processing() {
 	}
 }
 
+// ADMIN CENTER
+function admin_center($action) {
+	switch ($action) {
+		case 'snews_categories'	:	admin_categories(); break;
+		case 'admin_category'	:	form_categories(); break;
+		case 'admin_subcategory':	form_categories('sub'); break;
+		case 'groupings'		:	admin_groupings(); break;
+		case 'admin_groupings'	:	form_groupings(); break;
+		case 'snews_articles'	:	admin_articles('article_view'); break;
+		case 'extra_contents'	:	admin_articles('extra_view'); break;
+		case 'snews_pages'		:	admin_articles('page_view'); break;
+		case 'admin_article'	:	form_articles(''); break;
+		case 'article_new'		:	form_articles('article_new'); break;
+		case 'extra_new'		:	form_articles('extra_new'); break;
+		case 'page_new'			:	form_articles('page_new'); break;
+		case 'editcomment'		:	edit_comment(); break;
+		case 'process'			:	processing(); break;
+		case 'hide'				:	visibility('hide'); break;
+		case 'show'				:	visibility('show'); break;
+	}
+}
+
 // LOGOUT
 function logout() {
 	$_SESSION = array();
